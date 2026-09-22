@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "NdrProto";
+
+import "common.proto";
+import "google/protobuf/empty.proto";
+
+service NdrService {
+  rpc ListNdr(google.protobuf.Empty) returns (ListNdrResponse);
+  rpc ActOnNdr(ActOnNdrRequest) returns (google.protobuf.Empty);
+}
+
+message NdrRow {
+  string id = 1;
+  string reason = 2;
+  int32 attempt_number = 3;
+  string action = 4;
+  string notes = 5;
+  string shipment_awb = 6;
+  string courier_name = 7;
+  string order_number = 8;
+  string buyer_contact_name = 9;
+  string buyer_city = 10;
+}
+
+message ListNdrResponse {
+  repeated NdrRow records = 1;
+}
+
+message ActOnNdrRequest {
+  string ndr_id = 1;
+  string action = 2; // "REATTEMPT" or "RTO"
+  string notes = 3;
+}

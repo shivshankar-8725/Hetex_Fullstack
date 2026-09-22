@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "AdminProto";
+
+import "common.proto";
+import "google/protobuf/empty.proto";
+
+service AdminService {
+  rpc ListSellers(google.protobuf.Empty) returns (ListSellersResponse);
+  rpc GetSellerDetail(GetSellerDetailRequest) returns (SellerDetailResponse);
+  rpc AdjustWallet(AdjustWalletRequest) returns (AdjustWalletResponse);
+  rpc ListCouriers(google.protobuf.Empty) returns (ListCouriersResponse);
+  rpc UpdateCourier(UpdateCourierRequest) returns (CourierMsg);
+  rpc ListCommissionRules(google.protobuf.Empty) returns (ListCommissionRulesResponse);
+  rpc CreateCommissionRule(CreateCommissionRuleRequest) returns (CommissionRuleMsg);
+  rpc DeleteCommissionRule(DeleteCommissionRuleRequest) returns (google.protobuf.Empty);
+  rpc ListNdrRtoOversight(google.protobuf.Empty) returns (ListNdrRtoOversightResponse);
+  rpc ListAllShipments(google.protobuf.Empty) returns (ListAllShipmentsResponse);
+  rpc GetOverview(google.protobuf.Empty) returns (AdminOverviewResponse);
+}
+
+message SellerRow {
+  string id = 1;
+  string business_name = 2;
+  string name = 3;
+  string phone = 4;
+  string kyc_status = 5;
+  int32 order_count = 6;
+  double wallet_balance = 7;
+  string email = 8;
+  string created_at = 9;
+  string pan_number = 10;
+  string gst_number = 11;
+  bool email_verified = 12;
+}
+
+message ListSellersResponse {
+  repeated SellerRow sellers = 1;
+}
+
+message GetSellerDetailRequest {
+  string user_id = 1;
+}
+
+message SellerDetailResponse {
+  SellerRow seller = 1;
+  repeated OrderSummary orders = 2;
+}
+
+message AllShipmentRow {
+  string awb_number = 1;
+  string order_number = 2;
+  string seller_name = 3;
+  string courier_name = 4;
+  string status = 5;
+  string current_location = 6;
+  string payment_mode = 7;
+  string created_at = 8;
+}
+
+message ListAllShipmentsResponse {
+  repeated AllShipmentRow shipments = 1;
+}
+
+message AdjustWalletRequest {
+  string user_id = 1;
+  double amount = 2;
+  string reason = 3;
+}
+
+message AdjustWalletResponse {
+  double balance = 1;
+}
+
+message ListCouriersResponse {
+  repeated CourierMsg couriers = 1;
+}
+
+message UpdateCourierRequest {
+  string id = 1;
+  bool active = 2;
+  bool has_active = 3;
+  double base_rate_per_kg = 4;
+  bool has_base_rate_per_kg = 5;
+}
+
+message CommissionRuleMsg {
+  string id = 1;
+  string courier_id = 2;
+  string courier_name = 3;
+  double min_weight = 4;
+  double max_weight = 5;
+  string margin_type = 6;
+  double margin_value = 7;
+}
+
+message ListCommissionRulesResponse {
+  repeated CommissionRuleMsg rules = 1;
+  repeated CourierMsg couriers = 2;
+}
+
+message CreateCommissionRuleRequest {
+  string courier_id = 1;
+  double min_weight = 2;
+  double max_weight = 3;
+  string margin_type = 4;
+  double margin_value = 5;
+}
+
+message DeleteCommissionRuleRequest {
+  string id = 1;
+}
+
+message NdrRtoRow {
+  string awb_number = 1;
+  string seller_name = 2;
+  string courier_name = 3;
+  string reason = 4;
+  string status = 5;
+}
+
+message ListNdrRtoOversightResponse {
+  repeated NdrRtoRow shipments = 1;
+}
+
+message AdminOverviewResponse {
+  int32 seller_count = 1;
+  int32 total_orders = 2;
+  int32 total_shipments = 3;
+  int32 open_ndr = 4;
+  double total_margin_earned = 5;
+  double total_wallet_balance = 6;
+  repeated OrderSummary recent_orders = 7;
+}

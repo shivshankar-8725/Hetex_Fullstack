@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "TicketProto";
+
+import "google/protobuf/empty.proto";
+
+service TicketService {
+  rpc CreateTicket(CreateTicketRequest) returns (TicketDetail);
+  rpc ListTickets(google.protobuf.Empty) returns (ListTicketsResponse);
+  rpc GetTicket(TicketIdRequest) returns (TicketDetail);
+  rpc AddTicketMessage(AddTicketMessageRequest) returns (TicketDetail);
+  rpc SimulateVendorReply(TicketIdRequest) returns (TicketDetail);
+}
+
+message CreateTicketRequest {
+  string orderId = 1;
+  string subject = 2;
+  string message = 3;
+}
+
+message TicketMessageMsg {
+  string id = 1;
+  string senderRole = 2;
+  string message = 3;
+  string createdAt = 4;
+}
+
+message TicketMsg {
+  string id = 1;
+  string orderNumber = 2;
+  string courierName = 3;
+  string subject = 4;
+  string status = 5;
+  string createdAt = 6;
+  int32 messageCount = 7;
+}
+
+message ListTicketsResponse {
+  repeated TicketMsg tickets = 1;
+}
+
+message TicketIdRequest {
+  string ticketId = 1;
+}
+
+message TicketDetail {
+  string id = 1;
+  string orderNumber = 2;
+  string courierName = 3;
+  string subject = 4;
+  string status = 5;
+  string createdAt = 6;
+  repeated TicketMessageMsg messages = 7;
+}
+
+message AddTicketMessageRequest {
+  string ticketId = 1;
+  string message = 2;
+}

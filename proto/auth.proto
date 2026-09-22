@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "AuthProto";
+
+import "common.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc VerifyEmailOtp(VerifyEmailOtpRequest) returns (AuthResponse);
+  rpc ResendEmailOtp(ResendEmailOtpRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
+  rpc RequestGstOtp(RequestGstOtpRequest) returns (RequestGstOtpResponse);
+  rpc SubmitEkyc(SubmitEkycRequest) returns (ProfileResponse);
+}
+
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string phone = 3;
+  string password = 4;
+}
+
+message RegisterResponse {
+  string email = 1;
+  // AUTH_MODE=mock: OTP is returned here instead of emailed, so the demo UI can show it.
+  string devOtp = 2;
+}
+
+message VerifyEmailOtpRequest {
+  string email = 1;
+  string code = 2;
+}
+
+message ResendEmailOtpRequest {
+  string email = 1;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  string token = 1;
+  string user_id = 2;
+  string name = 3;
+  Role role = 4;
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message ProfileResponse {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+  string phone = 4;
+  string business_name = 5;
+  Role role = 6;
+  KycStatus kyc_status = 7;
+  string pan_number = 8;
+  string gst_number = 9;
+  double wallet_balance = 10;
+}
+
+message RequestGstOtpRequest {
+  string gstNumber = 1;
+}
+
+message RequestGstOtpResponse {
+  string gstNumber = 1;
+  // AUTH_MODE=mock: OTP is returned here instead of sent to the GST-registered mobile, so the demo UI can show it.
+  string devOtp = 2;
+}
+
+message SubmitEkycRequest {
+  string panNumber = 1;
+  string gstNumber = 2;
+  string gstOtp = 3;
+  bool consent = 4;
+}

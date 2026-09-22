@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "AddressProto";
+
+import "common.proto";
+import "google/protobuf/empty.proto";
+
+service AddressService {
+  rpc ListAddresses(ListAddressesRequest) returns (ListAddressesResponse);
+  rpc CreateAddress(CreateAddressRequest) returns (AddressMsg);
+  rpc DeleteAddress(DeleteAddressRequest) returns (google.protobuf.Empty);
+}
+
+message ListAddressesRequest {
+  string type_filter = 1; // "", "PICKUP", or "BUYER"
+}
+
+message ListAddressesResponse {
+  repeated AddressMsg addresses = 1;
+}
+
+message CreateAddressRequest {
+  string type = 1;
+  string label = 2;
+  string contact_name = 3;
+  string phone = 4;
+  string address_line1 = 5;
+  string address_line2 = 6;
+  string city = 7;
+  string state = 8;
+  string pincode = 9;
+  bool is_default = 10;
+}
+
+message DeleteAddressRequest {
+  string id = 1;
+}

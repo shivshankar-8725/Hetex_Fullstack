@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "ChannelProto";
+
+import "google/protobuf/empty.proto";
+
+service ChannelService {
+  rpc ListChannels(google.protobuf.Empty) returns (ListChannelsResponse);
+  rpc ConnectChannel(ConnectChannelRequest) returns (ChannelConnectionMsg);
+  rpc DisconnectChannel(DisconnectChannelRequest) returns (google.protobuf.Empty);
+  rpc SyncChannel(SyncChannelRequest) returns (SyncChannelResponse);
+}
+
+message ChannelConnectionMsg {
+  string id = 1;
+  string platform = 2;
+  string store_name = 3;
+  bool connected = 4;
+}
+
+message ListChannelsResponse {
+  repeated ChannelConnectionMsg connections = 1;
+}
+
+message ConnectChannelRequest {
+  string platform = 1;
+  string store_name = 2;
+}
+
+message DisconnectChannelRequest {
+  string id = 1;
+}
+
+message SyncChannelRequest {
+  string id = 1;
+}
+
+message SyncChannelResponse {
+  int32 imported = 1;
+}

@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "ShipmentProto";
+
+import "common.proto";
+import "google/protobuf/empty.proto";
+
+service ShipmentService {
+  rpc SimulateTracking(SimulateTrackingRequest) returns (ShipmentMsg);
+  rpc GetLabelPdf(ShipmentIdRequest) returns (PdfResponse);
+  rpc GetInvoicePdf(ShipmentIdRequest) returns (PdfResponse);
+  rpc TrackPublic(TrackPublicRequest) returns (TrackPublicResponse);
+  rpc ReceiveWebhook(WebhookRequest) returns (google.protobuf.Empty);
+  rpc ListWeightDisputes(google.protobuf.Empty) returns (ListWeightDisputesResponse);
+  rpc RespondToWeightDispute(RespondToWeightDisputeRequest) returns (google.protobuf.Empty);
+  rpc RaiseWeightDispute(ShipmentIdRequest) returns (WeightDisputeMsg);
+}
+
+message WeightDisputeMsg {
+  string id = 1;
+  string shipmentId = 2;
+  string orderNumber = 3;
+  string awbNumber = 4;
+  string courierName = 5;
+  double declaredWeight = 6;
+  double courierWeight = 7;
+  double extraCharge = 8;
+  string status = 9;
+  string resolutionNote = 10;
+  string createdAt = 11;
+}
+
+message ListWeightDisputesResponse {
+  repeated WeightDisputeMsg disputes = 1;
+}
+
+message RespondToWeightDisputeRequest {
+  string disputeId = 1;
+  string status = 2; // "RESOLVED" (accept extra charge) or "REJECTED" (dispute it)
+  string resolutionNote = 3;
+}
+
+message SimulateTrackingRequest {
+  string shipment_id = 1;
+}
+
+message ShipmentIdRequest {
+  string shipment_id = 1;
+}
+
+message PdfResponse {
+  bytes content = 1;
+  string filename = 2;
+}
+
+message TrackPublicRequest {
+  string awb_number = 1;
+}
+
+message TrackPublicResponse {
+  string awb_number = 1;
+  string status = 2;
+  string current_location = 3;
+  string courier_name = 4;
+  string destination_city = 5;
+  repeated TrackingEventMsg events = 6;
+  string brand_name = 7;
+  string primary_color = 8;
+  string logo_url = 9;
+}
+
+message WebhookRequest {
+  string awb_number = 1;
+  string status = 2;
+  string description = 3;
+  string location = 4;
+}

@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "OrderProto";
+
+import "common.proto";
+import "google/protobuf/empty.proto";
+
+service OrderService {
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+  rpc GetOrder(GetOrderRequest) returns (OrderDetail);
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc CancelOrder(CancelOrderRequest) returns (google.protobuf.Empty);
+  rpc BulkUploadOrders(BulkUploadOrdersRequest) returns (BulkUploadOrdersResponse);
+}
+
+message ListOrdersRequest {
+  string status_filter = 1; // "" or "ALL" for no filter, else a ShipmentStatus name
+}
+
+message ListOrdersResponse {
+  repeated OrderSummary orders = 1;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message OrderDetail {
+  string id = 1;
+  string order_number = 2;
+  string created_at = 3;
+  string status = 4;
+  string item_description = 5;
+  double declared_value = 6;
+  double weight = 7;
+  double length = 8;
+  double width = 9;
+  double height = 10;
+  double volumetric_weight = 11;
+  double billable_weight = 12;
+  string payment_mode = 13;
+  double cod_amount = 14;
+  AddressMsg pickup_address = 15;
+  AddressMsg buyer_address = 16;
+  ShipmentMsg shipment = 17;
+  bool has_shipment = 18;
+}
+
+message CreateOrderRequest {
+  string pickup_address_id = 1;
+  string buyer_address_id = 2;
+  string courier_id = 3;
+  double seller_price = 4;
+  double margin = 5;
+  string item_description = 6;
+  double declared_value = 7;
+  double weight = 8;
+  double length = 9;
+  double width = 10;
+  double height = 11;
+  string payment_mode = 12;
+  double cod_amount = 13;
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  string order_number = 2;
+  string awb_number = 3;
+}
+
+message CancelOrderRequest {
+  string order_id = 1;
+}
+
+message BulkUploadOrdersRequest {
+  string csv_content = 1;
+}
+
+message BulkUploadOrdersResponse {
+  int32 created = 1;
+  repeated string errors = 2;
+}

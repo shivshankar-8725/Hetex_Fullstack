@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "WalletProto";
+
+import "google/protobuf/empty.proto";
+
+service WalletService {
+  rpc GetWallet(google.protobuf.Empty) returns (WalletResponse);
+  rpc Recharge(RechargeRequest) returns (RechargeResponse);
+}
+
+message WalletTransactionMsg {
+  string id = 1;
+  string type = 2;
+  double amount = 3;
+  double balance_after = 4;
+  string reason = 5;
+  string created_at = 6;
+}
+
+message WalletResponse {
+  double balance = 1;
+  repeated WalletTransactionMsg transactions = 2;
+}
+
+message RechargeRequest {
+  double amount = 1;
+}
+
+message RechargeResponse {
+  double balance = 1;
+}

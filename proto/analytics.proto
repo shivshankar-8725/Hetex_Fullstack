@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package hetex;
+
+option java_package = "com.hetex.grpc.proto";
+option java_multiple_files = true;
+option java_outer_classname = "AnalyticsProto";
+
+import "google/protobuf/empty.proto";
+
+service AnalyticsService {
+  rpc GetAnalytics(google.protobuf.Empty) returns (AnalyticsResponse);
+}
+
+message OrdersPerDay {
+  string date = 1;
+  int32 count = 2;
+}
+
+message CourierSplitEntry {
+  string name = 1;
+  int32 count = 2;
+}
+
+message PaymentSplitEntry {
+  string name = 1;
+  int32 value = 2;
+}
+
+message AnalyticsTotals {
+  int32 orders = 1;
+  int32 delivered = 2;
+  int32 rto = 3;
+  double rto_percent = 4;
+}
+
+message AnalyticsResponse {
+  repeated OrdersPerDay orders_per_day = 1;
+  repeated CourierSplitEntry courier_split = 2;
+  repeated PaymentSplitEntry payment_split = 3;
+  AnalyticsTotals totals = 4;
+}
