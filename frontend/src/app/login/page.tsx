@@ -36,7 +36,7 @@ function LoginForm() {
         if (typeof data.error === "string" && data.error.toLowerCase().includes("verify")) setUnverified(true);
         throw new Error(data.error);
       }
-      router.push(next);
+      router.push(data.user?.role === "ADMIN" ? "/admin" : next);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");

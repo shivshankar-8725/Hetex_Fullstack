@@ -7,6 +7,7 @@ import { SELLER_NAV } from "@/components/dashboard/nav-items";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.role === "ADMIN") redirect("/admin");
 
   return (
     <div className="flex min-h-screen">
