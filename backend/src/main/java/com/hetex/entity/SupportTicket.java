@@ -25,6 +25,21 @@ public class SupportTicket extends BaseEntity {
     @Column(nullable = false)
     private String courierId;
 
+    @Column(nullable = true)
+    private String awbNumber;
+
+    @Column(nullable = true)
+    private String vendorTicketId;
+
+    @Column(nullable = true)
+    private String vendorStatus;
+
+    @Column(nullable = false)
+    private boolean vendorApiSupported = false;
+
+    @Column(length = 1000)
+    private String vendorNotes;
+
     @Column(nullable = false)
     private String subject;
 

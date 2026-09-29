@@ -37,6 +37,7 @@ export const ADMIN_NAV = [
     section: "Manage",
     items: [
       { href: "/admin/users", label: "Sellers & Wallets", icon: "users" },
+      { href: "/admin/wallet", label: "Wallet & Payments", icon: "wallet" },
       { href: "/admin/shipments", label: "All Shipments & Tracking", icon: "truck" },
       { href: "/admin/couriers", label: "Courier Partners", icon: "truck" },
       { href: "/admin/commission", label: "Commission Rules", icon: "percent" },

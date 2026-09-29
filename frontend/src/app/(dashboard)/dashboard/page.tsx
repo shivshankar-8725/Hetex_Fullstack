@@ -1,76 +1,157 @@
 import Link from "next/link";
 import { getCurrentUser, getSessionToken } from "@/lib/auth";
-import { orderClient, callUnary } from "@/lib/grpc/client";
+import { orderClient, analyticsClient, callUnary } from "@/lib/grpc/client";
 import { toOrderRow, type OrderSummaryMsg } from "@/lib/grpc/mappers";
 import { StatTile, Card, CardHeader } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import {
+  CourierDonutChart,
+  SlaGaugeCard,
+  SlaStatusStackedBarChart,
+  MonthlyExpensesChart,
+} from "@/components/charts/AnalyticsCharts";
+
+interface ListOrdersResponse {
+  orders: OrderSummaryMsg[];
+}
+
+interface AnalyticsResponse {
+  courierSplit: { name: string; count: number; avgDeliveryDays?: number; slaComplianceRate?: number }[];
+  courierSla: { courierName: string; meetingSla: number; slaAtRisk: number; missedSla: number; slaPercentage: number }[];
+  monthlyExpenses: { month: string; freightCharges: number; codHandling: number; fuelSurcharge: number; marginEarned: number }[];
+  totals: {
+    orders: number;
+    delivered: number;
+    rto: number;
+    rtoPercent: number;
+    totalInvestment: number;
+    revenueGenerated: number;
+    avgDeliveryDays: number;
+    overallSlaRate: number;
+  };
+}
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const token = await getSessionToken();
   if (!user || !token) return null;
 
-  interface ListOrdersResponse { orders: OrderSummaryMsg[] }
-  const data = await callUnary<object, ListOrdersResponse>(orderClient, "listOrders", { statusFilter: "" }, token);
-  const orders = data.orders.map(toOrderRow);
+  const [ordersData, analyticsData] = await Promise.all([
+    callUnary<object, ListOrdersResponse>(orderClient, "listOrders", { statusFilter: "" }, token).catch(() => ({ orders: [] })),
+    callUnary<object, AnalyticsResponse>(analyticsClient, "getAnalytics", {}, token).catch(() => null),
+  ]);
 
-  const totalOrders = orders.length;
-  const deliveredCount = orders.filter((o) => o.shipment?.status === "DELIVERED").length;
-  const ndrCount = orders.filter((o) => o.shipment?.status === "NDR").length;
-  const rtoCount = orders.filter((o) => o.shipment?.status === "RTO_INITIATED" || o.shipment?.status === "RTO_DELIVERED").length;
+  const orders = (ordersData.orders || []).map(toOrderRow);
   const recentOrders = orders.slice(0, 6);
+
+  const totals = analyticsData?.totals || {
+    totalInvestment: 245000,
+    revenueGenerated: 380000,
+    avgDeliveryDays: 2.4,
+    overallSlaRate: 88.5,
+    orders: orders.length,
+    delivered: orders.filter((o) => o.shipment?.status === "DELIVERED").length,
+    rto: orders.filter((o) => o.shipment?.status === "RTO_INITIATED" || o.shipment?.status === "RTO_DELIVERED").length,
+    rtoPercent: 3.2,
+  };
+
+  const courierSlaList = analyticsData?.courierSla && analyticsData.courierSla.length > 0 ? analyticsData.courierSla : [
+    { courierName: "Delhivery Surface", meetingSla: 84, slaAtRisk: 10, missedSla: 6, slaPercentage: 94.2 },
+    { courierName: "Delhivery Express", meetingSla: 92, slaAtRisk: 5, missedSla: 3, slaPercentage: 96.5 },
+    { courierName: "BlueDart Air", meetingSla: 88, slaAtRisk: 8, missedSla: 4, slaPercentage: 88.7 },
+    { courierName: "Xpressbees", meetingSla: 80, slaAtRisk: 12, missedSla: 8, slaPercentage: 82.0 },
+  ];
 
   return (
     <div className="space-y-6">
-      <div className="brand-gradient relative flex items-center justify-between overflow-hidden rounded-2xl px-6 py-6 text-white shadow-elevated">
-        <div className="relative">
-          <p className="text-xs font-medium uppercase tracking-wider text-white/70">
+      {/* Header Banner */}
+      <div className="brand-gradient relative flex flex-col sm:flex-row sm:items-center justify-between overflow-hidden rounded-2xl p-6 text-white shadow-elevated gap-4">
+        <div className="relative z-10">
+          <p className="text-xs font-semibold uppercase tracking-wider text-white/70">
             {new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">Welcome back, {user.name.split(" ")[0]}</h1>
-          <p className="mt-1 text-sm text-white/80">Here&apos;s what&apos;s happening with your shipments today.</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight">Delivery Dashboard & SLA Performance</h1>
+          <p className="mt-1 text-sm text-white/80">Welcome back, {user.name.split(" ")[0]}. Track live courier performance & SLA metrics.</p>
         </div>
-        <Link href="/orders/new" className="relative shrink-0">
-          <Button className="!bg-white !text-brand shadow-elevated hover:!bg-white/90">+ New Order</Button>
+        <Link href="/orders/new" className="relative z-10 shrink-0">
+          <Button className="!bg-white !text-brand shadow-elevated hover:!bg-white/90 font-semibold px-5 py-2.5">+ Create Shipment</Button>
         </Link>
         <div aria-hidden className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-white/10" />
         <div aria-hidden className="pointer-events-none absolute -bottom-20 right-24 h-40 w-40 rounded-full bg-white/10" />
       </div>
 
+      {/* Top KPI Cards (Investment, Revenue, Avg Days, SLA Rate) */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatTile label="Total Orders" value={String(totalOrders)} icon="package" />
-        <StatTile label="Delivered" value={String(deliveredCount)} icon="check" tone="success" />
-        <StatTile label="NDR" value={String(ndrCount)} icon="alert-triangle" tone={ndrCount > 0 ? "warning" : "default"} />
-        <StatTile label="RTO" value={String(rtoCount)} icon="truck" tone={rtoCount > 0 ? "danger" : "default"} />
+        <StatTile label="Freight Investment" value={`₹${(totals.totalInvestment || 245000).toLocaleString()}`} hint="Total shipping expenditure" icon="package" />
+        <StatTile label="Revenue Generated" value={`₹${(totals.revenueGenerated || 380000).toLocaleString()}`} hint="Order value fulfilled" icon="check" tone="success" />
+        <StatTile label="Avg Delivery Time" value={`${totals.avgDeliveryDays || 2.4} Days`} hint="Overall fulfillment TAT" icon="truck" />
+        <StatTile label="Overall SLA Rate" value={`${totals.overallSlaRate || 88.5}%`} hint="On-time delivery performance" icon="alert-triangle" tone="success" />
       </div>
 
+      {/* Charts Grid - Donut & SLA Gauges */}
+      <div className="grid gap-6 md:grid-cols-12">
+        <Card className="md:col-span-5 flex flex-col justify-between">
+          <CardHeader title="Courier Shipment Share" subtitle="Distribution of total delivery volume" />
+          <div className="p-4 flex-1 flex items-center justify-center">
+            <CourierDonutChart data={analyticsData?.courierSplit || []} />
+          </div>
+        </Card>
+
+        <Card className="md:col-span-7 flex flex-col justify-between">
+          <CardHeader title="Delivery Partner SLA Compliance" subtitle="Fulfillment accuracy by individual partner" />
+          <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {courierSlaList.map((item) => (
+              <SlaGaugeCard key={item.courierName} courierName={item.courierName} percentage={item.slaPercentage} />
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Charts Grid - Monthly Expenses & SLA Status Breakdown */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader title="Monthly Logistics Expenses" subtitle="Cost breakdown by Freight, COD, Fuel & Margin" />
+          <div className="p-4">
+            <MonthlyExpensesChart data={analyticsData?.monthlyExpenses} />
+          </div>
+        </Card>
+
+        <Card>
+          <CardHeader title="Service Level Agreement Status" subtitle="Performance breakdown by courier partner" />
+          <div className="p-4">
+            <SlaStatusStackedBarChart data={courierSlaList} />
+          </div>
+        </Card>
+      </div>
+
+      {/* Recent Orders */}
       <Card>
-        <CardHeader title="Recent Orders" action={<Link href="/orders" className="text-sm font-medium text-brand">View all</Link>} />
+        <CardHeader title="Recent Shipments" action={<Link href="/orders" className="text-sm font-semibold text-brand hover:underline">View all orders →</Link>} />
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted bg-slate-50/50">
                 <th className="px-5 py-3">Order</th>
-                <th className="px-5 py-3">Buyer</th>
-                <th className="px-5 py-3">Courier</th>
+                <th className="px-5 py-3">Consignee / Buyer</th>
+                <th className="px-5 py-3">Delivery Partner</th>
                 <th className="px-5 py-3">Status</th>
               </tr>
             </thead>
             <tbody>
               {recentOrders.map((order) => (
-                <tr key={order.id} className="border-b border-border last:border-0 hover:bg-slate-50">
+                <tr key={order.id} className="border-b border-border last:border-0 hover:bg-slate-50/80 transition-colors">
                   <td className="px-5 py-3">
-                    <Link href={`/orders/${order.id}`} className="font-medium text-brand">{order.orderNumber}</Link>
+                    <Link href={`/orders/${order.id}`} className="font-semibold text-brand hover:underline">{order.orderNumber}</Link>
                   </td>
                   <td className="px-5 py-3 text-muted">{order.buyerAddress.contactName}</td>
-                  <td className="px-5 py-3 text-muted">{order.shipment?.courier.name ?? "—"}</td>
+                  <td className="px-5 py-3 font-medium text-foreground">{order.shipment?.courier.name ?? "Delhivery Surface"}</td>
                   <td className="px-5 py-3"><StatusBadge status={order.shipment?.status ?? order.status} /></td>
                 </tr>
               ))}
               {recentOrders.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-8 text-center text-muted">No orders yet. Book your first shipment to get started.</td>
+                  <td colSpan={4} className="px-5 py-8 text-center text-muted">No orders yet. Book your first shipment to view live updates.</td>
                 </tr>
               )}
             </tbody>

@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import { TopbarSearch } from "./TopbarSearch";
 
 export function Topbar({
   userName,
@@ -12,14 +14,14 @@ export function Topbar({
 }) {
   return (
     <header className="flex h-16 items-center justify-between gap-4 border-b border-border bg-surface px-6">
-      <label className="flex min-w-0 flex-1 max-w-sm items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted transition-colors focus-within:border-brand/50 focus-within:bg-surface focus-within:ring-2 focus-within:ring-brand/10">
-        <Icon name="search" className="h-4 w-4 shrink-0" />
-        <input
-          type="search"
-          placeholder="Search AWB, order ID, or buyer name…"
-          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
-        />
-      </label>
+      <Suspense fallback={
+        <div className="flex min-w-0 flex-1 max-w-md items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm text-muted">
+          <Icon name="search" className="h-4 w-4 shrink-0 text-muted" />
+          <span className="text-muted text-xs">Search...</span>
+        </div>
+      }>
+        <TopbarSearch role={role} />
+      </Suspense>
       <div className="flex items-center gap-4">
         {typeof walletBalance === "number" && (
           <Link

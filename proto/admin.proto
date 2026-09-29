@@ -7,6 +7,7 @@ option java_multiple_files = true;
 option java_outer_classname = "AdminProto";
 
 import "common.proto";
+import "analytics.proto";
 import "google/protobuf/empty.proto";
 
 service AdminService {
@@ -21,6 +22,7 @@ service AdminService {
   rpc ListNdrRtoOversight(google.protobuf.Empty) returns (ListNdrRtoOversightResponse);
   rpc ListAllShipments(google.protobuf.Empty) returns (ListAllShipmentsResponse);
   rpc GetOverview(google.protobuf.Empty) returns (AdminOverviewResponse);
+  rpc ListAllWalletTransactions(google.protobuf.Empty) returns (ListAllWalletTransactionsResponse);
 }
 
 message SellerRow {
@@ -49,6 +51,7 @@ message GetSellerDetailRequest {
 message SellerDetailResponse {
   SellerRow seller = 1;
   repeated OrderSummary orders = 2;
+  repeated AdminWalletTransactionRow wallet_transactions = 3;
 }
 
 message AllShipmentRow {
@@ -135,4 +138,26 @@ message AdminOverviewResponse {
   double total_margin_earned = 5;
   double total_wallet_balance = 6;
   repeated OrderSummary recent_orders = 7;
+  repeated CourierSlaStatus courier_sla = 8;
+}
+
+message AdminWalletTransactionRow {
+  string id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  string business_name = 4;
+  double current_balance = 5;
+  string type = 6;
+  double amount = 7;
+  double balance_before = 8;
+  double balance_after = 9;
+  string reason = 10;
+  string payment_provider = 11;
+  string payment_reference = 12;
+  string payment_status = 13;
+  string created_at = 14;
+}
+
+message ListAllWalletTransactionsResponse {
+  repeated AdminWalletTransactionRow transactions = 1;
 }

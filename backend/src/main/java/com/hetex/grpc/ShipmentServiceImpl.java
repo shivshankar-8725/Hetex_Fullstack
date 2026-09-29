@@ -4,6 +4,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.hetex.entity.*;
 import com.hetex.grpc.proto.ListWeightDisputesResponse;
+import com.hetex.grpc.proto.LiveTrackingResponse;
 import com.hetex.grpc.proto.PdfResponse;
 import com.hetex.grpc.proto.RespondToWeightDisputeRequest;
 import com.hetex.grpc.proto.ShipmentIdRequest;
@@ -12,6 +13,7 @@ import com.hetex.grpc.proto.ShipmentServiceGrpc;
 import com.hetex.grpc.proto.SimulateTrackingRequest;
 import com.hetex.grpc.proto.TrackPublicRequest;
 import com.hetex.grpc.proto.TrackPublicResponse;
+import com.hetex.grpc.proto.TrackingEventMsg;
 import com.hetex.grpc.proto.WebhookRequest;
 import com.hetex.grpc.proto.WeightDisputeMsg;
 import com.hetex.repository.*;
@@ -20,6 +22,7 @@ import com.hetex.service.NotifyService;
 import com.hetex.service.PdfService;
 import com.hetex.service.courier.CourierAdapter;
 import com.hetex.service.courier.CourierRegistry;
+import com.hetex.service.courier.DelhiveryService;
 import com.hetex.service.courier.MockCourierAdapter;
 import com.hetex.service.courier.TrackingUpdate;
 import io.grpc.Status;
@@ -52,13 +55,15 @@ public class ShipmentServiceImpl extends ShipmentServiceGrpc.ShipmentServiceImpl
     private final PdfService pdfService;
     private final GrpcMappers mappers;
     private final WeightDisputeRepository weightDisputeRepository;
+    private final DelhiveryService delhiveryService;
 
     public ShipmentServiceImpl(
         ShipmentRepository shipmentRepository, OrderRepository orderRepository, AddressRepository addressRepository,
         CourierRepository courierRepository, UserRepository userRepository, TrackingEventRepository trackingEventRepository,
         NdrRecordRepository ndrRecordRepository, CodRemittanceRepository codRemittanceRepository,
         TrackingPageConfigRepository trackingPageConfigRepository, CourierRegistry courierRegistry,
-        NotifyService notifyService, PdfService pdfService, GrpcMappers mappers, WeightDisputeRepository weightDisputeRepository
+        NotifyService notifyService, PdfService pdfService, GrpcMappers mappers, WeightDisputeRepository weightDisputeRepository,
+        DelhiveryService delhiveryService
     ) {
         this.shipmentRepository = shipmentRepository;
         this.orderRepository = orderRepository;
@@ -74,6 +79,7 @@ public class ShipmentServiceImpl extends ShipmentServiceGrpc.ShipmentServiceImpl
         this.pdfService = pdfService;
         this.weightDisputeRepository = weightDisputeRepository;
         this.mappers = mappers;
+        this.delhiveryService = delhiveryService;
     }
 
     private Shipment loadOwnedShipment(String shipmentId, JwtService.SessionPayload session) {
@@ -214,6 +220,69 @@ public class ShipmentServiceImpl extends ShipmentServiceGrpc.ShipmentServiceImpl
             .setPrimaryColor(branding != null ? branding.getPrimaryColor() : "#2c3958")
             .setLogoUrl(branding != null && branding.getLogoUrl() != null ? branding.getLogoUrl() : "");
 
+        if ("DLV".equalsIgnoreCase(courier.getCode()) || "Delhivery".equalsIgnoreCase(courier.getName())) {
+            DelhiveryService.LiveTrackingResponse liveData = delhiveryService.trackShipment(shipment.getAwbNumber());
+            if (liveData.events() != null && !liveData.events().isEmpty()) {
+                for (DelhiveryService.TrackingEventDetail ev : liveData.events()) {
+                    builder.addEvents(TrackingEventMsg.newBuilder()
+                        .setId("dlv_" + Math.abs(ev.hashCode()))
+                        .setStatus(ev.status())
+                        .setDescription(ev.description())
+                        .setLocation(ev.location())
+                        .setTimestamp(ev.timestamp())
+                        .build());
+                }
+                responseObserver.onNext(builder.build());
+                responseObserver.onCompleted();
+                return;
+            }
+        }
+
+        trackingEventRepository.findByShipmentIdOrderByTimestampAsc(shipment.getId()).forEach(e -> builder.addEvents(mappers.eventToMsg(e)));
+        responseObserver.onNext(builder.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getLiveTracking(ShipmentIdRequest request, StreamObserver<LiveTrackingResponse> responseObserver) {
+        JwtService.SessionPayload session = AuthContext.requireSession();
+        Shipment shipment = loadOwnedShipment(request.getShipmentId(), session);
+        Order order = orderRepository.findById(shipment.getOrderId()).orElseThrow();
+        Address buyer = addressRepository.findById(order.getBuyerAddressId()).orElseThrow();
+        Courier courier = courierRepository.findById(shipment.getCourierId()).orElseThrow();
+
+        LiveTrackingResponse.Builder builder = LiveTrackingResponse.newBuilder()
+            .setAwbNumber(shipment.getAwbNumber())
+            .setStatus(shipment.getStatus().name())
+            .setCurrentLocation(shipment.getCurrentLocation())
+            .setCourierName(courier.getName())
+            .setDestinationCity(buyer.getCity());
+
+        if ("DLV".equalsIgnoreCase(courier.getCode()) || "Delhivery".equalsIgnoreCase(courier.getName())) {
+            DelhiveryService.LiveTrackingResponse liveData = delhiveryService.trackShipment(shipment.getAwbNumber());
+            builder.setIsLive(liveData.isLive());
+            builder.setMessage(liveData.message());
+            if (liveData.expectedDeliveryDate() != null && !liveData.expectedDeliveryDate().isBlank()) {
+                builder.setExpectedDeliveryDate(liveData.expectedDeliveryDate());
+            }
+            if (liveData.events() != null && !liveData.events().isEmpty()) {
+                for (DelhiveryService.TrackingEventDetail ev : liveData.events()) {
+                    builder.addEvents(TrackingEventMsg.newBuilder()
+                        .setId("dlv_" + Math.abs(ev.hashCode()))
+                        .setStatus(ev.status())
+                        .setDescription(ev.description())
+                        .setLocation(ev.location())
+                        .setTimestamp(ev.timestamp())
+                        .build());
+                }
+                responseObserver.onNext(builder.build());
+                responseObserver.onCompleted();
+                return;
+            }
+        }
+
+        builder.setIsLive(false);
+        builder.setMessage("Tracking events from order record");
         trackingEventRepository.findByShipmentIdOrderByTimestampAsc(shipment.getId()).forEach(e -> builder.addEvents(mappers.eventToMsg(e)));
 
         responseObserver.onNext(builder.build());
@@ -295,7 +364,6 @@ public class ShipmentServiceImpl extends ShipmentServiceGrpc.ShipmentServiceImpl
         responseObserver.onCompleted();
     }
 
-    /** Demo trigger standing in for a courier's post-pickup weight-check flagging a mismatch. */
     @Override
     @Transactional
     public void raiseWeightDispute(ShipmentIdRequest request, StreamObserver<WeightDisputeMsg> responseObserver) {

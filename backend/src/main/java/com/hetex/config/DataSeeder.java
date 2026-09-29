@@ -58,6 +58,10 @@ public class DataSeeder {
             courier.setEtaMinDays(c.etaMin());
             courier.setEtaMaxDays(c.etaMax());
             courier.setRtoRiskPercent(c.rtoRisk());
+            
+            // Set Delhivery = ENABLED (active=true), others = DISABLED (active=false) by default
+            boolean isDelhivery = "DLV".equalsIgnoreCase(c.code());
+            courier.setActive(isDelhivery);
             courierRepository.save(courier);
         }
     }

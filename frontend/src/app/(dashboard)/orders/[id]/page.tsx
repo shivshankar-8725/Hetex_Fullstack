@@ -5,6 +5,7 @@ import { toOrderDetail, type OrderDetailMsg } from "@/lib/grpc/mappers";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { OrderActions } from "@/components/orders/OrderActions";
+import { LiveTrackingCard } from "@/components/orders/LiveTrackingCard";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -61,20 +62,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       </Card>
 
       {order.shipment && (
-        <Card>
-          <CardHeader title="Tracking Timeline" subtitle={`Courier: ${order.shipment.courier.name}`} />
-          <div className="space-y-4 p-5">
-            {[...order.shipment.trackingEvents].reverse().map((event) => (
-              <div key={event.id} className="flex gap-3">
-                <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-brand" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">{event.description}</p>
-                  <p className="text-xs text-muted">{event.location} · {new Date(event.timestamp).toLocaleString()}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <LiveTrackingCard
+          shipmentId={order.shipment.id}
+          awbNumber={order.shipment.awbNumber}
+          courierName={order.shipment.courier.name}
+          initialEvents={order.shipment.trackingEvents}
+          initialStatus={order.shipment.status}
+          initialLocation={order.shipment.currentLocation}
+        />
       )}
 
       {order.shipment?.ndrRecords && order.shipment.ndrRecords.length > 0 && (

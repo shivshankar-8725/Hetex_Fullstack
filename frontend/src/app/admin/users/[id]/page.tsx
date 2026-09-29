@@ -22,9 +22,23 @@ interface SellerRow {
   emailVerified: boolean;
 }
 
+interface AdminWalletTxn {
+  id: string;
+  type: string;
+  amount: number;
+  balanceBefore: number;
+  balanceAfter: number;
+  reason: string;
+  paymentProvider: string;
+  paymentReference: string;
+  paymentStatus: string;
+  createdAt: string;
+}
+
 interface SellerDetailResponse {
   seller: SellerRow;
   orders: OrderSummaryMsg[];
+  walletTransactions?: AdminWalletTxn[];
 }
 
 export default async function AdminSellerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -106,6 +120,50 @@ export default async function AdminSellerDetailPage({ params }: { params: Promis
               ))}
               {orders.length === 0 && (
                 <tr><td colSpan={6} className="px-5 py-6 text-center text-muted">No orders placed yet</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title={`Wallet Transactions (${data.walletTransactions?.length || 0})`} subtitle="Ledger of all credits, debits, adjustments, and Razorpay payments" />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
+                <th className="px-5 py-3">Type & Reason</th>
+                <th className="px-5 py-3">Amount</th>
+                <th className="px-5 py-3">Balance After</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3">Provider</th>
+                <th className="px-5 py-3">Payment Ref</th>
+                <th className="px-5 py-3">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(data.walletTransactions || []).map((t) => (
+                <tr key={t.id} className="border-b border-border last:border-0">
+                  <td className="px-5 py-3">
+                    <p className="font-medium text-foreground">{t.reason || t.type}</p>
+                    <p className="text-xs font-mono text-muted">{t.id}</p>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className={`font-semibold ${t.type === "CREDIT" ? "text-success" : "text-danger"}`}>
+                      {t.type === "CREDIT" ? "+" : "-"}₹{t.amount.toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 font-medium text-foreground">₹{t.balanceAfter.toFixed(2)}</td>
+                  <td className="px-5 py-3"><StatusBadge status={t.paymentStatus || (t.type === "CREDIT" ? "SUCCESS" : "COMPLETED")} /></td>
+                  <td className="px-5 py-3 text-xs text-muted">{t.paymentProvider || "MANUAL"}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-foreground">
+                    {t.paymentReference ? <span className="rounded bg-slate-100 px-1.5 py-0.5 text-slate-700">{t.paymentReference}</span> : "—"}
+                  </td>
+                  <td className="px-5 py-3 text-xs text-muted">{t.createdAt ? new Date(t.createdAt).toLocaleString() : "—"}</td>
+                </tr>
+              ))}
+              {(!data.walletTransactions || data.walletTransactions.length === 0) && (
+                <tr><td colSpan={7} className="px-5 py-6 text-center text-muted">No wallet transactions recorded</td></tr>
               )}
             </tbody>
           </table>

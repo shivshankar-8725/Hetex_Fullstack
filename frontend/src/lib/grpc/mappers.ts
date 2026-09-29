@@ -169,3 +169,40 @@ export function toOrderDetail(o: OrderDetailMsg) {
     shipment: o.hasShipment && o.shipment ? toShipmentDetail(o.shipment) : null,
   };
 }
+
+export interface TicketMsg {
+  id: string;
+  orderNumber: string;
+  courierName: string;
+  subject: string;
+  status: string;
+  createdAt: string;
+  messageCount: number;
+  awbNumber: string;
+  vendorTicketId: string;
+  vendorStatus: string;
+  vendorApiSupported: boolean;
+  vendorNotes: string;
+}
+
+export interface TicketMessageMsg {
+  id: string;
+  senderRole: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface TicketDetailMsg {
+  id: string;
+  orderNumber: string;
+  courierName: string;
+  subject: string;
+  status: string;
+  createdAt: string;
+  messages: TicketMessageMsg[];
+  awbNumber: string;
+  vendorTicketId: string;
+  vendorStatus: string;
+  vendorApiSupported: boolean;
+  vendorNotes: string;
+}

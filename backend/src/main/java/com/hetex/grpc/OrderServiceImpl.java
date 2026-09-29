@@ -19,6 +19,7 @@ import com.hetex.service.NotifyService;
 import com.hetex.service.VolumetricUtil;
 import com.hetex.service.courier.CourierAdapter;
 import com.hetex.service.courier.CourierRegistry;
+import com.hetex.service.courier.DelhiveryService;
 import com.hetex.service.courier.ShipmentCreationResult;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -29,7 +30,6 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.StringReader;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -54,13 +54,14 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     private final CourierRegistry courierRegistry;
     private final NotifyService notifyService;
     private final GrpcMappers mappers;
+    private final DelhiveryService delhiveryService;
 
     public OrderServiceImpl(
         OrderRepository orderRepository, ShipmentRepository shipmentRepository, AddressRepository addressRepository,
         WalletRepository walletRepository, WalletTransactionRepository walletTransactionRepository,
         CodRemittanceRepository codRemittanceRepository, UserRepository userRepository,
         TrackingEventRepository trackingEventRepository, CourierRegistry courierRegistry,
-        NotifyService notifyService, GrpcMappers mappers
+        NotifyService notifyService, GrpcMappers mappers, DelhiveryService delhiveryService
     ) {
         this.orderRepository = orderRepository;
         this.shipmentRepository = shipmentRepository;
@@ -73,6 +74,7 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         this.courierRegistry = courierRegistry;
         this.notifyService = notifyService;
         this.mappers = mappers;
+        this.delhiveryService = delhiveryService;
     }
 
     @Override
@@ -178,13 +180,11 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             .filter(c -> c.getId().equals(request.getCourierId()))
             .findFirst()
             .orElseThrow(() -> Status.INVALID_ARGUMENT.withDescription("Invalid courier").asRuntimeException());
-        CourierAdapter adapter = courierRegistry.getAdapter(courier);
 
         double billable = VolumetricUtil.roundToSlab(
             VolumetricUtil.billableWeight(request.getWeight(), request.getLength(), request.getWidth(), request.getHeight())
         );
         PaymentMode paymentMode = PaymentMode.valueOf(request.getPaymentMode());
-        ShipmentCreationResult shipmentResult = adapter.createShipment(pickup.getPincode(), buyer.getPincode(), billable, paymentMode);
 
         Order order = new Order();
         order.setOrderNumber("HTX-" + Long.toString(System.currentTimeMillis(), 36).toUpperCase());
@@ -204,20 +204,33 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
         order.setStatus(OrderStatus.BOOKED);
         Order savedOrder = orderRepository.save(order);
 
+        String awbNumber;
+        boolean labelReady = true;
+
+        if ("DLV".equalsIgnoreCase(courier.getCode()) || "Delhivery".equalsIgnoreCase(courier.getName())) {
+            DelhiveryService.DelhiveryShipmentResult dlvResult = delhiveryService.createShipment(savedOrder, pickup, buyer);
+            awbNumber = dlvResult.awbNumber();
+        } else {
+            CourierAdapter adapter = courierRegistry.getAdapter(courier);
+            ShipmentCreationResult shipmentResult = adapter.createShipment(pickup.getPincode(), buyer.getPincode(), billable, paymentMode);
+            awbNumber = shipmentResult.awbNumber();
+            labelReady = shipmentResult.labelReady();
+        }
+
         Shipment shipment = new Shipment();
         shipment.setOrderId(savedOrder.getId());
         shipment.setCourierId(courier.getId());
-        shipment.setAwbNumber(shipmentResult.awbNumber());
+        shipment.setAwbNumber(awbNumber);
         shipment.setRateCharged(request.getSellerPrice());
         shipment.setMarginEarned(request.getMargin());
         shipment.setStatus(ShipmentStatus.READY_TO_SHIP);
-        shipment.setLabelGenerated(shipmentResult.labelReady());
+        shipment.setLabelGenerated(labelReady);
         Shipment savedShipment = shipmentRepository.save(shipment);
 
         TrackingEvent event = new TrackingEvent();
         event.setShipmentId(savedShipment.getId());
         event.setStatus(ShipmentStatus.READY_TO_SHIP);
-        event.setDescription("Order booked, awaiting manifest");
+        event.setDescription("Order booked with " + courier.getName() + ", awaiting manifest");
         event.setLocation(pickup.getCity());
         trackingEventRepository.save(event);
 
@@ -243,12 +256,12 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
 
         User seller = userRepository.findById(session.userId()).orElseThrow();
         notifyService.notifyAllChannels(session.userId(), seller.getPhone(), seller.getEmail(),
-            "Order " + savedOrder.getOrderNumber() + " booked successfully. AWB: " + shipmentResult.awbNumber() + ".", savedOrder.getId());
+            "Order " + savedOrder.getOrderNumber() + " booked successfully. AWB: " + awbNumber + ".", savedOrder.getId());
 
         responseObserver.onNext(CreateOrderResponse.newBuilder()
             .setOrderId(savedOrder.getId())
             .setOrderNumber(savedOrder.getOrderNumber())
-            .setAwbNumber(shipmentResult.awbNumber())
+            .setAwbNumber(awbNumber)
             .build());
         responseObserver.onCompleted();
     }

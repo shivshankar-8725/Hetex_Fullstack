@@ -5,6 +5,7 @@ import com.hetex.entity.*;
 import com.hetex.grpc.proto.*;
 import com.hetex.repository.*;
 import com.hetex.service.JwtService;
+import com.hetex.service.courier.DelhiverySupportIntegration;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
@@ -27,16 +28,19 @@ public class TicketServiceImpl extends TicketServiceGrpc.TicketServiceImplBase {
     private final OrderRepository orderRepository;
     private final ShipmentRepository shipmentRepository;
     private final CourierRepository courierRepository;
+    private final DelhiverySupportIntegration delhiverySupportIntegration;
 
     public TicketServiceImpl(
         SupportTicketRepository ticketRepository, TicketMessageRepository messageRepository,
-        OrderRepository orderRepository, ShipmentRepository shipmentRepository, CourierRepository courierRepository
+        OrderRepository orderRepository, ShipmentRepository shipmentRepository, CourierRepository courierRepository,
+        DelhiverySupportIntegration delhiverySupportIntegration
     ) {
         this.ticketRepository = ticketRepository;
         this.messageRepository = messageRepository;
         this.orderRepository = orderRepository;
         this.shipmentRepository = shipmentRepository;
         this.courierRepository = courierRepository;
+        this.delhiverySupportIntegration = delhiverySupportIntegration;
     }
 
     private TicketMessageMsg toMessageMsg(TicketMessage m) {
@@ -57,7 +61,12 @@ public class TicketServiceImpl extends TicketServiceGrpc.TicketServiceImplBase {
             .setCourierName(courier.getName())
             .setSubject(ticket.getSubject())
             .setStatus(ticket.getStatus().name())
-            .setCreatedAt(ticket.getCreatedAt().toString());
+            .setCreatedAt(ticket.getCreatedAt().toString())
+            .setAwbNumber(ticket.getAwbNumber() != null ? ticket.getAwbNumber() : "")
+            .setVendorTicketId(ticket.getVendorTicketId() != null ? ticket.getVendorTicketId() : "")
+            .setVendorStatus(ticket.getVendorStatus() != null ? ticket.getVendorStatus() : "")
+            .setVendorApiSupported(ticket.isVendorApiSupported())
+            .setVendorNotes(ticket.getVendorNotes() != null ? ticket.getVendorNotes() : "");
         messageRepository.findByTicketIdOrderByCreatedAtAsc(ticket.getId()).forEach(m -> builder.addMessages(toMessageMsg(m)));
         return builder.build();
     }
@@ -76,11 +85,24 @@ public class TicketServiceImpl extends TicketServiceGrpc.TicketServiceImplBase {
             return;
         }
 
+        Courier courier = courierRepository.findById(shipment.getCourierId()).orElseThrow();
+
         SupportTicket ticket = new SupportTicket();
         ticket.setUserId(session.userId());
         ticket.setOrderId(order.getId());
         ticket.setCourierId(shipment.getCourierId());
+        ticket.setAwbNumber(shipment.getAwbNumber());
         ticket.setSubject(request.getSubject());
+
+        // Process delivery support ticket interaction with Delhivery integration
+        if ("DLV".equalsIgnoreCase(courier.getCode()) || "Delhivery".equalsIgnoreCase(courier.getName())) {
+            DelhiverySupportIntegration.SupportResult result = delhiverySupportIntegration.createVendorTicket(ticket, shipment, request.getMessage());
+            ticket.setVendorApiSupported(result.apiSupported());
+            ticket.setVendorTicketId(result.vendorTicketId());
+            ticket.setVendorStatus(result.vendorStatus());
+            ticket.setVendorNotes(result.vendorNotes());
+        }
+
         SupportTicket savedTicket = ticketRepository.save(ticket);
 
         TicketMessage message = new TicketMessage();
@@ -109,6 +131,11 @@ public class TicketServiceImpl extends TicketServiceGrpc.TicketServiceImplBase {
                 .setStatus(ticket.getStatus().name())
                 .setCreatedAt(ticket.getCreatedAt().toString())
                 .setMessageCount(messageCount)
+                .setAwbNumber(ticket.getAwbNumber() != null ? ticket.getAwbNumber() : "")
+                .setVendorTicketId(ticket.getVendorTicketId() != null ? ticket.getVendorTicketId() : "")
+                .setVendorStatus(ticket.getVendorStatus() != null ? ticket.getVendorStatus() : "")
+                .setVendorApiSupported(ticket.isVendorApiSupported())
+                .setVendorNotes(ticket.getVendorNotes() != null ? ticket.getVendorNotes() : "")
                 .build());
         }
         responseObserver.onNext(builder.build());
@@ -149,7 +176,6 @@ public class TicketServiceImpl extends TicketServiceGrpc.TicketServiceImplBase {
         responseObserver.onCompleted();
     }
 
-    /** Demo trigger standing in for the courier's support desk replying — no live vendor helpdesk API exists yet. */
     @Override
     public void simulateVendorReply(TicketIdRequest request, StreamObserver<TicketDetail> responseObserver) {
         JwtService.SessionPayload session = AuthContext.requireSession();
