@@ -7,9 +7,13 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         format_sql: true
+
+server:
+  port: 8081
 
 grpc:
   server:
