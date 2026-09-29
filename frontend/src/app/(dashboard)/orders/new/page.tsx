@@ -12,7 +12,7 @@ export default async function NewOrderPage() {
   const data = await callUnary<object, ListAddressesResponse>(addressClient, "listAddresses", { typeFilter: "PICKUP" }, token);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-foreground">New Order</h1>
         <p className="text-sm text-muted">Enter shipment details to compare live courier rates and book.</p>

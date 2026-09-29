@@ -17,7 +17,7 @@ export default async function TrackingPageSettings() {
   const sampleAwb = orders.orders.find((o) => o.hasShipment)?.shipment?.awbNumber ?? null;
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-foreground">Branded Tracking Page</h1>
         <p className="text-sm text-muted">Customize the public tracking page your buyers see.</p>

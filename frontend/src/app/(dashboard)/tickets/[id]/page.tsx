@@ -11,7 +11,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
   try {
     const ticket = await callUnary(ticketClient, "getTicket", { ticketId: id }, token);
     return (
-      <div className="mx-auto max-w-2xl">
+      <div className="w-full space-y-5">
         <TicketThread initial={ticket as never} />
       </div>
     );

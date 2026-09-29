@@ -7,7 +7,7 @@ export default async function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="w-full space-y-5">
       <h1 className="text-xl font-semibold text-foreground">Business Profile</h1>
 
       <Card>

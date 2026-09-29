@@ -14,7 +14,7 @@ export default async function NewTicketPage() {
     .map((o) => ({ id: o.id, orderNumber: o.orderNumber, courierName: o.shipment!.courier.name, awbNumber: o.shipment!.awbNumber }));
 
   return (
-    <div className="mx-auto max-w-xl space-y-5">
+    <div className="w-full space-y-5">
       <div>
         <h1 className="text-xl font-semibold text-foreground">New Support Ticket</h1>
         <p className="text-sm text-muted">Your inquiry goes straight to the courier handling this shipment.</p>

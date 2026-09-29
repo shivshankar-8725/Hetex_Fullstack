@@ -34,7 +34,7 @@ export default async function WalletPage() {
     .reduce((acc, t) => acc + t.amount, 0);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-foreground">Wallet</h1>
         <p className="text-sm text-muted">
