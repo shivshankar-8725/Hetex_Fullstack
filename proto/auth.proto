@@ -10,11 +10,15 @@ import "common.proto";
 
 service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc SendPhoneOtp(SendPhoneOtpRequest) returns (SendPhoneOtpResponse);
+  rpc VerifyPhoneOtp(VerifyPhoneOtpRequest) returns (AuthResponse);
   rpc VerifyEmailOtp(VerifyEmailOtpRequest) returns (AuthResponse);
   rpc ResendEmailOtp(ResendEmailOtpRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (AuthResponse);
   rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
   rpc RequestGstOtp(RequestGstOtpRequest) returns (RequestGstOtpResponse);
+  rpc RequestKycOtp(RequestKycOtpRequest) returns (RequestKycOtpResponse);
+  rpc VerifyKycOtp(VerifyKycOtpRequest) returns (ProfileResponse);
   rpc SubmitEkyc(SubmitEkycRequest) returns (ProfileResponse);
 }
 
@@ -27,8 +31,22 @@ message RegisterRequest {
 
 message RegisterResponse {
   string email = 1;
-  // AUTH_MODE=mock: OTP is returned here instead of emailed, so the demo UI can show it.
+  string phone = 2;
+  string devOtp = 3;
+}
+
+message SendPhoneOtpRequest {
+  string phone = 1;
+}
+
+message SendPhoneOtpResponse {
+  string phone = 1;
   string devOtp = 2;
+}
+
+message VerifyPhoneOtpRequest {
+  string phone = 1;
+  string code = 2;
 }
 
 message VerifyEmailOtpRequest {
@@ -67,6 +85,9 @@ message ProfileResponse {
   string pan_number = 8;
   string gst_number = 9;
   double wallet_balance = 10;
+  bool email_verified = 11;
+  bool phone_verified = 12;
+  string aadhaar_number = 13;
 }
 
 message RequestGstOtpRequest {
@@ -75,8 +96,33 @@ message RequestGstOtpRequest {
 
 message RequestGstOtpResponse {
   string gstNumber = 1;
-  // AUTH_MODE=mock: OTP is returned here instead of sent to the GST-registered mobile, so the demo UI can show it.
   string devOtp = 2;
+}
+
+enum KycDocumentType {
+  PAN = 0;
+  AADHAAR = 1;
+  GST = 2;
+}
+
+message RequestKycOtpRequest {
+  KycDocumentType documentType = 1;
+  string documentNumber = 2;
+}
+
+message RequestKycOtpResponse {
+  KycDocumentType documentType = 1;
+  string documentNumber = 2;
+  string referenceId = 3;
+  string devOtp = 4;
+}
+
+message VerifyKycOtpRequest {
+  KycDocumentType documentType = 1;
+  string documentNumber = 2;
+  string referenceId = 3;
+  string otp = 4;
+  bool consent = 5;
 }
 
 message SubmitEkycRequest {
