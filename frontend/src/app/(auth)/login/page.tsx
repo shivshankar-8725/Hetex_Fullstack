@@ -89,7 +89,7 @@ function LoginForm() {
         )}
 
         <p className="mt-4 text-center text-xs text-muted">
-          New here? <Link href="/register" className="font-medium text-brand hover:underline">Create an account</Link>
+          New here? <Link href="/register" className="font-medium text-blue-600 hover:underline">Create an account</Link>
         </p>
 
         <p className="mt-4 text-center text-xs text-muted">

@@ -133,7 +133,7 @@ export default function RegisterPage() {
         {error && <p className="mt-3 text-sm text-danger">{error}</p>}
 
         <p className="mt-4 text-center text-xs text-muted">
-          Already have an account? <Link href="/login" className="font-medium text-brand hover:underline">Log in</Link>
+          Already have an account? <Link href="/login" className="font-medium text-blue-600 hover:underline">Log in</Link>
         </p>
         <PublicTrackingBox />
       </div>
