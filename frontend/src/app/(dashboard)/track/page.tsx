@@ -5,6 +5,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { trackOrderAction } from "./actions";
+import { formatStatus } from "@/lib/formatters";
 
 export default function TrackOrderPage() {
   const [trackingId, setTrackingId] = useState("");
@@ -38,7 +39,7 @@ export default function TrackOrderPage() {
         <CardHeader title="Tracking details" />
         <div className="p-6">
           <form onSubmit={handleTrack} className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative max-w-lg">
+            <div className="flex-1 relative">
               <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
               <input
                 type="text"
@@ -80,7 +81,7 @@ export default function TrackOrderPage() {
                   </div>
                   <div>
                     <p className="text-xs text-muted font-medium">Current Status</p>
-                    <p className="text-sm font-bold text-brand">{result.status}</p>
+                    <p className="text-sm font-bold text-brand">{formatStatus(result.status)}</p>
                   </div>
                 </div>
               </div>
@@ -92,7 +93,7 @@ export default function TrackOrderPage() {
                     {result.events.map((event: any, i: number) => (
                       <div key={i} className="relative">
                         <div className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full bg-brand ring-4 ring-white" />
-                        <p className="text-sm font-medium">{event.status}</p>
+                        <p className="text-sm font-medium">{formatStatus(event.status)}</p>
                         <p className="text-xs text-muted">{event.location} • {new Date(event.timestamp).toLocaleString()}</p>
                         {event.description && <p className="text-xs text-slate-600 mt-1">{event.description}</p>}
                       </div>

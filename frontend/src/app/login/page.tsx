@@ -99,6 +99,22 @@ function LoginForm() {
         <p className="mt-4 text-center text-xs text-muted">
           Demo seller: meena@zubera.one / Demo@123 · Demo admin: admin@hetex.com / Admin@123
         </p>
+        <div className="mt-8 rounded-xl border border-brand/20 bg-brand-light/30 p-4">
+          <Link href="/track" className="flex items-center justify-between group">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-white shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <div>
+                <p className="font-semibold text-brand">Track your shipment here</p>
+                <p className="text-xs text-muted">No account required</p>
+              </div>
+            </div>
+            <div className="text-brand transition-transform group-hover:translate-x-1">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </div>
+          </Link>
+        </div>
       </div>
     </div>
   );

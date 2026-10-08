@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { formatStatus } from "@/lib/formatters";
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
   READY_TO_SHIP: { bg: "bg-slate-100", text: "text-slate-700", dot: "bg-slate-400" },
@@ -35,7 +36,7 @@ export function StatusBadge({ status }: { status: string }) {
       )}
     >
       <span className={clsx("h-1.5 w-1.5 shrink-0 rounded-full", style.dot)} />
-      {status.replaceAll("_", " ")}
+      {formatStatus(status)}
     </span>
   );
 }
