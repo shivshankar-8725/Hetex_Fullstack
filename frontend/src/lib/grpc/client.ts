@@ -94,6 +94,9 @@ export function toHttpError(err: unknown): GrpcHttpError {
     case grpc.status.UNAVAILABLE:
       return new GrpcHttpError(503, "Backend service is currently unavailable. Please try again later.");
     default:
+      if (message.includes("ECONNREFUSED") || message.includes("No connection established")) {
+        return new GrpcHttpError(503, "Backend service is currently unavailable. Please try again later.");
+      }
       return new GrpcHttpError(500, message.replace(/^\d+\s+[A-Z_]+:\s*/, ""));
   }
 }
