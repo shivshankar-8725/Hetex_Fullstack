@@ -23,7 +23,7 @@ export function Topbar({
         <TopbarSearch role={role} />
       </Suspense>
       <div className="flex items-center gap-4">
-        {typeof walletBalance === "number" && (
+        {typeof walletBalance === "number" && role === "SELLER" && (
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-slate-600 hidden lg:block">Notification Credits: 0</span>
             <div className="flex items-center rounded-lg border border-brand overflow-hidden text-sm">
@@ -38,20 +38,20 @@ export function Topbar({
         )}
 
         <div className="hidden md:flex items-center gap-2">
-          <Link href="/track" className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+          <Link href={role === "ADMIN" ? "/admin/track" : "/track"} className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
             Track Order
           </Link>
-          <Link href="/tickets" className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+          <Link href={role === "ADMIN" ? "/admin/tickets" : "/tickets"} className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
             Tickets
           </Link>
         </div>
 
         <div className="flex items-center gap-2 ml-2 pl-4 border-l border-border">
-          <Link href="/notifications" className="relative rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Notifications" title="Notifications">
+          <Link href={role === "ADMIN" ? "/admin/notifications" : "/notifications"} className="relative rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Notifications" title="Notifications">
             <Icon name="bell" className="h-5 w-5" />
             <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white"></span>
           </Link>
-          <Link href="/settings/profile" className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-slate-50" title="Business profile">
+          <Link href={role === "ADMIN" ? "/admin/settings/profile" : "/settings/profile"} className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-slate-50" title="Business profile">
             <div className="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white">
               {userName.slice(0, 1).toUpperCase()}
             </div>
