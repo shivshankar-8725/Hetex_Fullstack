@@ -38,7 +38,7 @@ class ShipmozoRateServiceTest {
                 .thenReturn(mockResponse);
 
         List<ShipmozoCourierRate> result = rateService.calculateRateForNewShipment(
-            "110001", "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0
+            "110001", "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0, "Document"
         );
 
         assertEquals(1, result.size());
@@ -49,13 +49,13 @@ class ShipmozoRateServiceTest {
     void testValidationFailure() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, 
             () -> rateService.calculateRateForNewShipment(
-                null, "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0
+                null, "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0, "Document"
             ));
         assertTrue(ex.getMessage().contains("pickup_pincode is required"));
         
         ex = assertThrows(IllegalArgumentException.class, 
             () -> rateService.calculateRateForExistingOrder(
-                null, "110001", "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0
+                null, "110001", "400001", "COD", 1000.0, 1.5, 10.0, 10.0, 10.0, 50.0, "Box"
             ));
         assertTrue(ex.getMessage().contains("order_id is required"));
     }

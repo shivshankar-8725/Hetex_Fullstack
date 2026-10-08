@@ -22,6 +22,7 @@ service AuthService {
   rpc SubmitEkyc(SubmitEkycRequest) returns (ProfileResponse);
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (AuthResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (ProfileResponse);
 }
 
 message RegisterRequest {
@@ -147,4 +148,9 @@ message ResetPasswordRequest {
   string email = 1;
   string code = 2;
   string newPassword = 3;
+}
+
+message UpdateProfileRequest {
+  string name = 1;
+  string business_name = 2;
 }

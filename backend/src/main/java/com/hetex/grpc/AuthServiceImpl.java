@@ -18,8 +18,10 @@ import com.hetex.grpc.proto.SendPhoneOtpRequest;
 import com.hetex.grpc.proto.SendPhoneOtpResponse;
 import com.hetex.grpc.proto.SubmitEkycRequest;
 import com.hetex.grpc.proto.VerifyEmailOtpRequest;
+import com.hetex.grpc.proto.VerifyEmailOtpRequest;
 import com.hetex.grpc.proto.VerifyKycOtpRequest;
 import com.hetex.grpc.proto.VerifyPhoneOtpRequest;
+import com.hetex.grpc.proto.UpdateProfileRequest;
 import com.hetex.repository.TrackingPageConfigRepository;
 import com.hetex.repository.UserRepository;
 import com.hetex.repository.WalletRepository;
@@ -386,6 +388,25 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
         User saved = userRepository.save(user);
 
         responseObserver.onNext(toAuthResponse(saved));
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void updateProfile(UpdateProfileRequest request, StreamObserver<ProfileResponse> responseObserver) {
+        JwtService.SessionPayload session = AuthContext.requireSession();
+        User user = userRepository.findById(session.userId()).orElseThrow(() -> Status.NOT_FOUND.asRuntimeException());
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+        if (request.getBusinessName() != null && !request.getBusinessName().isBlank()) {
+            user.setBusinessName(request.getBusinessName());
+        }
+
+        User saved = userRepository.save(user);
+        double balance = walletRepository.findByUserId(saved.getId()).map(Wallet::getBalance).orElse(0.0);
+
+        responseObserver.onNext(toProfileResponse(saved, balance));
         responseObserver.onCompleted();
     }
 

@@ -153,6 +153,12 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     @Transactional
     public void createOrder(CreateOrderRequest request, StreamObserver<CreateOrderResponse> responseObserver) {
         JwtService.SessionPayload session = AuthContext.requireSession();
+        User seller = userRepository.findById(session.userId()).orElseThrow();
+
+        if (seller.getKycStatus() != KycStatus.VERIFIED) {
+            responseObserver.onError(Status.FAILED_PRECONDITION.withDescription("PAN eKYC must be completed before creating an order.").asRuntimeException());
+            return;
+        }
 
         Address pickup = addressRepository.findById(request.getPickupAddressId()).orElse(null);
         Address buyer = addressRepository.findById(request.getBuyerAddressId()).orElse(null);
@@ -254,7 +260,6 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
             codRemittanceRepository.save(remittance);
         }
 
-        User seller = userRepository.findById(session.userId()).orElseThrow();
         notifyService.notifyAllChannels(session.userId(), seller.getPhone(), seller.getEmail(),
             "Order " + savedOrder.getOrderNumber() + " booked successfully. AWB: " + awbNumber + ".", savedOrder.getId());
 
@@ -307,6 +312,12 @@ public class OrderServiceImpl extends OrderServiceGrpc.OrderServiceImplBase {
     @Override
     public void bulkUploadOrders(BulkUploadOrdersRequest request, StreamObserver<BulkUploadOrdersResponse> responseObserver) {
         JwtService.SessionPayload session = AuthContext.requireSession();
+        User seller = userRepository.findById(session.userId()).orElseThrow();
+
+        if (seller.getKycStatus() != KycStatus.VERIFIED) {
+            responseObserver.onError(Status.FAILED_PRECONDITION.withDescription("PAN eKYC must be completed before uploading orders.").asRuntimeException());
+            return;
+        }
 
         Address pickup = addressRepository.findFirstByUserIdAndTypeOrderByIsDefaultDesc(session.userId(), AddressType.PICKUP).orElse(null);
         if (pickup == null) {

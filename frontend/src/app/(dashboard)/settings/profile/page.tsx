@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/lib/auth";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EkycPanel } from "@/components/settings/EkycPanel";
+import { EditProfileModal } from "@/components/settings/EditProfileModal";
 
 export default async function ProfilePage() {
   const user = await getCurrentUser();
@@ -8,7 +9,10 @@ export default async function ProfilePage() {
 
   return (
     <div className="w-full space-y-5">
-      <h1 className="text-xl font-semibold text-foreground">Business Profile</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold text-foreground">Business Profile</h1>
+        <EditProfileModal initialName={user.name} initialBusinessName={user.businessName} />
+      </div>
 
       <Card>
         <CardHeader title="Account Details" />
