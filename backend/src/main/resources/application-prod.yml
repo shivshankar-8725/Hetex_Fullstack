@@ -48,3 +48,12 @@ hetex:
     key-id: ${RAZORPAY_KEY_ID:${HETEX_RAZORPAY_KEY_ID:REPLACE_WITH_KEY_ID}}
     key-secret: ${RAZORPAY_KEY_SECRET:${HETEX_RAZORPAY_KEY_SECRET:REPLACE_WITH_KEY_SECRET}}
     webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:${HETEX_RAZORPAY_WEBHOOK_SECRET:REPLACE_WITH_WEBHOOK_SECRET}}
+
+  # -----------------------------------------------------------------------
+  # Shipmozo API (Task 01)
+  # Credentials for Shipmozo Integration
+  # -----------------------------------------------------------------------
+  shipmozo:
+    base-url: ${SHIPMOZO_BASE_URL:https://shipping-api.com/app/api/v1}
+    public-key: ${SHIPMOZO_PUBLIC_KEY:REPLACE_WITH_PUBLIC_KEY}
+    private-key: ${SHIPMOZO_PRIVATE_KEY:REPLACE_WITH_PRIVATE_KEY}

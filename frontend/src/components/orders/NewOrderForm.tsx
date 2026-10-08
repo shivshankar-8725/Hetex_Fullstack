@@ -24,6 +24,7 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
   const [stage, setStage] = useState<"form" | "rates" | "success">("form");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [serviceableMessage, setServiceableMessage] = useState<string | null>(null);
 
   const [pickupAddressId, setPickupAddressId] = useState(pickupAddresses[0]?.id ?? "");
   const [showAddPickup, setShowAddPickup] = useState(pickupAddresses.length === 0);
@@ -47,6 +48,26 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     return data.address.id as string;
+  }
+
+  async function checkServiceability(fromPincode: string, toPincode: string) {
+    if (fromPincode.length === 6 && toPincode.length === 6) {
+      try {
+        const res = await fetch("/api/serviceability", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fromPincode, toPincode }),
+        });
+        const data = await res.json();
+        if (data.serviceable) {
+          setServiceableMessage("Pincodes are serviceable");
+        } else {
+          setServiceableMessage("Warning: Shipmozo may not service these pincodes");
+        }
+      } catch {
+        setServiceableMessage(null);
+      }
+    }
   }
 
   async function handleGetRates() {
@@ -186,13 +207,31 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
 
       <Card>
         <CardHeader title="Consignee (Buyer) Details" />
-        <div className="grid grid-cols-2 gap-3 p-5">
+            <div className="grid grid-cols-2 gap-3 p-5">
           <div><label className={labelClass}>Full name</label><input className={inputClass} value={buyer.contactName} onChange={(e) => setBuyer({ ...buyer, contactName: e.target.value })} /></div>
           <div><label className={labelClass}>Phone</label><input className={inputClass} value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} /></div>
           <div className="col-span-2"><label className={labelClass}>Address</label><input className={inputClass} value={buyer.addressLine1} onChange={(e) => setBuyer({ ...buyer, addressLine1: e.target.value })} /></div>
           <div><label className={labelClass}>City</label><input className={inputClass} value={buyer.city} onChange={(e) => setBuyer({ ...buyer, city: e.target.value })} /></div>
-          <div><label className={labelClass}>State</label><input className={inputClass} value={buyer.state} onChange={(e) => setBuyer({ ...buyer, state: e.target.value })} /></div>
-          <div><label className={labelClass}>Pincode</label><input className={inputClass} value={buyer.pincode} onChange={(e) => setBuyer({ ...buyer, pincode: e.target.value })} /></div>
+          <div>
+            <label className={labelClass}>State</label>
+            <input className={inputClass} value={buyer.state} onChange={(e) => setBuyer({ ...buyer, state: e.target.value })} />
+          </div>
+          <div>
+            <label className={labelClass}>Pincode</label>
+            <input className={inputClass} value={buyer.pincode} onChange={(e) => {
+              const newPincode = e.target.value;
+              setBuyer({ ...buyer, pincode: newPincode });
+              const fromPincode = showAddPickup ? newPickup.pincode : pickupAddresses.find((a) => a.id === pickupAddressId)?.pincode;
+              if (fromPincode && newPincode.length === 6) {
+                checkServiceability(fromPincode, newPincode);
+              }
+            }} />
+          </div>
+          {serviceableMessage && (
+            <div className={`col-span-2 text-xs font-medium ${serviceableMessage.includes('Warning') ? 'text-amber-600' : 'text-emerald-600'}`}>
+              {serviceableMessage}
+            </div>
+          )}
         </div>
       </Card>
 

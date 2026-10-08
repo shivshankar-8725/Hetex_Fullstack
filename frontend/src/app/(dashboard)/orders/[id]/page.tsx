@@ -6,6 +6,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { OrderActions } from "@/components/orders/OrderActions";
 import { LiveTrackingCard } from "@/components/orders/LiveTrackingCard";
+import { AssignCourierPanel } from "@/components/orders/AssignCourierPanel";
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,7 +33,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <StatusBadge status={order.shipment?.status ?? order.status} />
       </div>
 
-      {order.shipment && <OrderActions orderId={order.id} shipmentId={order.shipment.id} status={order.shipment.status} />}
+      {order.shipment ? (
+        <OrderActions orderId={order.id} shipmentId={order.shipment.id} status={order.shipment.status} />
+      ) : (
+        <AssignCourierPanel orderId={order.id} />
+      )}
 
       <div className="grid gap-5 md:grid-cols-2">
         <Card className="p-5">
