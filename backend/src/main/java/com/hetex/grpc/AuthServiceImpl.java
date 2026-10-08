@@ -345,6 +345,50 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void requestPasswordReset(com.hetex.grpc.proto.RequestPasswordResetRequest request, StreamObserver<com.hetex.grpc.proto.RequestPasswordResetResponse> responseObserver) {
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            responseObserver.onError(Status.NOT_FOUND.withDescription("No account found with this email").asRuntimeException());
+            return;
+        }
+
+        String emailOtp = otpService.requestOtp(request.getEmail());
+        emailService.sendOtpEmail(request.getEmail(), emailOtp);
+
+        responseObserver.onNext(com.hetex.grpc.proto.RequestPasswordResetResponse.newBuilder()
+            .setEmail(request.getEmail())
+            .setDevOtp(emailOtp)
+            .build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void resetPassword(com.hetex.grpc.proto.ResetPasswordRequest request, StreamObserver<AuthResponse> responseObserver) {
+        if (request.getNewPassword().length() < 6) {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("Password must be at least 6 characters").asRuntimeException());
+            return;
+        }
+
+        boolean ok = otpService.verifyOtp(request.getEmail(), request.getCode());
+        if (!ok) {
+            responseObserver.onError(Status.UNAUTHENTICATED.withDescription("Incorrect or expired OTP").asRuntimeException());
+            return;
+        }
+
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
+        if (user == null) {
+            responseObserver.onError(Status.NOT_FOUND.withDescription("No account found with this email").asRuntimeException());
+            return;
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        User saved = userRepository.save(user);
+
+        responseObserver.onNext(toAuthResponse(saved));
+        responseObserver.onCompleted();
+    }
+
     private ProfileResponse toProfileResponse(User user, double walletBalance) {
         return ProfileResponse.newBuilder()
             .setId(user.getId())

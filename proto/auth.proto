@@ -20,6 +20,8 @@ service AuthService {
   rpc RequestKycOtp(RequestKycOtpRequest) returns (RequestKycOtpResponse);
   rpc VerifyKycOtp(VerifyKycOtpRequest) returns (ProfileResponse);
   rpc SubmitEkyc(SubmitEkycRequest) returns (ProfileResponse);
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (AuthResponse);
 }
 
 message RegisterRequest {
@@ -130,4 +132,19 @@ message SubmitEkycRequest {
   string gstNumber = 2;
   string gstOtp = 3;
   bool consent = 4;
+}
+
+message RequestPasswordResetRequest {
+  string email = 1;
+}
+
+message RequestPasswordResetResponse {
+  string email = 1;
+  string devOtp = 2;
+}
+
+message ResetPasswordRequest {
+  string email = 1;
+  string code = 2;
+  string newPassword = 3;
 }
