@@ -83,10 +83,10 @@ export default async function DashboardPage() {
 
       {/* Top KPI Cards (Investment, Revenue, Avg Days, SLA Rate) */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatTile label="Freight Investment" value={`₹${(totals.totalInvestment || 245000).toLocaleString()}`} hint="Total shipping expenditure" icon="package" />
-        <StatTile label="Revenue Generated" value={`₹${(totals.revenueGenerated || 380000).toLocaleString()}`} hint="Order value fulfilled" icon="check" tone="success" />
-        <StatTile label="Avg Delivery Time" value={`${totals.avgDeliveryDays || 2.4} Days`} hint="Overall fulfillment TAT" icon="truck" />
-        <StatTile label="Overall SLA Rate" value={`${totals.overallSlaRate || 88.5}%`} hint="On-time delivery performance" icon="alert-triangle" tone="success" />
+        <StatTile label="Wallet Balance" value={`₹${(user.wallet?.balance ?? 0).toLocaleString()}`} hint="Available funds for booking" icon="wallet" tone="success" />
+        <StatTile label="Total Shipments Booked" value={`${totals.orders}`} hint="Total orders processed" icon="package" />
+        <StatTile label="Freight Investment" value={`₹${(totals.totalInvestment || 245000).toLocaleString()}`} hint="Total shipping expenditure" icon="truck" />
+        <StatTile label="Avg Delivery Time" value={`${totals.avgDeliveryDays || 2.4} Days`} hint="Overall fulfillment TAT" icon="check" />
       </div>
 
       {/* Charts Grid - Donut & SLA Gauges */}

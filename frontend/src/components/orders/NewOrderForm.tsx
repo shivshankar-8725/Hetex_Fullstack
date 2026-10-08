@@ -21,7 +21,7 @@ const labelClass = "block text-xs font-medium text-muted mb-1";
 
 export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddress[] }) {
   const router = useRouter();
-  const [stage, setStage] = useState<"form" | "rates" | "success">("form");
+  const [stage, setStage] = useState<"pincodes" | "rates" | "details" | "success">("pincodes");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [serviceableMessage, setServiceableMessage] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
   const [newPickup, setNewPickup] = useState({ label: "Warehouse", contactName: "", phone: "", addressLine1: "", city: "", state: "", pincode: "" });
 
   const [buyer, setBuyer] = useState({ contactName: "", phone: "", addressLine1: "", city: "", state: "", pincode: "" });
-  const [pkg, setPkg] = useState({ itemDescription: "", declaredValue: "", weight: "", length: "", width: "", height: "" });
+  const [pkg, setPkg] = useState({ packageType: "Box", itemDescription: "", declaredValue: "", weight: "", length: "", width: "", height: "" });
   const [paymentMode, setPaymentMode] = useState<"PREPAID" | "COD">("PREPAID");
   const [codAmount, setCodAmount] = useState("");
 
@@ -74,15 +74,9 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
     setError(null);
     setLoading(true);
     try {
-      let effectivePickupId = pickupAddressId;
-      if (showAddPickup) {
-        effectivePickupId = await saveNewPickup();
-        setPickupAddressId(effectivePickupId);
-        setShowAddPickup(false);
-        router.refresh();
-      }
-      const fromPincode = showAddPickup ? newPickup.pincode : pickupAddresses.find((a) => a.id === effectivePickupId)?.pincode;
-      if (!fromPincode) throw new Error("Select or add a pickup address");
+      const fromPincode = showAddPickup ? newPickup.pincode : pickupAddresses.find((a) => a.id === pickupAddressId)?.pincode;
+      if (!fromPincode || fromPincode.length !== 6) throw new Error("Please enter a valid 6-digit pickup pincode");
+      if (!buyer.pincode || buyer.pincode.length !== 6) throw new Error("Please enter a valid 6-digit delivery pincode");
 
       const res = await fetch("/api/rates", {
         method: "POST",
@@ -116,6 +110,11 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
     setError(null);
     setLoading(true);
     try {
+      let effectivePickupId = pickupAddressId;
+      if (showAddPickup) {
+        effectivePickupId = await saveNewPickup();
+      }
+
       const quote = quotes.find((q) => q.courierId === selectedCourierId)!;
       const buyerAddressRes = await fetch("/api/addresses", {
         method: "POST",
@@ -127,12 +126,12 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
       const res = await fetch("/api/orders", {
         method: "POST",
         body: JSON.stringify({
-          pickupAddressId,
+          pickupAddressId: effectivePickupId,
           buyerAddressId: buyerAddressData.address.id,
           courierId: quote.courierId,
           sellerPrice: quote.sellerPrice,
           margin: quote.margin,
-          itemDescription: pkg.itemDescription,
+          itemDescription: `${pkg.packageType} - ${pkg.itemDescription}`,
           declaredValue: Number(pkg.declaredValue),
           weight: Number(pkg.weight),
           length: Number(pkg.length),
@@ -174,91 +173,87 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
     <div className="space-y-5">
       {error && <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-danger">{error}</div>}
 
-      <Card>
-        <CardHeader title="Pickup Address" subtitle="Where should the courier collect this shipment from?" />
-        <div className="space-y-3 p-5">
-          {!showAddPickup ? (
-            <div className="flex items-center gap-3">
-              <select className={inputClass} value={pickupAddressId} onChange={(e) => setPickupAddressId(e.target.value)}>
-                {pickupAddresses.map((a) => (
-                  <option key={a.id} value={a.id}>{a.label} — {a.city}, {a.pincode}{a.isDefault ? " (default)" : ""}</option>
-                ))}
-              </select>
-              <button type="button" className="whitespace-nowrap text-sm font-medium text-brand" onClick={() => setShowAddPickup(true)}>+ Add new</button>
+      {stage === "pincodes" && (
+        <>
+          <Card>
+            <CardHeader title="Route Details" subtitle="Enter pickup and delivery pincodes" />
+            <div className="grid grid-cols-2 gap-5 p-5">
+              <div>
+                <label className={labelClass}>Pickup Pincode</label>
+                {!showAddPickup ? (
+                  <div className="space-y-2">
+                    <select className={inputClass} value={pickupAddressId} onChange={(e) => setPickupAddressId(e.target.value)}>
+                      {pickupAddresses.map((a) => (
+                        <option key={a.id} value={a.id}>{a.label} — {a.city}, {a.pincode}{a.isDefault ? " (default)" : ""}</option>
+                      ))}
+                    </select>
+                    <button type="button" className="text-xs font-medium text-brand" onClick={() => setShowAddPickup(true)}>+ Add new pickup location</button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <input className={inputClass} placeholder="6-digit Pincode" value={newPickup.pincode} onChange={(e) => setNewPickup({ ...newPickup, pincode: e.target.value })} />
+                    {pickupAddresses.length > 0 && (
+                      <button type="button" className="text-xs text-muted hover:underline" onClick={() => setShowAddPickup(false)}>
+                        Use a saved address instead
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className={labelClass}>Delivery Pincode</label>
+                <input className={inputClass} placeholder="6-digit Pincode" value={buyer.pincode} onChange={(e) => {
+                  const newPincode = e.target.value;
+                  setBuyer({ ...buyer, pincode: newPincode });
+                  const fromPincode = showAddPickup ? newPickup.pincode : pickupAddresses.find((a) => a.id === pickupAddressId)?.pincode;
+                  if (fromPincode && newPincode.length === 6) {
+                    checkServiceability(fromPincode, newPincode);
+                  }
+                }} />
+                {serviceableMessage && (
+                  <div className={`mt-1 text-xs font-medium ${serviceableMessage.includes('Warning') ? 'text-amber-600' : 'text-emerald-600'}`}>
+                    {serviceableMessage}
+                  </div>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3">
-              <input className={inputClass} placeholder="Warehouse label" value={newPickup.label} onChange={(e) => setNewPickup({ ...newPickup, label: e.target.value })} />
-              <input className={inputClass} placeholder="Contact name" value={newPickup.contactName} onChange={(e) => setNewPickup({ ...newPickup, contactName: e.target.value })} />
-              <input className={inputClass} placeholder="Phone" value={newPickup.phone} onChange={(e) => setNewPickup({ ...newPickup, phone: e.target.value })} />
-              <input className={inputClass} placeholder="Pincode" value={newPickup.pincode} onChange={(e) => setNewPickup({ ...newPickup, pincode: e.target.value })} />
-              <input className={`${inputClass} col-span-2`} placeholder="Address line" value={newPickup.addressLine1} onChange={(e) => setNewPickup({ ...newPickup, addressLine1: e.target.value })} />
-              <input className={inputClass} placeholder="City" value={newPickup.city} onChange={(e) => setNewPickup({ ...newPickup, city: e.target.value })} />
-              <input className={inputClass} placeholder="State" value={newPickup.state} onChange={(e) => setNewPickup({ ...newPickup, state: e.target.value })} />
-              {pickupAddresses.length > 0 && (
-                <button type="button" className="col-span-2 text-left text-xs text-muted hover:underline" onClick={() => setShowAddPickup(false)}>
-                  Use a saved address instead
-                </button>
-              )}
+          </Card>
+
+          <Card>
+            <CardHeader title="Package Details" />
+            <div className="grid grid-cols-3 gap-3 p-5">
+              <div>
+                <label className={labelClass}>Package Type</label>
+                <select className={inputClass} value={pkg.packageType} onChange={(e) => setPkg({ ...pkg, packageType: e.target.value })}>
+                  <option value="Document">Document</option>
+                  <option value="Box">Box</option>
+                  <option value="Apparel">Apparel</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Cosmetics">Cosmetics</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div className="col-span-2"><label className={labelClass}>Item description</label><input className={inputClass} value={pkg.itemDescription} onChange={(e) => setPkg({ ...pkg, itemDescription: e.target.value })} /></div>
+              <div><label className={labelClass}>Declared value (₹)</label><input type="number" className={inputClass} value={pkg.declaredValue} onChange={(e) => setPkg({ ...pkg, declaredValue: e.target.value })} /></div>
+              <div><label className={labelClass}>Weight (kg)</label><input type="number" step="0.01" className={inputClass} value={pkg.weight} onChange={(e) => setPkg({ ...pkg, weight: e.target.value })} /></div>
+              <div />
+              <div><label className={labelClass}>Length (cm)</label><input type="number" className={inputClass} value={pkg.length} onChange={(e) => setPkg({ ...pkg, length: e.target.value })} /></div>
+              <div><label className={labelClass}>Width (cm)</label><input type="number" className={inputClass} value={pkg.width} onChange={(e) => setPkg({ ...pkg, width: e.target.value })} /></div>
+              <div><label className={labelClass}>Height (cm)</label><input type="number" className={inputClass} value={pkg.height} onChange={(e) => setPkg({ ...pkg, height: e.target.value })} /></div>
+              <div className="col-span-3 flex items-center gap-6 pt-2">
+                <label className="flex items-center gap-2 text-sm"><input type="radio" checked={paymentMode === "PREPAID"} onChange={() => setPaymentMode("PREPAID")} /> Prepaid</label>
+                <label className="flex items-center gap-2 text-sm"><input type="radio" checked={paymentMode === "COD"} onChange={() => setPaymentMode("COD")} /> COD</label>
+                {paymentMode === "COD" && (
+                  <input type="number" placeholder="COD amount to collect (₹)" className={`${inputClass} max-w-xs`} value={codAmount} onChange={(e) => setCodAmount(e.target.value)} />
+                )}
+              </div>
             </div>
-          )}
-        </div>
-      </Card>
+          </Card>
 
-      <Card>
-        <CardHeader title="Consignee (Buyer) Details" />
-            <div className="grid grid-cols-2 gap-3 p-5">
-          <div><label className={labelClass}>Full name</label><input className={inputClass} value={buyer.contactName} onChange={(e) => setBuyer({ ...buyer, contactName: e.target.value })} /></div>
-          <div><label className={labelClass}>Phone</label><input className={inputClass} value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} /></div>
-          <div className="col-span-2"><label className={labelClass}>Address</label><input className={inputClass} value={buyer.addressLine1} onChange={(e) => setBuyer({ ...buyer, addressLine1: e.target.value })} /></div>
-          <div><label className={labelClass}>City</label><input className={inputClass} value={buyer.city} onChange={(e) => setBuyer({ ...buyer, city: e.target.value })} /></div>
-          <div>
-            <label className={labelClass}>State</label>
-            <input className={inputClass} value={buyer.state} onChange={(e) => setBuyer({ ...buyer, state: e.target.value })} />
+          <div className="flex justify-end">
+            <Button disabled={loading} onClick={handleGetRates}>{loading ? "Checking rates…" : "Check Courier Rates →"}</Button>
           </div>
-          <div>
-            <label className={labelClass}>Pincode</label>
-            <input className={inputClass} value={buyer.pincode} onChange={(e) => {
-              const newPincode = e.target.value;
-              setBuyer({ ...buyer, pincode: newPincode });
-              const fromPincode = showAddPickup ? newPickup.pincode : pickupAddresses.find((a) => a.id === pickupAddressId)?.pincode;
-              if (fromPincode && newPincode.length === 6) {
-                checkServiceability(fromPincode, newPincode);
-              }
-            }} />
-          </div>
-          {serviceableMessage && (
-            <div className={`col-span-2 text-xs font-medium ${serviceableMessage.includes('Warning') ? 'text-amber-600' : 'text-emerald-600'}`}>
-              {serviceableMessage}
-            </div>
-          )}
-        </div>
-      </Card>
-
-      <Card>
-        <CardHeader title="Package Details" />
-        <div className="grid grid-cols-3 gap-3 p-5">
-          <div className="col-span-3"><label className={labelClass}>Item description</label><input className={inputClass} value={pkg.itemDescription} onChange={(e) => setPkg({ ...pkg, itemDescription: e.target.value })} /></div>
-          <div><label className={labelClass}>Declared value (₹)</label><input type="number" className={inputClass} value={pkg.declaredValue} onChange={(e) => setPkg({ ...pkg, declaredValue: e.target.value })} /></div>
-          <div><label className={labelClass}>Weight (kg)</label><input type="number" step="0.01" className={inputClass} value={pkg.weight} onChange={(e) => setPkg({ ...pkg, weight: e.target.value })} /></div>
-          <div />
-          <div><label className={labelClass}>Length (cm)</label><input type="number" className={inputClass} value={pkg.length} onChange={(e) => setPkg({ ...pkg, length: e.target.value })} /></div>
-          <div><label className={labelClass}>Width (cm)</label><input type="number" className={inputClass} value={pkg.width} onChange={(e) => setPkg({ ...pkg, width: e.target.value })} /></div>
-          <div><label className={labelClass}>Height (cm)</label><input type="number" className={inputClass} value={pkg.height} onChange={(e) => setPkg({ ...pkg, height: e.target.value })} /></div>
-          <div className="col-span-3 flex items-center gap-6 pt-2">
-            <label className="flex items-center gap-2 text-sm"><input type="radio" checked={paymentMode === "PREPAID"} onChange={() => setPaymentMode("PREPAID")} /> Prepaid</label>
-            <label className="flex items-center gap-2 text-sm"><input type="radio" checked={paymentMode === "COD"} onChange={() => setPaymentMode("COD")} /> COD</label>
-            {paymentMode === "COD" && (
-              <input type="number" placeholder="COD amount to collect (₹)" className={`${inputClass} max-w-xs`} value={codAmount} onChange={(e) => setCodAmount(e.target.value)} />
-            )}
-          </div>
-        </div>
-      </Card>
-
-      {stage === "form" && (
-        <div className="flex justify-end">
-          <Button disabled={loading} onClick={handleGetRates}>{loading ? "Checking rates…" : "Check Courier Rates →"}</Button>
-        </div>
+        </>
       )}
 
       {stage === "rates" && (
@@ -285,10 +280,46 @@ export function NewOrderForm({ pickupAddresses }: { pickupAddresses: PickupAddre
             ))}
           </div>
           <div className="flex justify-between border-t border-border px-5 py-4">
-            <Button variant="secondary" onClick={() => setStage("form")}>← Edit Details</Button>
-            <Button disabled={!selectedCourierId || loading} onClick={handleBook}>{loading ? "Booking…" : "Book Shipment"}</Button>
+            <Button variant="secondary" onClick={() => setStage("pincodes")}>← Back to Details</Button>
+            <Button disabled={!selectedCourierId} onClick={() => setStage("details")}>Continue to Address Details →</Button>
           </div>
         </Card>
+      )}
+
+      {stage === "details" && (
+        <>
+          {showAddPickup && (
+            <Card>
+              <CardHeader title="Complete Pickup Address" subtitle="Fill out the remaining pickup address details" />
+              <div className="grid grid-cols-2 gap-3 p-5">
+                <input className={inputClass} placeholder="Warehouse label" value={newPickup.label} onChange={(e) => setNewPickup({ ...newPickup, label: e.target.value })} />
+                <input className={inputClass} placeholder="Contact name" value={newPickup.contactName} onChange={(e) => setNewPickup({ ...newPickup, contactName: e.target.value })} />
+                <input className={inputClass} placeholder="Phone" value={newPickup.phone} onChange={(e) => setNewPickup({ ...newPickup, phone: e.target.value })} />
+                <input className={`${inputClass} bg-slate-50 text-muted-foreground`} placeholder="Pincode" value={newPickup.pincode} readOnly />
+                <input className={`${inputClass} col-span-2`} placeholder="Address line" value={newPickup.addressLine1} onChange={(e) => setNewPickup({ ...newPickup, addressLine1: e.target.value })} />
+                <input className={inputClass} placeholder="City" value={newPickup.city} onChange={(e) => setNewPickup({ ...newPickup, city: e.target.value })} />
+                <input className={inputClass} placeholder="State" value={newPickup.state} onChange={(e) => setNewPickup({ ...newPickup, state: e.target.value })} />
+              </div>
+            </Card>
+          )}
+
+          <Card>
+            <CardHeader title="Complete Consignee (Buyer) Address" />
+            <div className="grid grid-cols-2 gap-3 p-5">
+              <div><label className={labelClass}>Full name</label><input className={inputClass} value={buyer.contactName} onChange={(e) => setBuyer({ ...buyer, contactName: e.target.value })} /></div>
+              <div><label className={labelClass}>Phone</label><input className={inputClass} value={buyer.phone} onChange={(e) => setBuyer({ ...buyer, phone: e.target.value })} /></div>
+              <div className="col-span-2"><label className={labelClass}>Address</label><input className={inputClass} value={buyer.addressLine1} onChange={(e) => setBuyer({ ...buyer, addressLine1: e.target.value })} /></div>
+              <div><label className={labelClass}>City</label><input className={inputClass} value={buyer.city} onChange={(e) => setBuyer({ ...buyer, city: e.target.value })} /></div>
+              <div><label className={labelClass}>State</label><input className={inputClass} value={buyer.state} onChange={(e) => setBuyer({ ...buyer, state: e.target.value })} /></div>
+              <div className="col-span-2"><label className={labelClass}>Pincode</label><input className={`${inputClass} bg-slate-50 text-muted-foreground`} value={buyer.pincode} readOnly /></div>
+            </div>
+          </Card>
+
+          <div className="flex justify-between">
+            <Button variant="secondary" onClick={() => setStage("rates")}>← Back to Rates</Button>
+            <Button disabled={loading} onClick={handleBook}>{loading ? "Booking…" : "Book Shipment"}</Button>
+          </div>
+        </>
       )}
     </div>
   );

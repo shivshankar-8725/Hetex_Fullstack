@@ -39,6 +39,7 @@ message GetRatesRequest {
   double height = 6;
   string payment_mode = 7; // "COD" or "PREPAID"
   double cod_amount = 8;
+  string package_type = 9;
 }
 
 message RateQuote {

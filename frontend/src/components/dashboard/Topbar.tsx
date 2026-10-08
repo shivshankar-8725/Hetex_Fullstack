@@ -24,29 +24,42 @@ export function Topbar({
       </Suspense>
       <div className="flex items-center gap-4">
         {typeof walletBalance === "number" && (
-          <Link
-            href="/wallet"
-            className="flex items-center gap-2 rounded-lg border border-border bg-brand-light px-3 py-1.5 text-sm font-medium text-brand transition-colors hover:border-brand/30"
-          >
-            <Icon name="wallet" className="h-4 w-4" />
-            ₹{walletBalance.toFixed(2)}
-          </Link>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-slate-600 hidden lg:block">Notification Credits: 0</span>
+            <div className="flex items-center rounded-lg border border-brand overflow-hidden text-sm">
+              <span className="bg-white px-3 py-1.5 font-medium text-brand flex items-center gap-1">
+                <Icon name="wallet" className="h-4 w-4" /> ₹{walletBalance.toFixed(2)}
+              </span>
+              <Link href="/wallet" className="bg-brand px-3 py-1.5 font-medium text-white hover:bg-brand/90 transition-colors">
+                Recharge
+              </Link>
+            </div>
+          </div>
         )}
-        <Link href="/notifications" className="rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Notifications" title="Notifications">
-          <Icon name="bell" className="h-5 w-5" />
-        </Link>
-        <Link href="/settings/profile" className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-slate-50" title="Business profile">
-          <div className="brand-gradient flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white">
-            {userName.slice(0, 1).toUpperCase()}
-          </div>
-          <div className="hidden text-sm sm:block">
-            <p className="font-medium leading-tight text-foreground">{userName}</p>
-            <p className="text-xs leading-tight text-muted">{role === "ADMIN" ? "Administrator" : "Seller"}</p>
-          </div>
-        </Link>
-        <Link href="/logout" className="rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Log out" title="Log out">
-          <Icon name="log-out" className="h-5 w-5" />
-        </Link>
+
+        <div className="hidden md:flex items-center gap-2">
+          <Link href="/track" className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+            Track Order
+          </Link>
+          <Link href="/tickets" className="relative flex items-center rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 transition-colors">
+            Tickets
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-2 ml-2 pl-4 border-l border-border">
+          <Link href="/notifications" className="relative rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Notifications" title="Notifications">
+            <Icon name="bell" className="h-5 w-5" />
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white"></span>
+          </Link>
+          <Link href="/settings/profile" className="flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-slate-50" title="Business profile">
+            <div className="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white">
+              {userName.slice(0, 1).toUpperCase()}
+            </div>
+          </Link>
+          <Link href="/logout" className="hidden sm:flex rounded-full p-2 text-muted transition-colors hover:bg-slate-50 hover:text-foreground" aria-label="Log out" title="Log out">
+            <Icon name="log-out" className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
     </header>
   );

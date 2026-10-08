@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
@@ -16,7 +16,9 @@ const inputClass = "w-full rounded-lg border border-border px-3 py-2 text-sm foc
 
 export function NewTicketForm({ orders }: { orders: OrderOption[] }) {
   const router = useRouter();
-  const [orderId, setOrderId] = useState(orders[0]?.id ?? "");
+  const searchParams = useSearchParams();
+  const defaultOrderId = searchParams.get("orderId") || (orders[0]?.id ?? "");
+  const [orderId, setOrderId] = useState(defaultOrderId);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);

@@ -5,6 +5,7 @@ export const SELLER_NAV = [
     items: [
       { href: "/orders/new", label: "New Order", icon: "plus-circle" },
       { href: "/orders", label: "Orders", icon: "package" },
+      { href: "/track", label: "Track Order", icon: "navigation" },
       { href: "/ndr", label: "NDR", icon: "alert-triangle" },
       { href: "/disputes", label: "Weight Disputes", icon: "scale" },
       { href: "/cod", label: "COD Remittance", icon: "wallet" },

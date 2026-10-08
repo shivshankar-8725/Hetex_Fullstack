@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -10,6 +12,7 @@ export function OrderActions({ orderId, shipmentId, status }: { orderId: string;
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [activeLink, setActiveLink] = useState<"label" | "invoice" | null>(null);
 
   async function simulate() {
     setLoading("simulate");
@@ -60,11 +63,11 @@ export function OrderActions({ orderId, shipmentId, status }: { orderId: string;
   return (
     <>
       <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-3">
-        <a href={`/api/shipment-label/${shipmentId}`} target="_blank" rel="noreferrer">
-          <Button variant="secondary">Download Label</Button>
+        <a href={`/api/shipment-label/${shipmentId}`} target="_blank" rel="noreferrer" onClick={() => setActiveLink("label")}>
+          <Button variant={activeLink === "label" ? "primary" : "secondary"}>Download Label</Button>
         </a>
-        <a href={`/api/shipment-invoice/${shipmentId}`} target="_blank" rel="noreferrer">
-          <Button variant="secondary">Download Invoice</Button>
+        <a href={`/api/shipment-invoice/${shipmentId}`} target="_blank" rel="noreferrer" onClick={() => setActiveLink("invoice")}>
+          <Button variant={activeLink === "invoice" ? "primary" : "secondary"}>Download Invoice</Button>
         </a>
         {status === "READY_TO_SHIP" && (
           <Button variant="primary" disabled={loading !== null} onClick={schedulePickup}>
@@ -76,11 +79,6 @@ export function OrderActions({ orderId, shipmentId, status }: { orderId: string;
             {loading === "simulate" ? "Advancing…" : "Simulate Next Tracking Update"}
           </Button>
         )}
-        {CANCELLABLE_STATUSES.includes(status) && (
-          <Button variant="danger" disabled={loading !== null} onClick={cancel}>
-            {loading === "cancel" ? "Cancelling…" : "Cancel Shipment"}
-          </Button>
-        )}
         {status !== "CANCELLED" && (
           <Button variant="secondary" disabled={loading !== null} onClick={raiseDispute} title="Demo: simulate a courier flagging a weight mismatch">
             {loading === "dispute" ? "Flagging…" : "Simulate Weight Dispute"}
@@ -89,6 +87,14 @@ export function OrderActions({ orderId, shipmentId, status }: { orderId: string;
         {status === "DELIVERED" && (
           <Button variant="primary" onClick={() => setShowReturnModal(true)}>
             Initiate Return
+          </Button>
+        )}
+        <Button variant="secondary" onClick={() => router.push(`/tickets/new?orderId=${orderId}`)}>
+          Raise Support Ticket
+        </Button>
+        {CANCELLABLE_STATUSES.includes(status) && (
+          <Button variant="secondary" disabled={loading !== null} onClick={cancel}>
+            {loading === "cancel" ? "Cancelling…" : "Cancel Shipment"}
           </Button>
         )}
       </div>

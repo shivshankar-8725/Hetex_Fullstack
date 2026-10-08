@@ -60,10 +60,10 @@ export default async function AdminDashboard() {
 
       {/* Top Stat Cards */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <StatTile label="Active Sellers" value={String(data.sellerCount)} hint="Registered shipping sellers" icon="package" />
-        <StatTile label="Total Orders" value={String(data.totalOrders)} hint={`${data.totalShipments} shipments booked`} icon="truck" />
+        <StatTile label="Active Sellers" value={String(data.sellerCount)} hint="Registered shipping sellers" icon="users" />
+        <StatTile label="Total Orders" value={String(data.totalOrders)} hint={`${data.totalShipments} shipments booked`} icon="package" />
         <StatTile label="Open NDR Cases" value={String(data.openNdr)} tone={data.openNdr > 0 ? "warning" : "default"} hint="Action required" icon="alert-triangle" />
-        <StatTile label="Total Margin Earned" value={`₹${data.totalMarginEarned.toFixed(2)}`} tone="success" hint="Platform gross profit" icon="check" />
+        <StatTile label="Platform Profit (All Users)" value={`₹${data.totalMarginEarned.toFixed(2)}`} tone="success" hint="Total net margin earned" icon="check" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

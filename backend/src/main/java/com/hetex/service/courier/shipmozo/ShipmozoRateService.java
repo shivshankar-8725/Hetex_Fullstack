@@ -30,7 +30,8 @@ public class ShipmozoRateService {
             double length,
             double width,
             double height,
-            Double codAmount) {
+            Double codAmount,
+            String packageType) {
         
         validateRateRequest(pickupPincode, deliveryPincode, weight, length, width, height);
 
@@ -42,7 +43,7 @@ public class ShipmozoRateService {
             paymentType,
             "Forward", // Assuming Forward shipment by default
             orderAmount,
-            "Document", // Assuming Document/Box
+            packageType != null && !packageType.isBlank() ? packageType : "Document",
             "No", // Default rov_type
             weight,
             List.of(dim),
@@ -63,7 +64,8 @@ public class ShipmozoRateService {
             double length,
             double width,
             double height,
-            Double codAmount) {
+            Double codAmount,
+            String packageType) {
         
         validateRateRequest(pickupPincode, deliveryPincode, weight, length, width, height);
         if (orderId == null || orderId.isBlank()) {
@@ -78,7 +80,7 @@ public class ShipmozoRateService {
             paymentType,
             "Forward",
             orderAmount,
-            "Box",
+            packageType != null && !packageType.isBlank() ? packageType : "Box",
             "No",
             weight,
             List.of(dim),

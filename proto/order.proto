@@ -64,6 +64,7 @@ message CreateOrderRequest {
   double height = 11;
   string payment_mode = 12;
   double cod_amount = 13;
+  string package_type = 14;
 }
 
 message CreateOrderResponse {
