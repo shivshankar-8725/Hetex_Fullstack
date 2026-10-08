@@ -46,22 +46,17 @@ export default async function DashboardPage() {
   const recentOrders = orders.slice(0, 6);
 
   const totals = analyticsData?.totals || {
-    totalInvestment: 245000,
-    revenueGenerated: 380000,
-    avgDeliveryDays: 2.4,
-    overallSlaRate: 88.5,
+    totalInvestment: 0,
+    revenueGenerated: 0,
+    avgDeliveryDays: 0,
+    overallSlaRate: 0,
     orders: orders.length,
     delivered: orders.filter((o) => o.shipment?.status === "DELIVERED").length,
     rto: orders.filter((o) => o.shipment?.status === "RTO_INITIATED" || o.shipment?.status === "RTO_DELIVERED").length,
-    rtoPercent: 3.2,
+    rtoPercent: 0,
   };
 
-  const courierSlaList = analyticsData?.courierSla && analyticsData.courierSla.length > 0 ? analyticsData.courierSla : [
-    { courierName: "Delhivery Surface", meetingSla: 84, slaAtRisk: 10, missedSla: 6, slaPercentage: 94.2 },
-    { courierName: "Delhivery Express", meetingSla: 92, slaAtRisk: 5, missedSla: 3, slaPercentage: 96.5 },
-    { courierName: "BlueDart Air", meetingSla: 88, slaAtRisk: 8, missedSla: 4, slaPercentage: 88.7 },
-    { courierName: "Xpressbees", meetingSla: 80, slaAtRisk: 12, missedSla: 8, slaPercentage: 82.0 },
-  ];
+  const courierSlaList = analyticsData?.courierSla && analyticsData.courierSla.length > 0 ? analyticsData.courierSla : [];
 
   return (
     <div className="space-y-6">
@@ -85,8 +80,8 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatTile label="Wallet Balance" value={`₹${(user.wallet?.balance ?? 0).toLocaleString()}`} hint="Available funds for booking" icon="wallet" tone="success" />
         <StatTile label="Total Shipments Booked" value={`${totals.orders}`} hint="Total orders processed" icon="package" />
-        <StatTile label="Freight Investment" value={`₹${(totals.totalInvestment || 245000).toLocaleString()}`} hint="Total shipping expenditure" icon="truck" />
-        <StatTile label="Avg Delivery Time" value={`${totals.avgDeliveryDays || 2.4} Days`} hint="Overall fulfillment TAT" icon="check" />
+        <StatTile label="Freight Investment" value={`₹${(totals.totalInvestment || 0).toLocaleString()}`} hint="Total shipping expenditure" icon="truck" />
+        <StatTile label="Avg Delivery Time" value={`${totals.avgDeliveryDays || 0} Days`} hint="Overall fulfillment TAT" icon="check" />
       </div>
 
       {/* Charts Grid - Donut & SLA Gauges */}

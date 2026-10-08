@@ -79,18 +79,14 @@ export function PaymentSplitChart({ data }: { data: { name: string; value: numbe
 }
 
 export function CourierDonutChart({ data }: { data: { name: string; count: number }[] }) {
-  const chartData = data.length > 0 ? data : [
-    { name: "Delhivery Surface", count: 35 },
-    { name: "Delhivery Express", count: 25 },
-    { name: "BlueDart Air", count: 20 },
-    { name: "Xpressbees Direct", count: 20 },
-  ];
-
+  if (!data || data.length === 0) {
+    return <div className="flex h-full w-full items-center justify-center text-sm text-muted">No shipment data available</div>;
+  }
   return (
     <ResponsiveContainer width="100%" height={240}>
       <PieChart>
         <Pie
-          data={chartData}
+          data={data}
           dataKey="count"
           nameKey="name"
           cx="50%"
@@ -101,7 +97,7 @@ export function CourierDonutChart({ data }: { data: { name: string; count: numbe
           label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`}
           labelLine={false}
         >
-          {chartData.map((entry, index) => (
+          {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={CATEGORICAL[index % CATEGORICAL.length]} />
           ))}
         </Pie>
@@ -132,19 +128,12 @@ export function SlaGaugeCard({ courierName, percentage }: { courierName: string;
 }
 
 export function MonthlyExpensesChart({ data }: { data?: { month: string; freightCharges: number; codHandling: number; fuelSurcharge: number; marginEarned: number }[] }) {
-  const defaultData = [
-    { month: "Jan", freightCharges: 120000, codHandling: 35000, fuelSurcharge: 25000, marginEarned: 40000 },
-    { month: "Feb", freightCharges: 150000, codHandling: 42000, fuelSurcharge: 30000, marginEarned: 52000 },
-    { month: "Mar", freightCharges: 180000, codHandling: 50000, fuelSurcharge: 38000, marginEarned: 60000 },
-    { month: "Apr", freightCharges: 160000, codHandling: 45000, fuelSurcharge: 32000, marginEarned: 55000 },
-    { month: "May", freightCharges: 210000, codHandling: 60000, fuelSurcharge: 42000, marginEarned: 75000 },
-    { month: "Jun", freightCharges: 250000, codHandling: 72000, fuelSurcharge: 50000, marginEarned: 90000 },
-  ];
-  const chartData = data && data.length > 0 ? data : defaultData;
-
+  if (!data || data.length === 0) {
+    return <div className="flex h-[260px] w-full items-center justify-center text-sm text-muted">No expense data available</div>;
+  }
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={chartData} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={GRIDLINE} />
         <XAxis dataKey="month" tick={axisStyle} axisLine={{ stroke: GRIDLINE }} tickLine={false} />
         <YAxis tick={axisStyle} axisLine={false} tickLine={false} tickFormatter={(val) => `₹${val / 1000}k`} />
@@ -160,17 +149,12 @@ export function MonthlyExpensesChart({ data }: { data?: { month: string; freight
 }
 
 export function SlaStatusStackedBarChart({ data }: { data?: { courierName: string; meetingSla: number; slaAtRisk: number; missedSla: number }[] }) {
-  const defaultData = [
-    { courierName: "Delhivery Surface", meetingSla: 78, slaAtRisk: 14, missedSla: 8 },
-    { courierName: "Delhivery Express", meetingSla: 88, slaAtRisk: 8, missedSla: 4 },
-    { courierName: "BlueDart Air", meetingSla: 92, slaAtRisk: 5, missedSla: 3 },
-    { courierName: "Xpressbees", meetingSla: 82, slaAtRisk: 11, missedSla: 7 },
-  ];
-  const chartData = data && data.length > 0 ? data : defaultData;
-
+  if (!data || data.length === 0) {
+    return <div className="flex h-[260px] w-full items-center justify-center text-sm text-muted">No SLA data available</div>;
+  }
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={chartData} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
+      <BarChart data={data} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
         <CartesianGrid vertical={false} stroke={GRIDLINE} />
         <XAxis dataKey="courierName" tick={axisStyle} axisLine={{ stroke: GRIDLINE }} tickLine={false} />
         <YAxis tick={axisStyle} axisLine={false} tickLine={false} unit="%" />

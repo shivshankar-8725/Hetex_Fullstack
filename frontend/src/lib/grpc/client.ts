@@ -91,7 +91,9 @@ export function toHttpError(err: unknown): GrpcHttpError {
       return new GrpcHttpError(400, message);
     case grpc.status.ALREADY_EXISTS:
       return new GrpcHttpError(409, message);
+    case grpc.status.UNAVAILABLE:
+      return new GrpcHttpError(503, "Backend service is currently unavailable. Please try again later.");
     default:
-      return new GrpcHttpError(500, message);
+      return new GrpcHttpError(500, message.replace(/^\d+\s+[A-Z_]+:\s*/, ""));
   }
 }
