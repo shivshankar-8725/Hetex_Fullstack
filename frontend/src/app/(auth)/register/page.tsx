@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Logo } from "@/components/ui/Logo";
+import { PublicTrackingBox } from "@/components/auth/PublicTrackingBox";
 
 const inputClass = "w-full rounded-lg border border-border px-3 py-2 text-sm focus:border-brand focus:outline-none";
 
@@ -72,11 +72,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8 shadow-card">
-        <div className="mb-6">
-          <Logo />
-        </div>
+    <div className="w-full rounded-2xl border border-border bg-surface p-8 shadow-elevated">
 
         {step === "details" && (
           <>
@@ -139,23 +135,7 @@ export default function RegisterPage() {
         <p className="mt-4 text-center text-xs text-muted">
           Already have an account? <Link href="/login" className="font-medium text-brand hover:underline">Log in</Link>
         </p>
-        <div className="mt-8 rounded-xl border border-brand/20 bg-brand-light/30 p-4">
-          <Link href="/track" className="flex items-center justify-between group">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-white shadow-md">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              </div>
-              <div>
-                <p className="font-semibold text-brand">Track your shipment here</p>
-                <p className="text-xs text-muted">No account required</p>
-              </div>
-            </div>
-            <div className="text-brand transition-transform group-hover:translate-x-1">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-            </div>
-          </Link>
-        </div>
+        <PublicTrackingBox />
       </div>
-    </div>
   );
 }
