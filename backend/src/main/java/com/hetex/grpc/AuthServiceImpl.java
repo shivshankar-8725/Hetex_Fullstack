@@ -104,9 +104,10 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
             return;
         }
         if (existing == null) {
-            userRepository.findByPhone(request.getPhone()).ifPresent(u -> {
-                throw Status.ALREADY_EXISTS.withDescription("An account with this phone number already exists").asRuntimeException();
-            });
+            if (userRepository.findByPhone(request.getPhone()).isPresent()) {
+                responseObserver.onError(Status.ALREADY_EXISTS.withDescription("An account with this phone number already exists").asRuntimeException());
+                return;
+            }
         }
 
         User user = existing != null ? existing : new User();
