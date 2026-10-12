@@ -11,9 +11,9 @@ class Database {
             // Read from environment or fallback to defaults
             $host = getenv('DB_HOST') ?: 'localhost';
             $port = getenv('DB_PORT') ?: '3306';
-            $db   = getenv('DB_NAME') ?: 'hetex_db';
-            $user = getenv('DB_USER') ?: 'hetex_user';
-            $pass = getenv('DB_PASS') ?: 'Hetex@2026_Secure';
+            $db   = getenv('DB_NAME') ?: 'u969244453_hetex';
+            $user = getenv('DB_USER') ?: 'u969244453_hetexuser';
+            $pass = getenv('DB_PASS') ?: 'Piyush@1197';
             $charset = 'utf8mb4';
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
