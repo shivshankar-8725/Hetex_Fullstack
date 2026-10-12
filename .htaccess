@@ -10,7 +10,11 @@
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # 3. Next.js Static Single Page Application fallback for client-side routing
+    # 3. Serve corresponding .html files for clean URLs (e.g. /login -> login.html)
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.*)$ $1.html [L]
+
+    # 4. Next.js Static Single Page Application fallback
     RewriteRule ^ index.html [L]
 </IfModule>
 
