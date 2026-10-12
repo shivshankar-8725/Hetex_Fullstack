@@ -1,0 +1,21 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. Forward all /api/* requests directly to PHP front controller
+    RewriteRule ^api/(.*)$ api/index.php [QSA,L]
+
+    # 2. Allow direct access to physical files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 3. Next.js Static Single Page Application fallback for client-side routing
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Security: Deny direct access to sensitive config files
+<FilesMatch "^(db\.php|jwt\.php|\.env)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
