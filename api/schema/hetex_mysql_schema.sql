@@ -294,7 +294,7 @@ VALUES (
   'ADMIN',
   'Hetex Logistics Corp',
   'VERIFIED',
-  '$2y$10$w85R7Z52p7v.vjUaJm7yweo82x0a.gV6f2QjY5kGvh2q8Qk5d4EFe',
+  '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
   1
 );
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>Admin Operations Panel | HetEx</title>
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
@@ -31,29 +31,35 @@
     .badge-danger { background: #fee2e2; color: #b91c1c; }
     .badge-navy { background: #f1f5f9; color: #334155; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
-    th { text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
-    td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; white-space: nowrap; }
+    td { padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
     .nav-tab { padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem; border-radius: 0.375rem; background: none; border: none; color: var(--text-muted); }
     .nav-tab.active { background: var(--brand); color: #fff; }
+    
+    @media (max-width: 768px) {
+      .admin-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
+      .admin-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+    }
   </style>
 </head>
 <body>
   <!-- Header -->
-  <header style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.875rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;">
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <a href="/admin.html">
-        <img src="/logo.jpeg" alt="HetEx" style="height: 40px; width: auto; object-fit: contain;" />
+  <header class="admin-header" style="height: 60px; min-height: 60px; background: #fff; border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; box-sizing: border-box;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="/admin.html" style="display: flex; align-items: center; text-decoration: none;">
+        <img src="/logo.jpeg" alt="HetEx" style="height: 36px; max-height: 36px; width: auto; max-width: 170px; object-fit: contain; display: block;" />
       </a>
-      <span class="badge badge-navy" style="background: #fee2e2; color: #b91c1c;">ADMINISTRATION PANEL</span>
+      <span class="badge badge-navy" style="background: #fee2e2; color: #b91c1c;">ADMIN PANEL</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 1rem;">
-      <span style="font-size: 0.875rem; font-weight: 700;">SuperAdmin (admin@hetex.in)</span>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-size: 0.8125rem; font-weight: 700;">admin@hetex.in</span>
+      <a href="/dashboard.html" class="btn-secondary" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Seller Portal</a>
       <button class="btn-secondary" onclick="adminLogout()" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Log Out</button>
     </div>
   </header>
 
   <!-- Nav Tabs -->
-  <div style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.5rem 2rem; display: flex; gap: 0.5rem;">
+  <div class="admin-nav" style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.5rem 1.5rem; display: flex; gap: 0.5rem; overflow-x: auto;">
     <button class="nav-tab active" onclick="switchAdminTab('overview', this)">📈 Platform Overview</button>
     <button class="nav-tab" onclick="switchAdminTab('sellers', this)">👥 Sellers & Users</button>
     <button class="nav-tab" onclick="switchAdminTab('couriers', this)">🚚 Courier Partners</button>
@@ -61,7 +67,7 @@
     <button class="nav-tab" onclick="switchAdminTab('shipments', this)">📦 All Shipments</button>
   </div>
 
-  <main style="max-width: 1280px; margin: 2rem auto; padding: 0 1.5rem;">
+  <main style="max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem;">
 
     <!-- TAB 1: OVERVIEW -->
     <div id="admin-tab-overview" class="admin-tab" style="display: block;">
@@ -85,9 +91,9 @@
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" style="padding: 1.25rem;">
         <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Recent Platform Orders</h3>
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
           <table>
             <thead>
               <tr>
@@ -111,7 +117,7 @@
     <!-- TAB 2: SELLERS -->
     <div id="admin-tab-sellers" class="admin-tab" style="display: none;">
       <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Registered Sellers</h2>
-      <div class="card" style="overflow-x: auto;">
+      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
             <tr>
@@ -134,7 +140,7 @@
     <!-- TAB 3: COURIERS -->
     <div id="admin-tab-couriers" class="admin-tab" style="display: none;">
       <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Courier Partner Integrations</h2>
-      <div class="card" style="overflow-x: auto;">
+      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
             <tr>
@@ -160,7 +166,7 @@
         <h2 style="font-size: 1.5rem; font-weight: 800;">Platform Margin Rules</h2>
         <button class="btn-primary" onclick="alert('Rule form ready.')">+ Add Rule</button>
       </div>
-      <div class="card" style="overflow-x: auto;">
+      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
             <tr>
@@ -182,7 +188,7 @@
     <!-- TAB 5: ALL SHIPMENTS -->
     <div id="admin-tab-shipments" class="admin-tab" style="display: none;">
       <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">All System Shipments</h2>
-      <div class="card" style="overflow-x: auto;">
+      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
             <tr>

@@ -41,14 +41,30 @@ class Response {
 
 class AuthMiddleware {
     public static function authenticate(): array {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        $authHeader = '';
+        if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            $authHeader = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        } elseif (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        } elseif (function_exists('apache_request_headers')) {
+            $headers = apache_request_headers();
+            $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        }
 
-        if (empty($authHeader) || !preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+        $token = '';
+        if (!empty($authHeader) && preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
+            $token = $matches[1];
+        } elseif (!empty($_COOKIE['hetex_session'])) {
+            $token = $_COOKIE['hetex_session'];
+        }
+
+        if (empty($token)) {
             Response::error('Unauthorized: Missing or invalid token', 401);
         }
 
-        $token = $matches[1];
         $payload = JWT::decode($token);
 
         if (!$payload || !isset($payload['userId'])) {

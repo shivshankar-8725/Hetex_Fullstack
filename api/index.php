@@ -69,15 +69,25 @@ try {
         case ($endpoint === '/auth/request-gst-otp' && $method === 'POST'):
             AuthController::requestGstOtp();
             break;
+        case ($endpoint === '/auth/request-kyc-otp' && $method === 'POST'):
+            AuthController::requestKycOtp();
+            break;
+        case ($endpoint === '/auth/verify-kyc-otp' && $method === 'POST'):
+            AuthController::verifyKycOtp();
+            break;
         case ($endpoint === '/auth/submit-ekyc' && $method === 'POST'):
         case ($endpoint === '/auth/kyc/submit' && $method === 'POST'):
-            AuthController::submitEkyc();
+            AuthController::verifyKycOtp();
             break;
 
-        // --- Rates & Serviceability ---
+        // --- Rates & Serviceability & Carrier SLA ---
         case ($endpoint === '/rates' && $method === 'POST'):
         case ($endpoint === '/serviceability' && $method === 'POST'):
             RateController::calculateRates();
+            break;
+        case ($endpoint === '/carrier-sla' && $method === 'GET'):
+        case ($endpoint === '/couriers' && $method === 'GET'):
+            RateController::getCarrierSla();
             break;
 
         // --- Orders ---

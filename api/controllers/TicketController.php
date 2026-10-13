@@ -13,11 +13,11 @@ class TicketController {
         $db = Database::getConnection();
 
         $stmt = $db->prepare("
-            SELECT t.*, o.order_number, c.name as courier_name,
+            SELECT t.*, o.order_number, COALESCE(c.name, 'General Support') as courier_name,
                    (SELECT COUNT(*) FROM ticket_messages m WHERE m.ticket_id = t.id) as message_count
             FROM support_tickets t
-            JOIN orders o ON t.order_id = o.id
-            JOIN couriers c ON t.courier_id = c.id
+            LEFT JOIN orders o ON t.order_id = o.id
+            LEFT JOIN couriers c ON t.courier_id = c.id
             WHERE t.user_id = ?
             ORDER BY t.created_at DESC
         ");
@@ -28,9 +28,9 @@ class TicketController {
             'tickets' => array_map(function($t) {
                 return [
                     'id' => $t['id'],
-                    'orderNumber' => $t['order_number'],
-                    'courierName' => $t['courier_name'],
-                    'awbNumber' => $t['awb_number'],
+                    'orderNumber' => $t['order_number'] ?? 'General',
+                    'courierName' => $t['courier_name'] ?? 'General Support',
+                    'awbNumber' => $t['awb_number'] ?? '-',
                     'subject' => $t['subject'],
                     'status' => $t['status'],
                     'messageCount' => (int)$t['message_count'],
@@ -45,10 +45,10 @@ class TicketController {
         $db = Database::getConnection();
 
         $stmt = $db->prepare("
-            SELECT t.*, o.order_number, c.name as courier_name
+            SELECT t.*, o.order_number, COALESCE(c.name, 'General Support') as courier_name
             FROM support_tickets t
-            JOIN orders o ON t.order_id = o.id
-            JOIN couriers c ON t.courier_id = c.id
+            LEFT JOIN orders o ON t.order_id = o.id
+            LEFT JOIN couriers c ON t.courier_id = c.id
             WHERE t.id = ? AND (t.user_id = ? OR 'ADMIN' = ?)
         ");
         $stmt->execute([$id, $auth['userId'], $auth['role']]);
@@ -63,9 +63,9 @@ class TicketController {
         Response::json([
             'ticket' => [
                 'id' => $t['id'],
-                'orderNumber' => $t['order_number'],
-                'courierName' => $t['courier_name'],
-                'awbNumber' => $t['awb_number'],
+                'orderNumber' => $t['order_number'] ?? 'General',
+                'courierName' => $t['courier_name'] ?? 'General Support',
+                'awbNumber' => $t['awb_number'] ?? '-',
                 'subject' => $t['subject'],
                 'status' => $t['status'],
                 'createdAt' => $t['created_at'],
@@ -85,15 +85,36 @@ class TicketController {
         $auth = AuthMiddleware::authenticate();
         $data = Response::getJsonInput();
 
-        $orderId = $data['orderId'] ?? '';
+        $orderId = trim($data['orderId'] ?? '');
         $subject = trim($data['subject'] ?? '');
         $message = trim($data['message'] ?? '');
 
-        if (empty($orderId) || empty($subject) || empty($message)) {
-            Response::error('Order ID, subject and message are required', 400);
+        if (empty($subject) || empty($message)) {
+            Response::error('Subject and message are required', 400);
         }
 
         $db = Database::getConnection();
+
+        // If orderId is not provided or 'GENERAL', find any user order or create dummy
+        if (empty($orderId) || $orderId === 'GENERAL') {
+            $userOrderStmt = $db->prepare("SELECT id FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 1");
+            $userOrderStmt->execute([$auth['userId']]);
+            $existing = $userOrderStmt->fetch();
+            if ($existing) {
+                $orderId = $existing['id'];
+            } else {
+                // Find any order in system or create a system reference
+                $anyOrder = $db->query("SELECT id FROM orders LIMIT 1")->fetch();
+                if ($anyOrder) {
+                    $orderId = $anyOrder['id'];
+                } else {
+                    $orderId = Response::generateUuid();
+                    // Seed a placeholder order for foreign key integrity
+                    $defaultAddr = $db->query("SELECT id FROM addresses LIMIT 1")->fetchColumn() ?: Response::generateUuid();
+                    $db->prepare("INSERT INTO orders (id, order_number, user_id, pickup_address_id, buyer_address_id, item_description, declared_value, weight, length, width, height, volumetric_weight, billable_weight, payment_mode, status, created_at) VALUES (?, 'GEN-SUPPORT', ?, ?, ?, 'General Inquiry', 0, 0.5, 10, 10, 10, 0.2, 0.5, 'PREPAID', 'DRAFT', NOW())")->execute([$orderId, $auth['userId'], $defaultAddr, $defaultAddr]);
+                }
+            }
+        }
 
         $stmt = $db->prepare("SELECT s.awb_number, s.courier_id FROM shipments s WHERE s.order_id = ?");
         $stmt->execute([$orderId]);
@@ -118,7 +139,7 @@ class TicketController {
             ")->execute([$msgId, $ticketId, $message]);
 
             $db->commit();
-            Response::json(['id' => $ticketId, 'success' => true], 201);
+            Response::json(['ticket' => ['id' => $ticketId], 'id' => $ticketId, 'success' => true], 201);
         } catch (Exception $e) {
             $db->rollBack();
             Response::error('Failed to create ticket: ' . $e->getMessage(), 500);

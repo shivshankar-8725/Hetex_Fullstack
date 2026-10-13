@@ -40,8 +40,16 @@ class AddressController {
         $auth = AuthMiddleware::authenticate();
         $data = Response::getJsonInput();
 
-        $type = strtoupper($data['type'] ?? 'PICKUP');
-        $label = trim($data['label'] ?? 'Warehouse');
+        $rawType = strtoupper($data['type'] ?? 'PICKUP');
+        $type = 'PICKUP';
+        if ($rawType === 'DELIVERY' || $rawType === 'BUYER') {
+            $type = 'DELIVERY';
+        } elseif ($rawType === 'RTO') {
+            $type = 'RTO';
+        } else {
+            $type = 'PICKUP';
+        }
+        $label = trim($data['label'] ?? ($type === 'PICKUP' ? 'Warehouse' : 'Delivery'));
         $contactName = trim($data['contactName'] ?? '');
         $phone = trim($data['phone'] ?? '');
         $addressLine1 = trim($data['addressLine1'] ?? '');

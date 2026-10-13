@@ -116,14 +116,20 @@
     .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.375rem; color: var(--navy); }
     .form-control { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; outline: none; transition: border 0.15s; }
     .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+
+    @media (max-width: 480px) {
+      .auth-container { padding: 1.25rem 0.75rem; }
+      .auth-box { padding: 1.5rem 1.125rem; border-radius: 0.75rem; }
+      .auth-box h1 { font-size: 1.25rem !important; }
+    }
   </style>
 </head>
 <body style="background: #f1f5f9;">
   <div class="auth-container">
     <div class="card auth-box">
-      <div style="text-align: center; margin-bottom: 2rem;">
-        <a href="/">
-          <img src="/logo.jpeg" alt="HetEx Logo" style="height: 52px; width: auto; object-fit: contain; margin-bottom: 1rem;" />
+      <div style="text-align: center; margin-bottom: 1.75rem;">
+        <a href="/" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+          <img src="/logo.jpeg" alt="HetEx Logo" style="height: 48px; max-width: 180px; width: auto; object-fit: contain; display: block; margin: 0 auto 1rem auto;" />
         </a>
         <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Log in to your account</h1>
         <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Compare couriers, book orders, and track shipments</p>
@@ -160,7 +166,7 @@
       <!-- Demo Accounts helper -->
       <div style="margin-top: 1.5rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 0.875rem; font-size: 0.8125rem; color: #1e40af;">
         <strong>Demo Login:</strong><br/>
-        • Admin: <span style="font-family: monospace;">admin@hetex.in</span> / <span style="font-family: monospace;">admin123</span><br/>
+        • Admin: <button type="button" onclick="document.getElementById('identifierInput').value='admin@hetex.in'; document.getElementById('passwordInput').value='admin123';" style="background: none; border: none; padding: 0; color: #1d4ed8; font-weight: 700; text-decoration: underline; cursor: pointer; font-family: monospace; font-size: 0.8125rem;">admin@hetex.in / admin123 (Click to fill)</button><br/>
         • Or register a fresh seller account with random OTP!
       </div>
 
