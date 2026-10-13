@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Seller Dashboard | HetEx Logistics</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
+  <style>
+    :root {
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-light: #eff6ff;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #ea580c;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--background); color: var(--text); min-height: 100vh; display: flex; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; }
+    input, select, textarea { font-family: inherit; font-size: inherit; }
+    .btn-primary { background: var(--brand); color: #fff; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.875rem; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.375rem; justify-content: center; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.375rem; justify-content: center; }
+    .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.625rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
+    .badge-navy { background: #f1f5f9; color: #334155; }
+    
+    /* Layout */
+    .sidebar { width: 250px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; position: sticky; top: 0; }
+    .sidebar-nav { list-style: none; padding: 1rem 0.75rem; flex: 1; overflow-y: auto; }
+    .sidebar-nav li { margin-bottom: 0.25rem; }
+    .nav-btn { width: 100%; display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; color: var(--text-muted); background: none; border: none; text-align: left; transition: all 0.15s; }
+    .nav-btn:hover { background: var(--brand-light); color: var(--brand); }
+    .nav-btn.active { background: var(--brand); color: #fff; }
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-x: hidden; }
+    .topbar { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 40; }
+    .content-area { padding: 1.5rem; flex: 1; max-width: 1280px; width: 100%; margin: 0 auto; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 1rem; backdrop-filter: blur(2px); }
+    .modal-content { background: #fff; border-radius: 0.75rem; max-width: 600px; width: 100%; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); max-height: 90vh; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    th { text-align: left; padding: 0.75rem 0.875rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
+    td { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: #f8fafc; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--navy); }
+    .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; outline: none; }
+    .form-control:focus { border-color: var(--brand); }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem;">
+      <a href="/dashboard.html">
+        <img src="/logo.jpeg" alt="HetEx" style="height: 40px; width: auto; object-fit: contain;" />
+      </a>
+    </div>
+    <ul class="sidebar-nav">
+      <li><button class="nav-btn active" onclick="switchTab('overview')">📊 Overview</button></li>
+      <li><button class="nav-btn" onclick="switchTab('orders')">📦 Orders & Shipments</button></li>
+      <li><button class="nav-btn" onclick="switchTab('create-order')">➕ Book Shipment</button></li>
+      <li><button class="nav-btn" onclick="switchTab('wallet')">💰 Wallet & Recharge</button></li>
+      <li><button class="nav-btn" onclick="switchTab('addresses')">📍 Address Book</button></li>
+      <li><button class="nav-btn" onclick="switchTab('rates')">🚚 Rate Calculator</button></li>
+      <li><button class="nav-btn" onclick="switchTab('track')">🔍 Live Tracking</button></li>
+      <li><button class="nav-btn" onclick="switchTab('ndr')">⚠️ NDR Management</button></li>
+      <li><button class="nav-btn" onclick="switchTab('tickets')">🎫 Support Tickets</button></li>
+      <li><button class="nav-btn" onclick="switchTab('profile')">⚙️ Profile Settings</button></li>
+    </ul>
+    <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border);">
+      <div style="font-size: 0.75rem; color: var(--text-muted);">Signed in as</div>
+      <div id="sidebarUserName" style="font-size: 0.875rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seller</div>
+    </div>
+  </aside>
+
+  <!-- Main Area -->
+  <div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div style="display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 480px;">
+        <input type="search" id="topbarSearchInput" placeholder="Search AWB, Order ID, or buyer name..."
+               class="form-control" style="padding: 0.375rem 0.75rem; font-size: 0.8125rem;" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <!-- Wallet Pill -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.375rem 0.75rem; border-radius: 9999px;">
+          <span style="font-size: 0.75rem; font-weight: 700; color: #065f46;">Balance:</span>
+          <span id="topbarWalletBalance" style="font-size: 0.875rem; font-weight: 800; color: #047857;">₹0.00</span>
+          <button class="btn-primary" onclick="openRechargeModal()" style="padding: 0.125rem 0.5rem; font-size: 0.6875rem; border-radius: 9999px; background: #059669;">+ Add</button>
+        </div>
+
+        <button class="btn-secondary" onclick="logout()" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Log Out</button>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="content-area">
+
+      <!-- ================= TAB: OVERVIEW ================= -->
+      <section id="tab-overview" class="tab-content active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Logistics Dashboard</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Real-time fulfillment KPIs, delivery SLA and recent shipments</p>
+          </div>
+          <button class="btn-primary" onclick="switchTab('create-order')">+ Create Shipment</button>
+        </div>
+
+        <!-- 4 KPI Tiles -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="card" style="padding: 1.25rem;">
+            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Available Wallet</p>
+            <p id="kpiBalance" style="font-size: 1.75rem; font-weight: 800; color: var(--success); margin-top: 0.25rem;">₹0.00</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Instant label deductions</p>
+          </div>
+          <div class="card" style="padding: 1.25rem;">
+            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Total Orders</p>
+            <p id="kpiTotalOrders" style="font-size: 1.75rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">0</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Booked across carriers</p>
+          </div>
+          <div class="card" style="padding: 1.25rem;">
+            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Freight Investment</p>
+            <p id="kpiInvestment" style="font-size: 1.75rem; font-weight: 800; color: var(--brand); margin-top: 0.25rem;">₹0.00</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total shipping charges</p>
+          </div>
+          <div class="card" style="padding: 1.25rem;">
+            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted);">Average TAT</p>
+            <p id="kpiTat" style="font-size: 1.75rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">3 Days</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Overall SLA speed</p>
+          </div>
+        </div>
+
+        <!-- Carrier SLA Grid -->
+        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+          <h2 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Carrier SLA Performance</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+              <p style="font-size: 0.8125rem; font-weight: 700; color: var(--navy);">Delhivery Surface</p>
+              <p style="font-size: 1.25rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">94.2%</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">ETA: 3-5 Days · Base: ₹42/kg</p>
+            </div>
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+              <p style="font-size: 0.8125rem; font-weight: 700; color: var(--navy);">Delhivery Express</p>
+              <p style="font-size: 1.25rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">96.5%</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">ETA: 1-3 Days · Base: ₹65/kg</p>
+            </div>
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+              <p style="font-size: 0.8125rem; font-weight: 700; color: var(--navy);">Shipmozo Standard</p>
+              <p style="font-size: 1.25rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">89.0%</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">ETA: 3-6 Days · Base: ₹39/kg</p>
+            </div>
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border);">
+              <p style="font-size: 0.8125rem; font-weight: 700; color: var(--navy);">BlueDart Air</p>
+              <p style="font-size: 1.25rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">98.0%</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">ETA: 1-2 Days · Base: ₹78/kg</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Shipments Table -->
+        <div class="card" style="padding: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2 style="font-size: 1rem; font-weight: 700;">Recent Orders</h2>
+            <button class="btn-secondary" onclick="switchTab('orders')" style="font-size: 0.75rem;">View All Orders →</button>
+          </div>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>AWB Number</th>
+                  <th>Buyer Name</th>
+                  <th>Destination</th>
+                  <th>Weight</th>
+                  <th>Mode</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="overviewRecentOrdersBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading recent orders...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: ORDERS ================= -->
+      <section id="tab-orders" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Orders & Shipments</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage manifested parcels, download labels, and track deliveries</p>
+          </div>
+          <button class="btn-primary" onclick="switchTab('create-order')">+ New Order</button>
+        </div>
+
+        <!-- Status Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+          <button class="btn-secondary active" onclick="filterOrders('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All</button>
+          <button class="btn-secondary" onclick="filterOrders('READY_TO_SHIP', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Ready to Ship</button>
+          <button class="btn-secondary" onclick="filterOrders('IN_TRANSIT', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">In Transit</button>
+          <button class="btn-secondary" onclick="filterOrders('DELIVERED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Delivered</button>
+          <button class="btn-secondary" onclick="filterOrders('NDR', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">NDR</button>
+          <button class="btn-secondary" onclick="filterOrders('CANCELLED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Cancelled</button>
+        </div>
+
+        <div class="card" style="padding: 1rem; overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Order Number</th>
+                <th>AWB / Tracking</th>
+                <th>Buyer</th>
+                <th>City</th>
+                <th>Weight</th>
+                <th>Payment</th>
+                <th>Rate Charged</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB: BOOK SHIPMENT ================= -->
+      <section id="tab-create-order" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Book New Shipment</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Select pickup location, consignee details, package specs, and choose courier</p>
+        </div>
+
+        <div id="createOrderAlert" style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem;"></div>
+
+        <form id="createOrderForm" class="card" style="padding: 1.75rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Pickup Warehouse -->
+            <div>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">1. Pickup Address</h3>
+              <div class="form-group">
+                <label>Select Pickup Warehouse *</label>
+                <select id="pickupAddressSelect" class="form-control" required>
+                  <option value="">Loading warehouses...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Buyer Details -->
+            <div>
+              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">2. Buyer / Consignee Address</h3>
+              <div class="form-group">
+                <label>Buyer Name *</label>
+                <input type="text" id="buyerName" class="form-control" placeholder="Rohan Mehra" required />
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div class="form-group">
+                  <label>Buyer Phone *</label>
+                  <input type="tel" id="buyerPhone" class="form-control" placeholder="9876543210" required />
+                </div>
+                <div class="form-group">
+                  <label>Pincode *</label>
+                  <input type="text" id="buyerPincode" class="form-control" placeholder="110001" maxlength="6" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Street Address *</label>
+                <input type="text" id="buyerAddress" class="form-control" placeholder="Flat 402, Green Heights, Sector 12" required />
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div class="form-group">
+                  <label>City *</label>
+                  <input type="text" id="buyerCity" class="form-control" placeholder="New Delhi" required />
+                </div>
+                <div class="form-group">
+                  <label>State *</label>
+                  <input type="text" id="buyerState" class="form-control" placeholder="Delhi" required />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Package Details -->
+          <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">3. Package Specifications</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+              <div class="form-group">
+                <label>Item Description *</label>
+                <input type="text" id="itemDesc" class="form-control" value="Apparel Merchandise" required />
+              </div>
+              <div class="form-group">
+                <label>Declared Value (₹) *</label>
+                <input type="number" id="declaredVal" class="form-control" value="1200" required />
+              </div>
+              <div class="form-group">
+                <label>Actual Weight (kg) *</label>
+                <input type="number" id="actualWeight" step="0.1" class="form-control" value="0.5" oninput="calcVolWeight()" required />
+              </div>
+              <div class="form-group">
+                <label>Dimensions (L × W × H cm)</label>
+                <div style="display: flex; gap: 0.25rem;">
+                  <input type="number" id="dimL" placeholder="L" value="15" class="form-control" oninput="calcVolWeight()" />
+                  <input type="number" id="dimW" placeholder="W" value="10" class="form-control" oninput="calcVolWeight()" />
+                  <input type="number" id="dimH" placeholder="H" value="5" class="form-control" oninput="calcVolWeight()" />
+                </div>
+              </div>
+            </div>
+            <p id="volWeightText" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Billable weight: 0.50 kg</p>
+          </div>
+
+          <!-- Payment Mode -->
+          <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem;">
+            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">4. Payment & Courier Selection</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label>Payment Mode</label>
+                <select id="paymentModeSelect" class="form-control" onchange="toggleCodInput()">
+                  <option value="PREPAID">Prepaid (Already paid by customer)</option>
+                  <option value="COD">Cash on Delivery (COD)</option>
+                </select>
+              </div>
+              <div class="form-group" id="codAmountGroup" style="display: none;">
+                <label>COD Amount to Collect (₹)</label>
+                <input type="number" id="codAmountInput" class="form-control" value="1200" />
+              </div>
+            </div>
+
+            <!-- Courier Options -->
+            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">Select Courier Partner</label>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+              <label class="card" style="padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer; border-color: var(--brand);">
+                <input type="radio" name="courierOption" value="c1000000-0000-0000-0000-000000000001" checked />
+                <div>
+                  <div style="font-weight: 700; font-size: 0.875rem;">Delhivery Surface</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">₹46.20 · ETA: 3-5 days</div>
+                </div>
+              </label>
+              <label class="card" style="padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                <input type="radio" name="courierOption" value="c1000000-0000-0000-0000-000000000002" />
+                <div>
+                  <div style="font-weight: 700; font-size: 0.875rem;">Delhivery Express</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">₹71.50 · ETA: 1-3 days</div>
+                </div>
+              </label>
+              <label class="card" style="padding: 0.875rem; display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                <input type="radio" name="courierOption" value="c1000000-0000-0000-0000-000000000003" />
+                <div>
+                  <div style="font-weight: 700; font-size: 0.875rem;">Shipmozo Standard</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">₹42.90 · ETA: 4-6 days</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" id="bookOrderBtn" class="btn-primary" style="width: 100%; padding: 0.875rem; font-size: 1rem;">
+            ⚡ Book Shipment & Generate AWB
+          </button>
+        </form>
+      </section>
+
+      <!-- ================= TAB: WALLET ================= -->
+      <section id="tab-wallet" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Wallet & Payments</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Recharge balance, view transactions, and manage Razorpay payments</p>
+          </div>
+          <button class="btn-primary" onclick="openRechargeModal()">+ Add Funds</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="card" style="padding: 1.5rem; background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff;">
+            <p style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; color: #93c5fd;">Current Balance</p>
+            <p id="walletLargeBalance" style="font-size: 2.25rem; font-weight: 800; margin: 0.5rem 0;">₹0.00</p>
+            <p style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 1.25rem;">Automatic deductions per order shipment</p>
+            <button class="btn-primary" onclick="openRechargeModal()" style="background: #fff; color: var(--brand); width: 100%;">Recharge Now</button>
+          </div>
+          <div class="card" style="padding: 1.5rem;">
+            <h3 style="font-size: 0.9375rem; font-weight: 700; margin-bottom: 0.75rem;">Quick Top-Up Options</h3>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn-secondary" onclick="quickRecharge(500)">+ ₹500</button>
+              <button class="btn-secondary" onclick="quickRecharge(1000)">+ ₹1,000</button>
+              <button class="btn-secondary" onclick="quickRecharge(2000)">+ ₹2,000</button>
+              <button class="btn-secondary" onclick="quickRecharge(5000)">+ ₹5,000</button>
+            </div>
+            <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 1rem;">Supports UPI, NetBanking, Debit/Credit Cards via Razorpay.</p>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 1.5rem;">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Transaction Ledger</h3>
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Balance Before</th>
+                  <th>Balance After</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="walletLedgerBody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading ledger...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: ADDRESSES ================= -->
+      <section id="tab-addresses" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Address Book</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage pickup warehouses and frequently used destination addresses</p>
+          </div>
+          <button class="btn-primary" onclick="openAddAddressModal()">+ Add Pickup Warehouse</button>
+        </div>
+
+        <div id="addressesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+          <div class="card" style="padding: 2rem; text-align: center; color: var(--text-muted);">Loading addresses...</div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: RATES ================= -->
+      <section id="tab-rates" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Courier Rate Calculator</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Compare live freight rates and estimated delivery turnaround across all carriers</p>
+        </div>
+
+        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+          <form id="rateCalcForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Weight (kg)</label>
+              <input type="number" id="calcWeight" value="1.0" step="0.5" class="form-control" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Pickup Pincode</label>
+              <input type="text" id="calcPickupPin" value="110001" class="form-control" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Delivery Pincode</label>
+              <input type="text" id="calcDeliveryPin" value="400001" class="form-control" required />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Payment Mode</label>
+              <select id="calcPayMode" class="form-control">
+                <option value="PREPAID">Prepaid</option>
+                <option value="COD">Cash on Delivery (COD)</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary" style="height: 38px;">Compare Rates</button>
+          </form>
+        </div>
+
+        <div class="card" style="padding: 1.5rem;">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Available Carriers</h3>
+          <div id="rateCardsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;"></div>
+        </div>
+      </section>
+
+      <!-- ================= TAB: LIVE TRACK ================= -->
+      <section id="tab-track" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Internal Shipment Tracker</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Query live courier milestone events directly from carrier APIs</p>
+        </div>
+
+        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+          <form id="dashTrackForm" style="display: flex; gap: 0.5rem;">
+            <input type="text" id="dashTrackInput" placeholder="Enter AWB Number (e.g. AWB1234567890)" class="form-control" required />
+            <button type="submit" class="btn-primary">Track</button>
+          </form>
+        </div>
+
+        <div id="dashTrackResult" class="card" style="padding: 1.5rem; display: none;"></div>
+      </section>
+
+      <!-- ================= TAB: NDR ================= -->
+      <section id="tab-ndr" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">NDR (Non-Delivery Reports)</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Action delivery failure exceptions to prevent Return to Origin (RTO)</p>
+        </div>
+
+        <div class="card" style="padding: 1.5rem; overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Shipment AWB</th>
+                <th>Attempt #</th>
+                <th>Reason</th>
+                <th>Customer Feedback</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ndrTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No pending NDR exceptions found.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB: TICKETS ================= -->
+      <section id="tab-tickets" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Support Tickets</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Raise shipping disputes, weight queries, and courier escalations</p>
+          </div>
+          <button class="btn-primary" onclick="openNewTicketModal()">+ Raise Ticket</button>
+        </div>
+
+        <div class="card" style="padding: 1.5rem; overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Subject</th>
+                <th>AWB / Order</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading tickets...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB: PROFILE ================= -->
+      <section id="tab-profile" class="tab-content">
+        <div style="margin-bottom: 1.5rem;">
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Profile & KYC</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">Account identity, business name, and GST/PAN verification</p>
+        </div>
+
+        <div class="card" style="padding: 1.75rem; max-width: 640px;">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="profName" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label>Business / Store Name</label>
+            <input type="text" id="profBusiness" class="form-control" readonly />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="text" id="profEmail" class="form-control" readonly />
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="text" id="profPhone" class="form-control" readonly />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>KYC Verification Status</label>
+            <div id="profKycBadge" style="margin-top: 0.25rem;"><span class="badge badge-success">VERIFIED</span></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal: Recharge Wallet -->
+  <div id="rechargeModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h3 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 1rem;">Recharge Prepaid Wallet</h3>
+      <div class="form-group">
+        <label>Enter Amount (₹)</label>
+        <input type="number" id="rechargeAmountInput" class="form-control" value="1000" min="100" />
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 500">₹500</button>
+        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 1000">₹1,000</button>
+        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 2000">₹2,000</button>
+        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 5000">₹5,000</button>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button class="btn-secondary" onclick="closeRechargeModal()">Cancel</button>
+        <button class="btn-primary" onclick="executeRecharge()">Proceed to Pay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Address -->
+  <div id="addAddressModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h3 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 1rem;">Add Pickup Warehouse</h3>
+      <form id="addAddressForm">
+        <div class="form-group">
+          <label>Warehouse / Contact Name *</label>
+          <input type="text" id="newAddrName" class="form-control" placeholder="Central Hub Warehouse" required />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="newAddrPhone" class="form-control" placeholder="9876543210" required />
+          </div>
+          <div class="form-group">
+            <label>Pincode *</label>
+            <input type="text" id="newAddrPincode" class="form-control" placeholder="110001" maxlength="6" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Street Address *</label>
+          <input type="text" id="newAddrLine" class="form-control" placeholder="Plot 45, Okhla Industrial Area Phase 3" required />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+          <div class="form-group">
+            <label>City *</label>
+            <input type="text" id="newAddrCity" class="form-control" placeholder="New Delhi" required />
+          </div>
+          <div class="form-group">
+            <label>State *</label>
+            <input type="text" id="newAddrState" class="form-control" placeholder="Delhi" required />
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+          <button type="button" class="btn-secondary" onclick="closeAddAddressModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save Warehouse</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Success Order / AWB Generated -->
+  <div id="orderSuccessModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="text-align: center;">
+      <span style="font-size: 3rem;">🎉</span>
+      <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin: 0.5rem 0;">Shipment Booked Successfully!</h2>
+      <p style="color: var(--text-muted); font-size: 0.875rem;">Your courier label has been generated and charges deducted from your wallet.</p>
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin: 1rem 0; text-align: left;">
+        <p><strong>Order #:</strong> <span id="successOrderNum">-</span></p>
+        <p><strong>AWB Number:</strong> <span id="successAwb" style="font-weight: 800; color: var(--brand);">-</span></p>
+        <p><strong>Rate Charged:</strong> <span id="successRate">-</span></p>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 0.75rem;">
+        <button class="btn-secondary" onclick="closeOrderSuccessModal()">Close</button>
+        <a id="successLabelBtn" href="#" target="_blank" class="btn-primary">📄 Print Shipping Label</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Auth Check
+    const token = localStorage.getItem('hetex_token');
+    const userJson = localStorage.getItem('hetex_user');
+    let currentUser = null;
+
+    if (!token) {
+      window.location.href = '/login.html';
+    } else {
+      try {
+        currentUser = JSON.parse(userJson || '{}');
+        document.getElementById('sidebarUserName').textContent = currentUser.name || 'Seller';
+        if (currentUser.role === 'ADMIN') {
+          window.location.href = '/admin.html';
+        }
+      } catch (e) {}
+    }
+
+    function logout() {
+      localStorage.removeItem('hetex_token');
+      localStorage.removeItem('hetex_user');
+      document.cookie = "hetex_session=; path=/; max-age=0;";
+      window.location.href = '/login.html';
+    }
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById('tab-' + tabId);
+      if (target) target.classList.add('active');
+
+      const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabId));
+      if (btn) btn.classList.add('active');
+
+      if (tabId === 'orders') loadOrders();
+      if (tabId === 'wallet') loadWallet();
+      if (tabId === 'addresses') loadAddresses();
+      if (tabId === 'rates') calcRates();
+      if (tabId === 'tickets') loadTickets();
+      if (tabId === 'profile') loadProfile();
+    }
+
+    // Load Wallet
+    async function loadWallet() {
+      try {
+        const res = await fetch('/api/wallet', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const bal = parseFloat(d.balance || 0).toFixed(2);
+        document.getElementById('topbarWalletBalance').textContent = '₹' + bal;
+        document.getElementById('kpiBalance').textContent = '₹' + bal;
+        document.getElementById('walletLargeBalance').textContent = '₹' + bal;
+
+        const txs = d.transactions || [];
+        const tbody = document.getElementById('walletLedgerBody');
+        if (txs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No wallet transactions yet.</td></tr>';
+        } else {
+          tbody.innerHTML = txs.map(t => {
+            const isCredit = t.type === 'CREDIT';
+            return '<tr>' +
+              '<td>' + (t.createdAt ? new Date(t.createdAt).toLocaleString() : '-') + '</td>' +
+              '<td><span class="badge ' + (isCredit ? 'badge-success' : 'badge-danger') + '">' + t.type + '</span></td>' +
+              '<td style="font-weight: 700; color: ' + (isCredit ? 'var(--success)' : 'var(--danger)') + ';">' + (isCredit ? '+' : '-') + '₹' + parseFloat(t.amount).toFixed(2) + '</td>' +
+              '<td>₹' + parseFloat(t.balanceBefore || 0).toFixed(2) + '</td>' +
+              '<td>₹' + parseFloat(t.balanceAfter || 0).toFixed(2) + '</td>' +
+              '<td>' + (t.reason || 'Transaction') + '</td>' +
+            '</tr>';
+          }).join('');
+        }
+      } catch (e) {}
+    }
+
+    function openRechargeModal() { document.getElementById('rechargeModal').style.display = 'flex'; }
+    function closeRechargeModal() { document.getElementById('rechargeModal').style.display = 'none'; }
+
+    async function quickRecharge(amt) {
+      document.getElementById('rechargeAmountInput').value = amt;
+      executeRecharge();
+    }
+
+    async function executeRecharge() {
+      const amt = parseFloat(document.getElementById('rechargeAmountInput').value || 1000);
+      try {
+        const res = await fetch('/api/wallet/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ amount: amt, paymentId: 'pay_' + Date.now() })
+        });
+        closeRechargeModal();
+        await loadWallet();
+        alert('₹' + amt + ' added to wallet successfully!');
+      } catch (e) {
+        alert('Recharge failed: ' + e.message);
+      }
+    }
+
+    // Load Orders
+    let currentOrders = [];
+    async function loadOrders(status = '') {
+      try {
+        const url = status && status !== 'ALL' ? '/api/orders?status=' + status : '/api/orders';
+        const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        currentOrders = d.orders || [];
+
+        renderOrdersTable(currentOrders);
+        renderOverviewRecentOrders(currentOrders.slice(0, 5));
+        document.getElementById('kpiTotalOrders').textContent = currentOrders.length;
+      } catch (e) {}
+    }
+
+    function filterOrders(st, btn) {
+      document.querySelectorAll('#tab-orders .btn-secondary').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      loadOrders(st);
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById('ordersTableBody');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No shipments found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => {
+        const awb = o.shipment?.awbNumber || '-';
+        const st = o.shipment?.status || o.status || 'CONFIRMED';
+        let badgeClass = 'badge-info';
+        if (st === 'DELIVERED') badgeClass = 'badge-success';
+        if (st === 'CANCELLED') badgeClass = 'badge-danger';
+        if (st === 'NDR') badgeClass = 'badge-warning';
+
+        return '<tr>' +
+          '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+          '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awb + '</td>' +
+          '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
+          '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
+          '<td>' + (o.billableWeight || o.weight || 0.5) + ' kg</td>' +
+          '<td><span class="badge badge-navy">' + (o.paymentMode || 'PREPAID') + '</span></td>' +
+          '<td style="font-weight: 700;">₹' + (o.shipment?.rateCharged || 46.2).toFixed(2) + '</td>' +
+          '<td><span class="badge ' + badgeClass + '">' + st.replace(/_/g, ' ') + '</span></td>' +
+          '<td>' +
+            '<div style="display: flex; gap: 0.25rem;">' +
+              (o.shipment?.id ? '<a href="/api/shipment-label/' + o.shipment.id + '" target="_blank" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">Label</a>' : '') +
+              (st !== 'CANCELLED' ? '<button onclick="cancelOrder(\'' + o.id + '\')" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem; color: var(--danger);">Cancel</button>' : '') +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderOverviewRecentOrders(orders) {
+      const tbody = document.getElementById('overviewRecentOrdersBody');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recent orders. Click "+ Create Shipment" to book.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = orders.map(o => {
+        const awb = o.shipment?.awbNumber || '-';
+        const st = o.shipment?.status || o.status || 'CONFIRMED';
+        let badgeClass = 'badge-info';
+        if (st === 'DELIVERED') badgeClass = 'badge-success';
+        if (st === 'CANCELLED') badgeClass = 'badge-danger';
+        return '<tr>' +
+          '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+          '<td style="font-family: monospace; color: var(--brand);">' + awb + '</td>' +
+          '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
+          '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
+          '<td>' + (o.billableWeight || 0.5) + ' kg</td>' +
+          '<td>' + (o.paymentMode || 'PREPAID') + '</td>' +
+          '<td><span class="badge ' + badgeClass + '">' + st.replace(/_/g, ' ') + '</span></td>' +
+          '<td><a href="/api/track?awb=' + awb + '" target="_blank" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem;">Track</a></td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    async function cancelOrder(id) {
+      if (!confirm('Are you sure you want to cancel this order? The shipping fee will be refunded to your wallet.')) return;
+      try {
+        const res = await fetch('/api/order-cancel/' + id, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          alert('Order cancelled and shipping fee refunded.');
+          loadOrders();
+          loadWallet();
+        } else {
+          alert('Failed to cancel order.');
+        }
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    // Load Addresses for Dropdown
+    let pickupAddresses = [];
+    async function loadAddresses() {
+      try {
+        const res = await fetch('/api/addresses', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        pickupAddresses = (d.addresses || []).filter(a => a.type === 'WAREHOUSE' || a.type === 'PICKUP' || true);
+
+        // Populate create order select
+        const sel = document.getElementById('pickupAddressSelect');
+        if (pickupAddresses.length === 0) {
+          sel.innerHTML = '<option value="">No warehouse saved. Please add one first.</option>';
+        } else {
+          sel.innerHTML = pickupAddresses.map(a => '<option value="' + a.id + '">' + a.contactName + ' (' + a.city + ' - ' + a.pincode + ')</option>').join('');
+        }
+
+        // Populate Address Book Grid
+        const grid = document.getElementById('addressesGrid');
+        if (pickupAddresses.length === 0) {
+          grid.innerHTML = '<div class="card" style="padding: 2rem; text-align: center; color: var(--text-muted); grid-column: 1/-1;">No addresses saved. Click "+ Add Pickup Warehouse" above.</div>';
+        } else {
+          grid.innerHTML = pickupAddresses.map(a => {
+            return '<div class="card" style="padding: 1.25rem;">' +
+              '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">' +
+                '<h4 style="font-weight: 700; color: var(--navy);">' + a.contactName + '</h4>' +
+                '<span class="badge badge-navy">' + (a.type || 'PICKUP') + '</span>' +
+              '</div>' +
+              '<p style="font-size: 0.8125rem; color: var(--text);">' + a.addressLine1 + '</p>' +
+              '<p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">' + a.city + ', ' + a.state + ' - ' + a.pincode + '</p>' +
+              '<p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Phone: ' + a.phone + '</p>' +
+              '<div style="margin-top: 1rem; text-align: right;">' +
+                '<button onclick="deleteAddress(\'' + a.id + '\')" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem; color: var(--danger);">Delete</button>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+      } catch (e) {}
+    }
+
+    function openAddAddressModal() { document.getElementById('addAddressModal').style.display = 'flex'; }
+    function closeAddAddressModal() { document.getElementById('addAddressModal').style.display = 'none'; }
+
+    document.getElementById('addAddressForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const payload = {
+        type: 'WAREHOUSE',
+        contactName: document.getElementById('newAddrName').value.trim(),
+        phone: document.getElementById('newAddrPhone').value.trim(),
+        addressLine1: document.getElementById('newAddrLine').value.trim(),
+        city: document.getElementById('newAddrCity').value.trim(),
+        state: document.getElementById('newAddrState').value.trim(),
+        pincode: document.getElementById('newAddrPincode').value.trim()
+      };
+      try {
+        const res = await fetch('/api/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+        closeAddAddressModal();
+        await loadAddresses();
+        alert('Warehouse address saved!');
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    async function deleteAddress(id) {
+      if (!confirm('Delete this address?')) return;
+      try {
+        await fetch('/api/addresses/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+        loadAddresses();
+      } catch (e) {}
+    }
+
+    // Volumetric Weight Calc
+    function calcVolWeight() {
+      const act = parseFloat(document.getElementById('actualWeight').value || 0.5);
+      const l = parseFloat(document.getElementById('dimL').value || 15);
+      const w = parseFloat(document.getElementById('dimW').value || 10);
+      const h = parseFloat(document.getElementById('dimH').value || 5);
+      const vol = (l * w * h) / 5000;
+      const billable = Math.max(act, vol);
+      document.getElementById('volWeightText').textContent = 'Volumetric: ' + vol.toFixed(2) + ' kg | Billable: ' + billable.toFixed(2) + ' kg';
+    }
+
+    function toggleCodInput() {
+      const mode = document.getElementById('paymentModeSelect').value;
+      document.getElementById('codAmountGroup').style.display = (mode === 'COD') ? 'block' : 'none';
+    }
+
+    // Create Order Submission
+    document.getElementById('createOrderForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('createOrderAlert');
+      const btn = document.getElementById('bookOrderBtn');
+      alertBox.style.display = 'none';
+
+      let pickupId = document.getElementById('pickupAddressSelect').value;
+      if (!pickupId) {
+        // Auto create dummy pickup address if none exists
+        const autoAddr = await fetch('/api/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ type: 'WAREHOUSE', contactName: 'Main Hub', phone: '9999999999', addressLine1: 'Hub Street 1', city: 'Delhi', state: 'Delhi', pincode: '110001' })
+        });
+        const autoData = await autoAddr.json();
+        pickupId = autoData.id;
+      }
+
+      // Create dummy buyer address ID
+      const buyerAddrRes = await fetch('/api/addresses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({
+          type: 'BUYER',
+          contactName: document.getElementById('buyerName').value.trim(),
+          phone: document.getElementById('buyerPhone').value.trim(),
+          addressLine1: document.getElementById('buyerAddress').value.trim(),
+          city: document.getElementById('buyerCity').value.trim(),
+          state: document.getElementById('buyerState').value.trim(),
+          pincode: document.getElementById('buyerPincode').value.trim()
+        })
+      });
+      const buyerAddrData = await buyerAddrRes.json();
+
+      const selectedCourier = document.querySelector('input[name="courierOption"]:checked').value;
+      const payMode = document.getElementById('paymentModeSelect').value;
+
+      const payload = {
+        pickupAddressId: pickupId,
+        buyerAddressId: buyerAddrData.id,
+        itemDescription: document.getElementById('itemDesc').value.trim(),
+        declaredValue: parseFloat(document.getElementById('declaredVal').value || 1000),
+        weight: parseFloat(document.getElementById('actualWeight').value || 0.5),
+        length: parseFloat(document.getElementById('dimL').value || 15),
+        width: parseFloat(document.getElementById('dimW').value || 10),
+        height: parseFloat(document.getElementById('dimH').value || 5),
+        paymentMode: payMode,
+        codAmount: payMode === 'COD' ? parseFloat(document.getElementById('codAmountInput').value || 0) : 0,
+        courierId: selectedCourier
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Booking Shipment...';
+
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.textContent = '⚡ Book Shipment & Generate AWB';
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to book order');
+        }
+
+        // Show Success Modal
+        document.getElementById('successOrderNum').textContent = data.orderNumber;
+        document.getElementById('successAwb').textContent = data.awbNumber;
+        document.getElementById('successRate').textContent = '₹' + parseFloat(data.rateCharged || 46.2).toFixed(2);
+        document.getElementById('successLabelBtn').href = '/api/shipment-label/' + data.orderId;
+        document.getElementById('orderSuccessModal').style.display = 'flex';
+
+        // Refresh stats & orders
+        loadWallet();
+        loadOrders();
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '⚡ Book Shipment & Generate AWB';
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#fee2e2';
+        alertBox.style.color = '#b91c1c';
+        alertBox.textContent = err.message;
+      }
+    });
+
+    function closeOrderSuccessModal() {
+      document.getElementById('orderSuccessModal').style.display = 'none';
+      switchTab('orders');
+    }
+
+    // Rate Calculator
+    async function calcRates() {
+      const wt = parseFloat(document.getElementById('calcWeight').value || 1.0);
+      const container = document.getElementById('rateCardsContainer');
+      container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1;">Fetching active carrier rates...</p>';
+
+      try {
+        const res = await fetch('/api/rates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            weight: wt,
+            pickupPincode: document.getElementById('calcPickupPin').value,
+            deliveryPincode: document.getElementById('calcDeliveryPin').value,
+            paymentMode: document.getElementById('calcPayMode').value
+          })
+        });
+        const d = await res.json();
+        const couriers = d.couriers || [];
+
+        container.innerHTML = couriers.map(c => {
+          return '<div class="card" style="padding: 1.25rem; border-top: 4px solid var(--brand);">' +
+            '<h4 style="font-weight: 700; color: var(--navy);">' + c.name + '</h4>' +
+            '<p style="font-size: 1.5rem; font-weight: 800; color: var(--brand); margin: 0.5rem 0;">₹' + parseFloat(c.totalRate || 45).toFixed(2) + '</p>' +
+            '<p style="font-size: 0.75rem; color: var(--text-muted);">ETA: ' + (c.etaDays || '2-4') + ' Days</p>' +
+            '<p style="font-size: 0.75rem; color: var(--text-muted);">Base: ₹' + c.baseFreight + ' + Margin: ₹' + c.margin + '</p>' +
+          '</div>';
+        }).join('');
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger);">Failed to calculate rates.</p>';
+      }
+    }
+
+    document.getElementById('rateCalcForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      calcRates();
+    });
+
+    // Support Tickets
+    async function loadTickets() {
+      try {
+        const res = await fetch('/api/tickets', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const tickets = d.tickets || [];
+        const tbody = document.getElementById('ticketsTableBody');
+        if (tickets.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No support tickets open.</td></tr>';
+        } else {
+          tbody.innerHTML = tickets.map(t => {
+            return '<tr>' +
+              '<td style="font-family: monospace;">' + t.id.substring(0, 8) + '</td>' +
+              '<td style="font-weight: 700;">' + t.subject + '</td>' +
+              '<td>' + (t.awbNumber || 'General') + '</td>' +
+              '<td><span class="badge badge-info">' + t.status + '</span></td>' +
+              '<td>' + (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recent') + '</td>' +
+              '<td><button class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem;">View</button></td>' +
+            '</tr>';
+          }).join('');
+        }
+      } catch (e) {}
+    }
+
+    // Profile
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const u = d.user || currentUser;
+        document.getElementById('profName').value = u.name || '';
+        document.getElementById('profBusiness').value = u.businessName || 'HetEx Seller';
+        document.getElementById('profEmail').value = u.email || '';
+        document.getElementById('profPhone').value = u.phone || '';
+      } catch (e) {}
+    }
+
+    // Initial Load
+    loadWallet();
+    loadOrders();
+    loadAddresses();
+  </script>
+</body>
+</html>

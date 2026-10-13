@@ -48,8 +48,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/verify-email", { method: "POST", body: JSON.stringify({ email, code }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      router.push("/dashboard");
-      router.refresh();
+      window.location.href = "/dashboard";
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {

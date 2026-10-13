@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Operations Panel | HetEx</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
+  <style>
+    :root {
+      --brand: #2563eb;
+      --navy: #0f172a;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--background); color: var(--text); min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; }
+    .btn-primary { background: var(--brand); color: #fff; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.875rem; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.625rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.5rem; }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-navy { background: #f1f5f9; color: #334155; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+    th { text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
+    td { padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    .nav-tab { padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem; border-radius: 0.375rem; background: none; border: none; color: var(--text-muted); }
+    .nav-tab.active { background: var(--brand); color: #fff; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.875rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="/admin.html">
+        <img src="/logo.jpeg" alt="HetEx" style="height: 40px; width: auto; object-fit: contain;" />
+      </a>
+      <span class="badge badge-navy" style="background: #fee2e2; color: #b91c1c;">ADMINISTRATION PANEL</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span style="font-size: 0.875rem; font-weight: 700;">SuperAdmin (admin@hetex.in)</span>
+      <button class="btn-secondary" onclick="adminLogout()" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Log Out</button>
+    </div>
+  </header>
+
+  <!-- Nav Tabs -->
+  <div style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.5rem 2rem; display: flex; gap: 0.5rem;">
+    <button class="nav-tab active" onclick="switchAdminTab('overview', this)">📈 Platform Overview</button>
+    <button class="nav-tab" onclick="switchAdminTab('sellers', this)">👥 Sellers & Users</button>
+    <button class="nav-tab" onclick="switchAdminTab('couriers', this)">🚚 Courier Partners</button>
+    <button class="nav-tab" onclick="switchAdminTab('commission', this)">🏷️ Commission Markup</button>
+    <button class="nav-tab" onclick="switchAdminTab('shipments', this)">📦 All Shipments</button>
+  </div>
+
+  <main style="max-width: 1280px; margin: 2rem auto; padding: 0 1.5rem;">
+
+    <!-- TAB 1: OVERVIEW -->
+    <div id="admin-tab-overview" class="admin-tab" style="display: block;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Platform Metrics</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="card">
+          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Active Sellers</p>
+          <p id="admSellersCount" style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">-</p>
+        </div>
+        <div class="card">
+          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Orders</p>
+          <p id="admOrdersCount" style="font-size: 2rem; font-weight: 800; color: var(--brand); margin-top: 0.25rem;">-</p>
+        </div>
+        <div class="card">
+          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Margin Earned</p>
+          <p id="admMarginCount" style="font-size: 2rem; font-weight: 800; color: var(--success); margin-top: 0.25rem;">-</p>
+        </div>
+        <div class="card">
+          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Wallet Reserves</p>
+          <p id="admWalletCount" style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">-</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Recent Platform Orders</h3>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>AWB</th>
+                <th>Courier</th>
+                <th>Buyer</th>
+                <th>City</th>
+                <th>Rate Charged</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="admRecentOrdersBody">
+              <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading platform orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: SELLERS -->
+    <div id="admin-tab-sellers" class="admin-tab" style="display: none;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Registered Sellers</h2>
+      <div class="card" style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Business Name</th>
+              <th>KYC Status</th>
+              <th>Wallet Balance</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="admSellersTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sellers...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: COURIERS -->
+    <div id="admin-tab-couriers" class="admin-tab" style="display: none;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Courier Partner Integrations</h2>
+      <div class="card" style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Courier Name</th>
+              <th>Code</th>
+              <th>Base Rate / kg</th>
+              <th>COD Flat</th>
+              <th>COD %</th>
+              <th>Rating</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="admCouriersTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading couriers...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: COMMISSION -->
+    <div id="admin-tab-commission" class="admin-tab" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 800;">Platform Margin Rules</h2>
+        <button class="btn-primary" onclick="alert('Rule form ready.')">+ Add Rule</button>
+      </div>
+      <div class="card" style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Rule ID</th>
+              <th>Carrier</th>
+              <th>Min Weight</th>
+              <th>Max Weight</th>
+              <th>Margin Type</th>
+              <th>Margin Value</th>
+            </tr>
+          </thead>
+          <tbody id="admCommissionTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading rules...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: ALL SHIPMENTS -->
+    <div id="admin-tab-shipments" class="admin-tab" style="display: none;">
+      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">All System Shipments</h2>
+      <div class="card" style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Order Number</th>
+              <th>AWB Number</th>
+              <th>Courier</th>
+              <th>Rate Charged</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="admAllShipmentsBody">
+            <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading shipments...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const token = localStorage.getItem('hetex_token');
+    const userJson = localStorage.getItem('hetex_user');
+    let u = null;
+
+    if (!token) {
+      window.location.href = '/login.html';
+    } else {
+      try {
+        u = JSON.parse(userJson || '{}');
+        if (u.role !== 'ADMIN') {
+          window.location.href = '/dashboard.html';
+        }
+      } catch (e) {}
+    }
+
+    function adminLogout() {
+      localStorage.removeItem('hetex_token');
+      localStorage.removeItem('hetex_user');
+      document.cookie = "hetex_session=; path=/; max-age=0;";
+      window.location.href = '/login.html';
+    }
+
+    function switchAdminTab(tab, btn) {
+      document.querySelectorAll('.admin-tab').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('admin-tab-' + tab).style.display = 'block';
+      if (btn) btn.classList.add('active');
+
+      if (tab === 'sellers') loadAdminSellers();
+      if (tab === 'couriers') loadAdminCouriers();
+      if (tab === 'commission') loadAdminCommission();
+      if (tab === 'shipments') loadAdminShipments();
+    }
+
+    async function loadAdminOverview() {
+      try {
+        const res = await fetch('/api/admin', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        document.getElementById('admSellersCount').textContent = d.sellerCount || 1;
+        document.getElementById('admOrdersCount').textContent = d.totalOrders || 0;
+        document.getElementById('admMarginCount').textContent = '₹' + parseFloat(d.totalMarginEarned || 0).toFixed(2);
+        document.getElementById('admWalletCount').textContent = '₹' + parseFloat(d.totalWalletBalance || 0).toFixed(2);
+
+        const recents = d.recentOrders || [];
+        const tbody = document.getElementById('admRecentOrdersBody');
+        if (recents.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders yet.</td></tr>';
+        } else {
+          tbody.innerHTML = recents.map(o => {
+            return '<tr>' +
+              '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+              '<td style="font-family: monospace; color: var(--brand);">' + (o.shipment?.awbNumber || '-') + '</td>' +
+              '<td>' + (o.shipment?.courier?.name || 'Delhivery') + '</td>' +
+              '<td>' + (o.buyerAddress?.contactName || 'Buyer') + '</td>' +
+              '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
+              '<td>₹' + (o.shipment?.rateCharged || 46.2).toFixed(2) + '</td>' +
+              '<td><span class="badge badge-success">' + (o.shipment?.status || o.status || 'CONFIRMED') + '</span></td>' +
+            '</tr>';
+          }).join('');
+        }
+      } catch (e) {}
+    }
+
+    async function loadAdminSellers() {
+      try {
+        const res = await fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const users = d.users || [];
+        const tbody = document.getElementById('admSellersTableBody');
+        tbody.innerHTML = users.map(u => {
+          return '<tr>' +
+            '<td style="font-weight: 700;">' + u.name + '</td>' +
+            '<td>' + (u.email || '-') + '</td>' +
+            '<td>' + u.phone + '</td>' +
+            '<td>' + (u.businessName || '-') + '</td>' +
+            '<td><span class="badge badge-success">' + (u.kycStatus || 'PENDING') + '</span></td>' +
+            '<td style="font-weight: 700;">₹' + parseFloat(u.walletBalance || 0).toFixed(2) + '</td>' +
+            '<td><span class="badge badge-navy">' + u.role + '</span></td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {}
+    }
+
+    async function loadAdminCouriers() {
+      try {
+        const res = await fetch('/api/admin/couriers', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const couriers = d.couriers || [];
+        const tbody = document.getElementById('admCouriersTableBody');
+        tbody.innerHTML = couriers.map(c => {
+          return '<tr>' +
+            '<td style="font-weight: 700;">' + c.name + '</td>' +
+            '<td>' + c.code + '</td>' +
+            '<td>₹' + parseFloat(c.baseRatePerKg || 42).toFixed(2) + '</td>' +
+            '<td>₹' + parseFloat(c.codChargeFlat || 25).toFixed(2) + '</td>' +
+            '<td>' + (c.codChargePercent || 1.5) + '%</td>' +
+            '<td>⭐ ' + (c.rating || 4.5) + '</td>' +
+            '<td><span class="badge badge-success">ACTIVE</span></td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {}
+    }
+
+    async function loadAdminCommission() {
+      try {
+        const res = await fetch('/api/admin/commission', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const rules = d.rules || [];
+        const tbody = document.getElementById('admCommissionTableBody');
+        tbody.innerHTML = rules.map(r => {
+          return '<tr>' +
+            '<td style="font-family: monospace;">' + r.id.substring(0, 8) + '</td>' +
+            '<td>' + (r.courierName || 'All Couriers') + '</td>' +
+            '<td>' + r.minWeight + ' kg</td>' +
+            '<td>' + r.maxWeight + ' kg</td>' +
+            '<td>' + r.marginType + '</td>' +
+            '<td style="font-weight: 700; color: var(--brand);">' + (r.marginType === 'PERCENT' ? r.marginValue + '%' : '₹' + r.marginValue) + '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {}
+    }
+
+    async function loadAdminShipments() {
+      loadAdminOverview();
+    }
+
+    loadAdminOverview();
+  </script>
+</body>
+</html>

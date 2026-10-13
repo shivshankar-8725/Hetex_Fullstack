@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HetEx | Multi-Courier Shipping & Logistics Platform</title>
+  <meta name="description" content="Compare courier rates, book shipments instantly, automate live tracking, and manage NDRs across Delhivery, Shipmozo, BlueDart and DTDC." />
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
+  <style>
+    
+  :root {
+    --brand: #2563eb;
+    --brand-dark: #1d4ed8;
+    --brand-light: #eff6ff;
+    --navy: #0f172a;
+    --navy-light: #1e293b;
+    --accent: #ea580c;
+    --surface: #ffffff;
+    --background: #f8fafc;
+    --border: #e2e8f0;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warning: #d97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; font-family: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  .btn-primary {
+    background: var(--brand);
+    color: #fff;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    border: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
+  .btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
+  .badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  .badge-success { background: #dcfce7; color: #15803d; }
+  .badge-warning { background: #fef3c7; color: #b45309; }
+  .badge-danger { background: #fee2e2; color: #b91c1c; }
+  .badge-info { background: #e0f2fe; color: #0369a1; }
+  .badge-navy { background: #f1f5f9; color: #334155; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  }
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 1rem;
+    backdrop-filter: blur(2px);
+  }
+  .modal-content {
+    background: #fff;
+    border-radius: 1rem;
+    max-width: 550px;
+    width: 100%;
+    padding: 1.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
+  td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #f8fafc; }
+
+    .hero-grad { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: #fff; }
+  </style>
+</head>
+<body>
+  <header style="background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+      <a href="/" style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="/logo.jpeg" alt="HetEx Logo" style="height: 44px; width: auto; object-fit: contain;" />
+      </a>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <a href="/track-public.html" style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted); padding: 0.5rem 0.75rem;">Track AWB</a>
+        <div id="authNavButtons" style="display: flex; gap: 0.75rem;">
+          <a href="/login.html" class="btn-secondary">Log In</a>
+          <a href="/register.html" class="btn-primary">Register Free</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero-grad" style="padding: 4.5rem 1.5rem 5rem; text-align: center; position: relative;">
+    <div style="max-width: 860px; margin: 0 auto; position: relative; z-index: 10;">
+      <span class="badge" style="background: rgba(255,255,255,0.15); color: #93c5fd; margin-bottom: 1rem;">Next-Gen Indian Logistics</span>
+      <h1 style="font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.25rem;">Simplify Your Shipping.<br/>Amplify Your Growth.</h1>
+      <p style="font-size: 1.125rem; color: #cbd5e1; max-width: 680px; margin: 0 auto 2.5rem; line-height: 1.6;">
+        Compare Delhivery, Shipmozo, and BlueDart rates, book parcels with 1-click AWB generation, automated NDR verification, and live customer tracking.
+      </p>
+
+      <div class="card" style="max-width: 620px; margin: 0 auto; padding: 1.25rem; text-align: left; color: var(--text); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);">
+        <p style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Track Your Package</p>
+        <form id="heroTrackForm" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <input type="text" id="heroAwbInput" placeholder="Enter AWB Number or Order ID (e.g. AWB1234567890)" required
+                 style="flex: 1; min-width: 240px; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; outline: none;" />
+          <button type="submit" class="btn-primary" style="padding: 0.75rem 1.75rem;">Track Status</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section style="background: #fff; border-bottom: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <p style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 1.25rem;">Integrated With India's Top Carriers</p>
+      <div style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; font-size: 1.25rem; font-weight: 800; color: #64748b;">
+        <span style="color: #000;">DELHIVERY</span>
+        <span style="color: #2563eb;">SHIPMOZO</span>
+        <span style="color: #0284c7;">BLUEDART</span>
+        <span style="color: #ea580c;">DTDC EXPRESS</span>
+        <span style="color: #dc2626;">XPRESSBEES</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h2 style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">Everything Your E-Commerce Business Needs</h2>
+      <p style="color: var(--text-muted); font-size: 1rem;">Built for high-volume D2C brands, online sellers, and logistics managers.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+      <div class="card" style="padding: 1.75rem;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">⚡</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Instant Multi-Courier Rates</h3>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Compare real-time shipping costs and ETAs across carriers before booking. Choose lowest rate or fastest delivery.</p>
+      </div>
+      <div class="card" style="padding: 1.75rem;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🛡️</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Automated NDR & RTO Reduction</h3>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Instant non-delivery alerts with buyer outreach automation. Request reattempts or initiate RTO with one click.</p>
+      </div>
+      <div class="card" style="padding: 1.75rem;">
+        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">💳</div>
+        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Prepaid Wallet & Early COD</h3>
+        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Zero hidden fees. Recharge via UPI or cards with Razorpay and maintain crystal-clear transaction ledgers.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer style="background: var(--navy); color: #94a3b8; padding: 3rem 1.5rem; border-top: 1px solid #334155; text-align: center; font-size: 0.875rem;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+      <img src="/logo.jpeg" alt="HetEx" style="height: 38px; filter: brightness(0) invert(1);" />
+      <p>© 2026 HetEx Logistics Corp. All rights reserved. Hostinger Production Deployment.</p>
+      <div style="display: flex; gap: 1.5rem; font-weight: 500;">
+        <a href="/login.html" style="color: #cbd5e1;">Seller Login</a>
+        <a href="/register.html" style="color: #cbd5e1;">Create Account</a>
+        <a href="/track-public.html" style="color: #cbd5e1;">Live Tracking</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem('hetex_token');
+    const userJson = localStorage.getItem('hetex_user');
+    if (token && userJson) {
+      try {
+        const u = JSON.parse(userJson);
+        const container = document.getElementById('authNavButtons');
+        if (container) {
+          const dest = u.role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
+          container.innerHTML = '<a href="' + dest + '" class="btn-primary">Go to Dashboard (' + (u.name || 'User').split(' ')[0] + ')</a>';
+        }
+      } catch (e) {}
+    }
+    document.getElementById('heroTrackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const val = document.getElementById('heroAwbInput').value.trim();
+      if (val) window.location.href = '/track-public.html?awb=' + encodeURIComponent(val);
+    });
+  </script>
+</body>
+</html>

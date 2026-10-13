@@ -63,13 +63,19 @@ function Tracker() {
     setError("");
     setResult(null);
 
-    const res = await trackOrderAction(idToTrack.trim());
-    if (res.success) {
-      setResult(res.data);
-    } else {
-      setError(res.error || "Failed to find tracking details.");
+    try {
+      const res = await fetch(`/api/track?awb=${encodeURIComponent(idToTrack.trim())}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to find tracking details.");
+      } else {
+        setResult(data);
+      }
+    } catch (e: any) {
+      setError(e.message || "Failed to connect to tracking server.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleTrack = async (e: React.FormEvent) => {

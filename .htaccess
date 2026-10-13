@@ -10,16 +10,27 @@
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # 3. Serve corresponding .html files for clean URLs (e.g. /login -> login.html)
-    RewriteCond %{REQUEST_FILENAME}.html -f
-    RewriteRule ^(.*)$ $1.html [L]
+    # 3. Clean URLs for main pages
+    RewriteRule ^login/?$ login.html [L]
+    RewriteRule ^register/?$ register.html [L]
+    RewriteRule ^forgot-password/?$ forgot-password.html [L]
+    RewriteRule ^track-public/?$ track-public.html [L]
+    RewriteRule ^dashboard/?$ dashboard.html [L]
+    RewriteRule ^admin/?$ admin.html [L]
+    RewriteRule ^track/([^/]+)/?$ track-public.html?awb=$1 [QSA,L]
 
-    # 4. Next.js Static Single Page Application fallback
+    # 4. Fallback for subroutes (e.g. /orders, /wallet, /addresses -> dashboard.html)
+    RewriteRule ^(orders|wallet|addresses|rates|serviceability|ndr|cod|tickets|settings)(/.*)?$ dashboard.html [L]
+    RewriteRule ^admin/(.*)$ admin.html [L]
+
+    # 5. Default fallback to index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.html [L]
 </IfModule>
 
 # Security: Deny direct access to sensitive config files
-<FilesMatch "^(db\.php|jwt\.php|\.env)$">
+<FilesMatch "^(db\.php|jwt\.php|\.env|.*\.sql)$">
     Order allow,deny
     Deny from all
 </FilesMatch>

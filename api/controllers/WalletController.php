@@ -1,6 +1,6 @@
 <?php
 /**
- * Wallet Controller - Balance, Transactions, Razorpay Order & Webhooks
+ * Wallet Controller - Balance, Transactions, Razorpay Order, QR Code & Webhooks
  */
 
 require_once __DIR__ . '/../config/db.php';
@@ -8,25 +8,16 @@ require_once __DIR__ . '/../utils/response.php';
 
 class WalletController {
 
-    public static function getBalance(): void {
+    public static function getWallet(): void {
         $auth = AuthMiddleware::authenticate();
         $db = Database::getConnection();
 
         $stmt = $db->prepare("SELECT balance FROM wallets WHERE user_id = ?");
         $stmt->execute([$auth['userId']]);
         $row = $stmt->fetch();
+        $balance = (float)($row['balance'] ?? 0.00);
 
-        Response::json([
-            'balance' => (float)($row['balance'] ?? 0.00),
-            'currency' => 'INR'
-        ]);
-    }
-
-    public static function getTransactions(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-
-        $stmt = $db->prepare("
+        $txStmt = $db->prepare("
             SELECT t.* 
             FROM wallet_transactions t
             JOIN wallets w ON t.wallet_id = w.id
@@ -34,23 +25,31 @@ class WalletController {
             ORDER BY t.created_at DESC
             LIMIT 100
         ");
-        $stmt->execute([$auth['userId']]);
-        $txs = $stmt->fetchAll();
+        $txStmt->execute([$auth['userId']]);
+        $txs = $txStmt->fetchAll();
+
+        $transactions = array_map(function($t) {
+            return [
+                'id' => $t['id'],
+                'type' => $t['type'],
+                'amount' => (float)$t['amount'],
+                'balanceBefore' => (float)$t['balance_before'],
+                'balanceAfter' => (float)$t['balance_after'],
+                'reason' => $t['reason'],
+                'paymentProvider' => $t['payment_provider'],
+                'paymentReference' => $t['payment_reference'],
+                'paymentStatus' => $t['payment_status'],
+                'createdAt' => $t['created_at']
+            ];
+        }, $txs);
 
         Response::json([
-            'transactions' => array_map(function($t) {
-                return [
-                    'id' => $t['id'],
-                    'type' => $t['type'],
-                    'amount' => (float)$t['amount'],
-                    'balanceBefore' => (float)$t['balance_before'],
-                    'balanceAfter' => (float)$t['balance_after'],
-                    'reason' => $t['reason'],
-                    'paymentReference' => $t['payment_reference'],
-                    'paymentStatus' => $t['payment_status'],
-                    'createdAt' => $t['created_at']
-                ];
-            }, $txs)
+            'balance' => $balance,
+            'wallet' => [
+                'balance' => $balance,
+                'transactions' => $transactions
+            ],
+            'transactions' => $transactions
         ]);
     }
 
@@ -59,21 +58,19 @@ class WalletController {
         $data = Response::getJsonInput();
         $amount = (float)($data['amount'] ?? 0);
 
-        if ($amount < 10) {
-            Response::error('Minimum recharge amount is ₹10', 400);
+        if ($amount < 1) {
+            Response::error('Enter a valid positive amount', 400);
         }
 
         $razorpayKeyId = getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_simulated_key';
         $razorpaySecret = getenv('RAZORPAY_KEY_SECRET') ?: 'rzp_test_simulated_secret';
 
-        // Check if real credentials exist or simulate order
         $orderId = 'order_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 14);
 
         if (!empty(getenv('RAZORPAY_KEY_ID'))) {
-            // Real Razorpay API call via cURL
             $ch = curl_init('https://api.razorpay.com/v1/orders');
             $payload = json_encode([
-                'amount' => (int)($amount * 100), // in paise
+                'amount' => (int)($amount * 100),
                 'currency' => 'INR',
                 'receipt' => 'rcpt_' . time(),
                 'notes' => ['userId' => $auth['userId']]
@@ -94,10 +91,58 @@ class WalletController {
         }
 
         Response::json([
+            'razorpayOrderId' => $orderId,
             'orderId' => $orderId,
             'amount' => $amount,
-            'keyId' => $razorpayKeyId,
-            'currency' => 'INR'
+            'currency' => 'INR',
+            'razorpayKeyId' => $razorpayKeyId,
+            'keyId' => $razorpayKeyId
+        ]);
+    }
+
+    public static function createQrPayment(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $amount = (float)($data['amount'] ?? 1000);
+
+        $orderId = 'order_qr_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 10);
+        $qrId = 'qr_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 12);
+
+        // Standard UPI QR format for India: upi://pay?pa=...
+        $upiUrl = "upi://pay?pa=hetex@icici&pn=HetEx%20Logistics&am={$amount}&cu=INR&tn=Recharge%20{$orderId}";
+        $qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" . urlencode($upiUrl);
+
+        Response::json([
+            'qrCodeId' => $qrId,
+            'imageUrl' => $qrImageUrl,
+            'razorpayOrderId' => $orderId,
+            'amount' => $amount,
+            'currency' => 'INR',
+            'isReal' => false,
+            'message' => 'Scan QR to pay using any UPI app (GPay, PhonePe, Paytm)'
+        ]);
+    }
+
+    public static function verifyPayment(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $amount = (float)($data['amount'] ?? 0);
+        $orderId = $data['razorpayOrderId'] ?? ('order_' . time());
+        $paymentId = $data['razorpayPaymentId'] ?? ('pay_' . time());
+
+        if ($amount <= 0) Response::error('Invalid payment amount', 400);
+
+        self::creditWallet($auth['userId'], $amount, 'Wallet Recharge: ' . $paymentId, $paymentId);
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT balance FROM wallets WHERE user_id = ?");
+        $stmt->execute([$auth['userId']]);
+        $newBal = (float)$stmt->fetchColumn();
+
+        Response::json([
+            'success' => true,
+            'balance' => $newBal,
+            'message' => 'Payment verified and wallet credited successfully'
         ]);
     }
 
@@ -107,7 +152,6 @@ class WalletController {
         $signature = $headers['X-Razorpay-Signature'] ?? $headers['x-razorpay-signature'] ?? '';
         $secret = getenv('RAZORPAY_WEBHOOK_SECRET') ?: '';
 
-        // If webhook secret configured, verify HMAC
         if (!empty($secret)) {
             $expected = hash_hmac('sha256', $body, $secret);
             if (!hash_equals($expected, $signature)) {
@@ -130,7 +174,7 @@ class WalletController {
         Response::json(['status' => 'ok']);
     }
 
-    public static function creditWallet(string $userId, double $amount, string $reason, ?string $ref = null): bool {
+    public static function creditWallet(string $userId, float $amount, string $reason, ?string $ref = null): bool {
         $db = Database::getConnection();
         $db->beginTransaction();
         try {
