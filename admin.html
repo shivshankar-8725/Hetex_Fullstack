@@ -35,6 +35,23 @@
     td { padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
     .nav-tab { padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem; border-radius: 0.375rem; background: none; border: none; color: var(--text-muted); }
     .nav-tab.active { background: var(--brand); color: #fff; }
+
+    /* In-App Toast Notifications */
+    .toast-container { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+    .toast { pointer-events: auto; background: #fff; border-radius: 0.5rem; padding: 0.875rem 1.25rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); border-left: 4px solid var(--brand); display: flex; align-items: center; gap: 0.75rem; font-size: 0.875rem; font-weight: 600; min-width: 280px; max-width: 440px; animation: slideInToast 0.25s ease-out; }
+    .toast-success { border-left-color: var(--success); }
+    .toast-error { border-left-color: var(--danger); }
+    .toast-info { border-left-color: var(--brand); }
+    @keyframes slideInToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutToast { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 1rem; backdrop-filter: blur(2px); }
+    .modal-content { background: #fff; border-radius: 0.75rem; max-width: 500px; width: 100%; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); max-height: 90vh; overflow-y: auto; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--navy); }
+    .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; outline: none; }
+    .form-control:focus { border-color: var(--brand); }
     
     @media (max-width: 768px) {
       .admin-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
@@ -43,6 +60,9 @@
   </style>
 </head>
 <body>
+  <!-- Floating In-App Toast Container -->
+  <div id="adminToastContainer" class="toast-container"></div>
+
   <!-- Header -->
   <header class="admin-header" style="height: 60px; min-height: 60px; background: #fff; border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; box-sizing: border-box;">
     <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -137,9 +157,15 @@
       </div>
     </div>
 
-    <!-- TAB 3: COURIERS -->
+    <!-- TAB 3: COURIERS (WITH REAL-TIME ACTIVE/INACTIVE CONTROLS) -->
     <div id="admin-tab-couriers" class="admin-tab" style="display: none;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Courier Partner Integrations</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800;">Courier Partner Integrations</h2>
+          <p style="color: var(--text-muted); font-size: 0.8125rem;">Active couriers appear in real-time on user Rate Calculators & Booking screens</p>
+        </div>
+        <button onclick="loadAdminCouriers()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh Status</button>
+      </div>
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
@@ -151,10 +177,11 @@
               <th>COD %</th>
               <th>Rating</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="admCouriersTableBody">
-            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading couriers...</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading couriers...</td></tr>
           </tbody>
         </table>
       </div>
@@ -163,8 +190,11 @@
     <!-- TAB 4: COMMISSION -->
     <div id="admin-tab-commission" class="admin-tab" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 800;">Platform Margin Rules</h2>
-        <button class="btn-primary" onclick="alert('Rule form ready.')">+ Add Rule</button>
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800;">Platform Margin Rules</h2>
+          <p style="color: var(--text-muted); font-size: 0.8125rem;">Configure markup percentage or flat rate added to shipments</p>
+        </div>
+        <button class="btn-primary" onclick="openAddRuleModal()">+ Add Rule</button>
       </div>
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
@@ -176,10 +206,11 @@
               <th>Max Weight</th>
               <th>Margin Type</th>
               <th>Margin Value</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="admCommissionTableBody">
-            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading rules...</td></tr>
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading rules...</td></tr>
           </tbody>
         </table>
       </div>
@@ -187,7 +218,10 @@
 
     <!-- TAB 5: ALL SHIPMENTS -->
     <div id="admin-tab-shipments" class="admin-tab" style="display: none;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">All System Shipments</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 800;">All System Shipments</h2>
+        <button onclick="loadAdminShipments()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh</button>
+      </div>
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
@@ -195,18 +229,64 @@
               <th>Order Number</th>
               <th>AWB Number</th>
               <th>Courier</th>
+              <th>Buyer / City</th>
               <th>Rate Charged</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody id="admAllShipmentsBody">
-            <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading shipments...</td></tr>
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading shipments...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
   </main>
+
+  <!-- Modal: Add Commission Rule (In-App Modal - ZERO ALERT POPUPS) -->
+  <div id="addRuleModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--navy);">New Platform Commission Markup</h3>
+        <button onclick="closeAddRuleModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+      <form id="addRuleForm">
+        <div class="form-group">
+          <label>Target Courier Partner</label>
+          <select id="ruleCourierSelect" class="form-control">
+            <option value="">All Couriers (Default Markup)</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label>Min Weight (kg)</label>
+            <input type="number" id="ruleMinWeight" class="form-control" value="0.0" step="0.1" required />
+          </div>
+          <div class="form-group">
+            <label>Max Weight (kg)</label>
+            <input type="number" id="ruleMaxWeight" class="form-control" value="1000.0" step="0.1" required />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label>Margin Type</label>
+            <select id="ruleMarginType" class="form-control">
+              <option value="PERCENT">Percentage (%)</option>
+              <option value="FLAT">Flat Fee (₹)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Margin Value</label>
+            <input type="number" id="ruleMarginValue" class="form-control" value="10.0" step="0.5" required />
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn-secondary" onclick="closeAddRuleModal()">Cancel</button>
+          <button type="submit" id="saveRuleSubmitBtn" class="btn-primary">Save Commission Rule</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     const token = localStorage.getItem('hetex_token');
@@ -222,6 +302,19 @@
           window.location.href = '/dashboard.html';
         }
       } catch (e) {}
+    }
+
+    function showAdminToast(msg, type = 'info') {
+      const c = document.getElementById('adminToastContainer');
+      if (!c) return;
+      const el = document.createElement('div');
+      el.className = 'toast toast-' + type;
+      el.textContent = msg;
+      c.appendChild(el);
+      setTimeout(() => {
+        el.style.animation = 'slideOutToast 0.25s ease-out forwards';
+        setTimeout(() => el.remove(), 250);
+      }, 3500);
     }
 
     function adminLogout() {
@@ -292,13 +385,26 @@
       } catch (e) {}
     }
 
+    let adminCouriersList = [];
     async function loadAdminCouriers() {
       try {
         const res = await fetch('/api/admin/couriers', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        const couriers = d.couriers || [];
+        adminCouriersList = d.couriers || [];
         const tbody = document.getElementById('admCouriersTableBody');
-        tbody.innerHTML = couriers.map(c => {
+        if (adminCouriersList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No couriers found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = adminCouriersList.map(c => {
+          const isActive = (c.active !== false && c.active !== 0 && c.active !== '0');
+          const badge = isActive
+            ? '<span class="badge badge-success">ACTIVE</span>'
+            : '<span class="badge badge-danger">INACTIVE</span>';
+          const btn = isActive
+            ? '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, false, &quot;' + c.name + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; color: var(--danger); border-color: #fca5a5;">Deactivate</button>'
+            : '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, true, &quot;' + c.name + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; background: var(--success);">Activate</button>';
+
           return '<tr>' +
             '<td style="font-weight: 700;">' + c.name + '</td>' +
             '<td>' + c.code + '</td>' +
@@ -306,10 +412,27 @@
             '<td>₹' + parseFloat(c.codChargeFlat || 25).toFixed(2) + '</td>' +
             '<td>' + (c.codChargePercent || 1.5) + '%</td>' +
             '<td>⭐ ' + (c.rating || 4.5) + '</td>' +
-            '<td><span class="badge badge-success">ACTIVE</span></td>' +
+            '<td>' + badge + '</td>' +
+            '<td>' + btn + '</td>' +
           '</tr>';
         }).join('');
       } catch (e) {}
+    }
+
+    async function toggleCourierStatus(id, newStatus, name) {
+      try {
+        const res = await fetch('/api/admin/couriers', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ id: id, active: newStatus ? 1 : 0 })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to update courier');
+        showAdminToast(name + ' is now ' + (newStatus ? 'ACTIVE' : 'INACTIVE') + ' across user portals', newStatus ? 'success' : 'info');
+        loadAdminCouriers();
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
     }
 
     async function loadAdminCommission() {
@@ -318,6 +441,10 @@
         const d = await res.json();
         const rules = d.rules || [];
         const tbody = document.getElementById('admCommissionTableBody');
+        if (rules.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No rules configured. Click "+ Add Rule" above.</td></tr>';
+          return;
+        }
         tbody.innerHTML = rules.map(r => {
           return '<tr>' +
             '<td style="font-family: monospace;">' + r.id.substring(0, 8) + '</td>' +
@@ -326,13 +453,96 @@
             '<td>' + r.maxWeight + ' kg</td>' +
             '<td>' + r.marginType + '</td>' +
             '<td style="font-weight: 700; color: var(--brand);">' + (r.marginType === 'PERCENT' ? r.marginValue + '%' : '₹' + r.marginValue) + '</td>' +
+            '<td><button onclick="deleteCommissionRule(&quot;' + r.id + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem; color: var(--danger);">Delete</button></td>' +
           '</tr>';
         }).join('');
       } catch (e) {}
     }
 
+    function openAddRuleModal() {
+      const sel = document.getElementById('ruleCourierSelect');
+      if (sel) {
+        sel.innerHTML = '<option value="">All Couriers (Default Markup)</option>' +
+          adminCouriersList.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+      }
+      document.getElementById('addRuleModal').style.display = 'flex';
+    }
+
+    function closeAddRuleModal() {
+      document.getElementById('addRuleModal').style.display = 'none';
+      document.getElementById('addRuleForm').reset();
+    }
+
+    document.getElementById('addRuleForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveRuleSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        courierId: document.getElementById('ruleCourierSelect').value || null,
+        marginType: document.getElementById('ruleMarginType').value,
+        marginValue: parseFloat(document.getElementById('ruleMarginValue').value || 10)
+      };
+
+      try {
+        const res = await fetch('/api/admin/commission', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Save Commission Rule';
+
+        if (!res.ok) throw new Error(d.error || 'Failed to save rule');
+
+        closeAddRuleModal();
+        showAdminToast('Platform commission markup rule saved!', 'success');
+        loadAdminCommission();
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Save Commission Rule';
+        showAdminToast(err.message, 'error');
+      }
+    });
+
+    async function deleteCommissionRule(id) {
+      try {
+        const res = await fetch('/api/admin-commission/' + id, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          showAdminToast('Commission rule removed', 'info');
+          loadAdminCommission();
+        }
+      } catch (e) {}
+    }
+
     async function loadAdminShipments() {
-      loadAdminOverview();
+      const tbody = document.getElementById('admAllShipmentsBody');
+      try {
+        const res = await fetch('/api/admin/shipments', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        const shipments = d.shipments || [];
+        if (shipments.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = shipments.map(s => {
+          return '<tr>' +
+            '<td style="font-weight: 700;">' + (s.order_number || '-') + '</td>' +
+            '<td style="font-family: monospace; color: var(--brand);">' + (s.awb_number || '-') + '</td>' +
+            '<td>' + (s.courier_name || 'Courier') + '</td>' +
+            '<td>' + (s.buyer_name || 'Buyer') + (s.buyer_city ? (' · ' + s.buyer_city) : '') + '</td>' +
+            '<td>₹' + parseFloat(s.rate_charged || 0).toFixed(2) + '</td>' +
+            '<td><span class="badge badge-success">' + (s.status || 'READY_TO_SHIP') + '</span></td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
+      }
     }
 
     loadAdminOverview();

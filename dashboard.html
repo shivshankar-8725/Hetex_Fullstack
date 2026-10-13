@@ -1125,11 +1125,10 @@
     });
 
     async function deleteAddress(id) {
-      if (!confirm('Delete this warehouse address?')) return;
       try {
         const res = await fetch('/api/addresses/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
         if (res.ok) {
-          showToast('Address removed', 'info');
+          showToast('Warehouse address removed', 'info');
           loadAddresses();
         }
       } catch (e) {}
@@ -1784,7 +1783,6 @@
     }
 
     async function cancelOrder(id) {
-      if (!confirm('Are you sure you want to cancel this order? The shipping fee will be refunded to your wallet.')) return;
       try {
         const res = await fetch('/api/order-cancel/' + id, {
           method: 'POST',

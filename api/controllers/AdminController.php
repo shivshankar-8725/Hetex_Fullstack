@@ -131,6 +131,14 @@ class AdminController {
         AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
         $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
+        if (empty($couriers)) {
+            $db->exec("INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `base_rate_per_kg`, `cod_charge_flat`, `cod_charge_percent`, `rating`, `eta_min_days`, `eta_max_days`, `rto_risk_percent`) VALUES 
+              ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#000000', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
+              ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#e11d48', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
+              ('c1000000-0000-0000-0000-000000000003', 'Shipmozo Standard', 'SHIPMOZO_STD', '#2563eb', 1, 39.00, 22.00, 1.40, 4.20, 3, 6, 7.00),
+              ('c1000000-0000-0000-0000-000000000004', 'BlueDart Express', 'BLUEDART_EXP', '#0284c7', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50)");
+            $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
+        }
 
         Response::json(['couriers' => array_map(function($c) {
             return [
@@ -210,6 +218,16 @@ class AdminController {
             ORDER BY r.created_at DESC
         ")->fetchAll();
 
+        if (empty($rules)) {
+            $db->exec("INSERT IGNORE INTO commission_rules (id, courier_id, min_weight, max_weight, margin_type, margin_value, created_at) VALUES ('r1000000-0000-0000-0000-000000000001', NULL, 0.00, 1000.00, 'PERCENT', 10.00, NOW())");
+            $rules = $db->query("
+                SELECT r.*, c.name as courier_name
+                FROM commission_rules r
+                LEFT JOIN couriers c ON r.courier_id = c.id
+                ORDER BY r.created_at DESC
+            ")->fetchAll();
+        }
+
         Response::json(['rules' => array_map(function($r) {
             return [
                 'id' => $r['id'],
@@ -249,5 +267,21 @@ class AdminController {
         $db = Database::getConnection();
         $db->prepare("DELETE FROM commission_rules WHERE id = ?")->execute([$id]);
         Response::json(['ok' => true]);
+    }
+
+    public static function listAllShipments(): void {
+        AuthMiddleware::requireAdmin();
+        $db = Database::getConnection();
+        $stmt = $db->query("
+            SELECT s.*, o.order_number, c.name as courier_name, b.contact_name as buyer_name, b.city as buyer_city
+            FROM shipments s
+            JOIN orders o ON s.order_id = o.id
+            LEFT JOIN couriers c ON s.courier_id = c.id
+            LEFT JOIN addresses b ON o.buyer_address_id = b.id
+            ORDER BY s.created_at DESC
+            LIMIT 100
+        ");
+        $shipments = $stmt->fetchAll();
+        Response::json(['shipments' => $shipments ?: []]);
     }
 }

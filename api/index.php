@@ -253,8 +253,11 @@ try {
         case ($endpoint === '/admin/couriers' && $method === 'GET'):
             AdminController::listCouriers();
             break;
-        case ($endpoint === '/admin/couriers' && $method === 'PATCH'):
+        case ($endpoint === '/admin/couriers' && ($method === 'PATCH' || $method === 'POST' || $method === 'PUT')):
             AdminController::updateCourier();
+            break;
+        case ($endpoint === '/admin/shipments' && $method === 'GET'):
+            AdminController::listAllShipments();
             break;
         case ($endpoint === '/admin/ndr-rto' && $method === 'GET'):
             AdminController::listNdrRtoOversight();

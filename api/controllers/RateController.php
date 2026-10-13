@@ -199,34 +199,39 @@ class RateController {
 
     public static function getCarrierSla(): void {
         $perf = [];
+        $dbConnected = false;
         try {
             $db = Database::getConnection();
-            $couriers = $db->query("SELECT * FROM couriers WHERE active = 1 ORDER BY rating DESC, base_rate_per_kg ASC")->fetchAll();
-            if (!empty($couriers)) {
-                $perf = array_map(function($c) {
-                    $rating = (float)($c['rating'] ?? 4.5);
-                    $slaPercent = round(85.0 + ($rating / 5.0) * 14.2, 1);
-                    if ($slaPercent > 99.5) $slaPercent = 98.6;
+            $countStmt = $db->query("SELECT COUNT(*) FROM couriers");
+            if ($countStmt && (int)$countStmt->fetchColumn() > 0) {
+                $dbConnected = true;
+                $couriers = $db->query("SELECT * FROM couriers WHERE active = 1 ORDER BY rating DESC, base_rate_per_kg ASC")->fetchAll();
+                if (!empty($couriers)) {
+                    $perf = array_map(function($c) {
+                        $rating = (float)($c['rating'] ?? 4.5);
+                        $slaPercent = round(85.0 + ($rating / 5.0) * 14.2, 1);
+                        if ($slaPercent > 99.5) $slaPercent = 98.6;
 
-                    return [
-                        'id' => $c['id'],
-                        'name' => $c['name'],
-                        'code' => $c['code'],
-                        'logoColor' => $c['logo_color'] ?? '#2563eb',
-                        'slaPercent' => $slaPercent,
-                        'rating' => $rating,
-                        'etaDays' => "{$c['eta_min_days']}-{$c['eta_max_days']}",
-                        'etaMinDays' => (int)$c['eta_min_days'],
-                        'etaMaxDays' => (int)$c['eta_max_days'],
-                        'baseRate' => (float)$c['base_rate_per_kg'],
-                        'codFee' => (float)$c['cod_charge_flat'],
-                        'rtoRisk' => (float)$c['rto_risk_percent']
-                    ];
-                }, $couriers);
+                        return [
+                            'id' => $c['id'],
+                            'name' => $c['name'],
+                            'code' => $c['code'],
+                            'logoColor' => $c['logo_color'] ?? '#2563eb',
+                            'slaPercent' => $slaPercent,
+                            'rating' => $rating,
+                            'etaDays' => "{$c['eta_min_days']}-{$c['eta_max_days']}",
+                            'etaMinDays' => (int)$c['eta_min_days'],
+                            'etaMaxDays' => (int)$c['eta_max_days'],
+                            'baseRate' => (float)$c['base_rate_per_kg'],
+                            'codFee' => (float)$c['cod_charge_flat'],
+                            'rtoRisk' => (float)$c['rto_risk_percent']
+                        ];
+                    }, $couriers);
+                }
             }
         } catch (Throwable $e) {}
 
-        if (empty($perf)) {
+        if (!$dbConnected && empty($perf)) {
             $perf = [
                 [
                     'id' => 'c1000000-0000-0000-0000-000000000001',
