@@ -497,7 +497,10 @@ const server = http.createServer(async (req, res) => {
         upiId,
         payeeName,
         upiUrl,
-        qrImageUrl
+        qrImageUrl,
+        qrCodeUrl: qrImageUrl,
+        qrDataUrl: qrImageUrl,
+        imageUrl: qrImageUrl
       });
     }
 

@@ -145,6 +145,9 @@ class WalletController {
             'payeeName' => $payeeName,
             'upiUrl' => $upiUrl,
             'qrImageUrl' => $qrImageUrl,
+            'qrCodeUrl' => $qrImageUrl,
+            'qrDataUrl' => $qrImageUrl,
+            'imageUrl' => $qrImageUrl,
             'message' => 'Scan QR to pay via any UPI app'
         ]);
     }
@@ -161,10 +164,32 @@ class WalletController {
         }
 
         $db = Database::getConnection();
+
+        // Auto self-heal: Ensure table exists
+        try {
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
+                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+                  `user_id` VARCHAR(36) NOT NULL,
+                  `amount` DECIMAL(10,2) NOT NULL,
+                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
+                  `upi_id` VARCHAR(128) NULL,
+                  `utr_number` VARCHAR(64) NULL,
+                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
+                  `admin_notes` TEXT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `reviewed_at` DATETIME NULL,
+                  INDEX `idx_recharge_user` (`user_id`),
+                  INDEX `idx_recharge_status` (`status`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+        } catch (Throwable $t) {}
+
         // Insert with status UNDER_REVIEW - NEVER credit wallet here!
         $db->prepare("
             INSERT INTO wallet_recharges (id, user_id, amount, payment_method, upi_id, utr_number, status, created_at)
             VALUES (?, ?, ?, 'UPI', 'hetex@icici', ?, 'UNDER_REVIEW', NOW())
+            ON DUPLICATE KEY UPDATE amount = VALUES(amount), utr_number = VALUES(utr_number)
         ")->execute([$requestId, $auth['userId'], $amount, $utrNumber ?: null]);
 
         Response::json([
@@ -180,9 +205,26 @@ class WalletController {
         $auth = AuthMiddleware::authenticate();
         $db = Database::getConnection();
 
+        try {
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
+                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+                  `user_id` VARCHAR(36) NOT NULL,
+                  `amount` DECIMAL(10,2) NOT NULL,
+                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
+                  `upi_id` VARCHAR(128) NULL,
+                  `utr_number` VARCHAR(64) NULL,
+                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
+                  `admin_notes` TEXT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `reviewed_at` DATETIME NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+        } catch (Throwable $t) {}
+
         $stmt = $db->prepare("SELECT * FROM wallet_recharges WHERE user_id = ? ORDER BY created_at DESC LIMIT 50");
         $stmt->execute([$auth['userId']]);
-        $rows = $stmt->fetchAll();
+        $rows = $stmt->fetchAll() ?: [];
 
         Response::json([
             'recharges' => array_map(function($r) {

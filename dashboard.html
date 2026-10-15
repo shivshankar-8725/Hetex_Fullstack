@@ -2104,8 +2104,15 @@
         if (!res.ok) throw new Error(d.error || 'Failed to generate dynamic UPI QR');
 
         currentRechargeRequestId = d.requestId;
+        const qrUrl = d.qrImageUrl || d.qrCodeUrl || d.qrDataUrl || d.imageUrl || ('https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(d.upiUrl || 'upi://pay?pa=hetex@icici&am=' + amt));
         const qrImg = document.getElementById('upiQrImage');
-        if (qrImg) qrImg.src = d.qrDataUrl || d.qrCodeUrl;
+        if (qrImg) {
+          qrImg.src = qrUrl;
+          qrImg.onerror = function() {
+            this.onerror = null;
+            this.src = 'https://chart.googleapis.com/chart?chs=250x250&cht=qr&chl=' + encodeURIComponent(d.upiUrl || 'upi://pay?pa=hetex@icici&am=' + amt);
+          };
+        }
 
         const dispAmt = document.getElementById('upiDisplayAmount');
         if (dispAmt) dispAmt.textContent = '₹' + parseFloat(d.amount).toFixed(2);

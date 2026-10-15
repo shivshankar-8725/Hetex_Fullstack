@@ -355,14 +355,34 @@ class AdminController {
         AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
 
-        $stmt = $db->query("
-            SELECT r.*, u.name as user_name, u.email as user_email, u.phone as user_phone, u.business_name
-            FROM wallet_recharges r
-            JOIN users u ON r.user_id = u.id
-            ORDER BY r.created_at DESC
-            LIMIT 100
-        ");
-        $rows = $stmt->fetchAll();
+        try {
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
+                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+                  `user_id` VARCHAR(36) NOT NULL,
+                  `amount` DECIMAL(10,2) NOT NULL,
+                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
+                  `upi_id` VARCHAR(128) NULL,
+                  `utr_number` VARCHAR(64) NULL,
+                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
+                  `admin_notes` TEXT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `reviewed_at` DATETIME NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+        } catch (Throwable $t) {}
+
+        $rows = [];
+        try {
+            $stmt = $db->query("
+                SELECT r.*, u.name as user_name, u.email as user_email, u.phone as user_phone, u.business_name
+                FROM wallet_recharges r
+                JOIN users u ON r.user_id = u.id
+                ORDER BY r.created_at DESC
+                LIMIT 100
+            ");
+            $rows = $stmt->fetchAll() ?: [];
+        } catch (Throwable $e) {}
 
         Response::json([
             'recharges' => array_map(function($r) {
