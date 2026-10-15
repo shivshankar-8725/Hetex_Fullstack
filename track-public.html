@@ -122,7 +122,7 @@
       <a href="/">
         <img src="/logo.jpeg" alt="HetEx Logo" style="height: 44px; width: auto; object-fit: contain;" />
       </a>
-      <a href="/login.html" class="btn-secondary" style="font-size: 0.875rem;">Log In to HetEx</a>
+      <a href="/login" class="btn-secondary" style="font-size: 0.875rem;">Log In to HetEx</a>
     </div>
   </header>
 
@@ -188,6 +188,19 @@
   </style>
 
   <script>
+    // Clean URL normalization: ensure no .html in browser URL
+    (function() {
+      try {
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+        }
+      } catch (e) {}
+    })();
+
     const form = document.getElementById('trackForm');
     const awbInput = document.getElementById('awbInput');
     const loading = document.getElementById('trackLoading');

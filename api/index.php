@@ -4,6 +4,22 @@
  * Comprehensive routing covering 100% of Node.js & Spring Boot endpoints
  */
 
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
+// Ensure any uncaught exception returns a valid JSON payload instead of an empty 500 response
+set_exception_handler(function (Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    header('Access-Control-Allow-Origin: *');
+    echo json_encode([
+        'error' => 'Server Error: ' . $e->getMessage(),
+        'file' => basename($e->getFile()),
+        'line' => $e->getLine()
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
@@ -131,6 +147,9 @@ try {
             break;
 
         // --- Addresses ---
+        case ($endpoint === '/addresses/lookup' && $method === 'GET'):
+            AddressController::lookupByPhone();
+            break;
         case ($endpoint === '/addresses' && $method === 'GET'):
             AddressController::listAddresses();
             break;
@@ -150,6 +169,15 @@ try {
             break;
         case ($endpoint === '/wallet/transactions' && $method === 'GET'):
             WalletController::getWallet();
+            break;
+        case ($endpoint === '/wallet/recharges' && $method === 'GET'):
+            WalletController::getUserRecharges();
+            break;
+        case ($endpoint === '/wallet/upi-create' && $method === 'POST'):
+            WalletController::createUpiRecharge();
+            break;
+        case ($endpoint === '/wallet/upi-paid' && $method === 'POST'):
+            WalletController::submitUpiPayment();
             break;
         case ($endpoint === '/wallet/create-order' && $method === 'POST'):
         case ($endpoint === '/wallet/recharge/create-order' && $method === 'POST'):
@@ -231,12 +259,22 @@ try {
             ExtraController::getAnalytics();
             break;
 
-        // --- Settings Tracking Page ---
+        // --- Settings Tracking Page & Platform Settings ---
         case ($endpoint === '/settings/tracking-page' && $method === 'GET'):
             ExtraController::getTrackingPageConfig();
             break;
         case ($endpoint === '/settings/tracking-page' && $method === 'PATCH'):
             ExtraController::updateTrackingPageConfig();
+            break;
+        case ($endpoint === '/settings' && $method === 'GET'):
+            AdminController::getSettings();
+            break;
+        case ($endpoint === '/admin/settings' && ($method === 'GET' || $method === 'POST')):
+            if ($method === 'POST') {
+                AdminController::updateSettings();
+            } else {
+                AdminController::getSettings();
+            }
             break;
 
         // --- Admin ---
@@ -247,7 +285,10 @@ try {
         case ($endpoint === '/admin/users' && $method === 'GET'):
             AdminController::listSellers();
             break;
-        case ($endpoint === '/admin/users' && $method === 'PATCH'):
+        case (preg_match('#^/admin/users/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
+            AdminController::getSellerDetail($m[1]);
+            break;
+        case ($endpoint === '/admin/users' && ($method === 'PATCH' || $method === 'POST')):
             AdminController::adjustWallet();
             break;
         case ($endpoint === '/admin/couriers' && $method === 'GET'):
@@ -270,6 +311,15 @@ try {
             break;
         case (preg_match('#^/admin-commission/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
             AdminController::deleteCommissionRule($m[1]);
+            break;
+        case ($endpoint === '/admin/recharges' && $method === 'GET'):
+            AdminController::listRechargeRequests();
+            break;
+        case ($endpoint === '/admin/recharges/approve' && $method === 'POST'):
+            AdminController::approveRechargeRequest();
+            break;
+        case ($endpoint === '/admin/recharges/reject' && $method === 'POST'):
+            AdminController::rejectRechargeRequest();
             break;
 
         default:

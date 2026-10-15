@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/credentials.php';
 require_once __DIR__ . '/../utils/response.php';
 
 class RateController {
@@ -47,18 +48,18 @@ class RateController {
         $fallbackRule = $ruleStmt->fetch();
         $marginPercent = $fallbackRule ? (float)$fallbackRule['margin_value'] : 10.0;
 
-        // Check if real Delhivery API credentials exist in environment
-        $delhiveryToken = getenv('DELHIVERY_API_KEY') ?: getenv('HETEX_DELHIVERY_TOKEN');
+        // Check if real Delhivery API credentials exist
+        $delhiveryToken = Credentials::get('DELHIVERY_API_KEY');
         $realDelhiveryRate = null;
-        if (!empty($delhiveryToken) && !str_contains(strtolower($delhiveryToken), 'mock') && !str_contains(strtolower($delhiveryToken), 'change')) {
+        if (!empty($delhiveryToken) && !str_contains(strtolower($delhiveryToken), 'your_') && !str_contains(strtolower($delhiveryToken), 'mock') && !str_contains(strtolower($delhiveryToken), 'change')) {
             $realDelhiveryRate = self::fetchDelhiveryLiveRate($delhiveryToken, $pickupPincode, $deliveryPincode, $billableWeight, $paymentMode);
         }
 
-        // Check if real Shipmozo API credentials exist in environment
-        $shipmozoPubKey = getenv('SHIPMOZO_PUBLIC_KEY');
-        $shipmozoPrivKey = getenv('SHIPMOZO_PRIVATE_KEY');
+        // Check if real Shipmozo API credentials exist
+        $shipmozoPubKey = Credentials::get('SHIPMOZO_PUBLIC_KEY');
+        $shipmozoPrivKey = Credentials::get('SHIPMOZO_PRIVATE_KEY');
         $realShipmozoRate = null;
-        if (!empty($shipmozoPubKey) && !empty($shipmozoPrivKey)) {
+        if (!empty($shipmozoPubKey) && !empty($shipmozoPrivKey) && !str_contains($shipmozoPubKey, 'YOUR_')) {
             $realShipmozoRate = self::fetchShipmozoLiveRate($shipmozoPubKey, $shipmozoPrivKey, $pickupPincode, $deliveryPincode, $billableWeight, $paymentMode, $codAmount);
         }
 

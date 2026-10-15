@@ -78,4 +78,46 @@ class AddressController {
 
         Response::json(['id' => $id, 'success' => true], 201);
     }
+
+    public static function lookupByPhone(): void {
+        $phone = trim($_GET['phone'] ?? '');
+        $cleanPhone = preg_replace('/\D/', '', $phone);
+        if (strlen($cleanPhone) > 10) {
+            $cleanPhone = substr($cleanPhone, -10);
+        }
+
+        if (strlen($cleanPhone) < 10) {
+            Response::json(['found' => false]);
+            return;
+        }
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("
+            SELECT contact_name, phone, address_line1, address_line2, city, state, pincode 
+            FROM addresses 
+            WHERE phone LIKE ? 
+               OR RIGHT(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '+', ''), 10) = ?
+            ORDER BY (CASE WHEN type IN ('DELIVERY', 'BUYER') THEN 0 ELSE 1 END), created_at DESC 
+            LIMIT 1
+        ");
+        $stmt->execute(['%' . $cleanPhone, $cleanPhone]);
+        $row = $stmt->fetch();
+
+        if ($row) {
+            Response::json([
+                'found' => true,
+                'address' => [
+                    'contactName' => $row['contact_name'],
+                    'phone' => $row['phone'],
+                    'addressLine1' => $row['address_line1'],
+                    'addressLine2' => $row['address_line2'] ?? '',
+                    'city' => $row['city'],
+                    'state' => $row['state'],
+                    'pincode' => $row['pincode']
+                ]
+            ]);
+        } else {
+            Response::json(['found' => false]);
+        }
+    }
 }

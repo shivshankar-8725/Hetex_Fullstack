@@ -1819,8 +1819,12 @@ const dashboardHtml = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync(path.join(rootDir, 'dashboard.html'), dashboardHtml, 'utf8');
-console.log("Wrote dashboard.html");
+if (!fs.existsSync(path.join(rootDir, 'dashboard.html')) || process.argv.includes('--force')) {
+  fs.writeFileSync(path.join(rootDir, 'dashboard.html'), dashboardHtml, 'utf8');
+  console.log("Wrote dashboard.html");
+} else {
+  console.log("Preserved existing dashboard.html");
+}
 
 // ==========================================
 // 2. ADMIN.HTML (Admin Operations Control Panel)
@@ -2377,8 +2381,12 @@ const adminHtml = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync(path.join(rootDir, 'admin.html'), adminHtml, 'utf8');
-console.log("Wrote admin.html");
+if (!fs.existsSync(path.join(rootDir, 'admin.html')) || process.argv.includes('--force')) {
+  fs.writeFileSync(path.join(rootDir, 'admin.html'), adminHtml, 'utf8');
+  console.log("Wrote admin.html");
+} else {
+  console.log("Preserved existing admin.html");
+}
 
 // ==========================================
 // 3. .HTACCESS (Comprehensive URL Routing)

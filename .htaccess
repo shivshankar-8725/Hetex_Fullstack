@@ -10,16 +10,23 @@
     # 1. Forward all /api/* requests directly to PHP front controller
     RewriteRule ^api/(.*)$ api/index.php [QSA,L]
 
-    # 2. Allow direct access to physical files and directories
+    # 2. Redirect external requests with .html to clean URLs (301 Permanent Redirect)
+    RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+    RewriteRule ^ / [R=301,L,NE]
+    RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+    RewriteRule ^ /%1 [R=301,L,NE]
+
+    # 3. Allow direct access to physical files and directories
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # 3. Clean URLs for main pages
+    # 4. Clean URLs for main pages
     RewriteRule ^login/?$ login.html [L]
     RewriteRule ^register/?$ register.html [L]
     RewriteRule ^forgot-password/?$ forgot-password.html [L]
     RewriteRule ^track-public/?$ track-public.html [L]
+    RewriteRule ^track/?$ track-public.html [L]
     RewriteRule ^dashboard/?$ dashboard.html [L]
     RewriteRule ^admin/?$ admin.html [L]
     RewriteRule ^track/([^/]+)/?$ track-public.html?awb=$1 [QSA,L]

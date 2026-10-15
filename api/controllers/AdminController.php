@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../utils/response.php';
+require_once __DIR__ . '/WalletController.php';
 
 class AdminController {
 
@@ -56,7 +57,7 @@ class AdminController {
             'courierSla' => [
                 ['courierName' => 'Delhivery Surface', 'meetingSla' => 78, 'slaAtRisk' => 14, 'missedSla' => 8, 'slaPercentage' => 94.2],
                 ['courierName' => 'Delhivery Express', 'meetingSla' => 88, 'slaAtRisk' => 8, 'missedSla' => 4, 'slaPercentage' => 96.5],
-                ['courierName' => 'Shipmozo Standard', 'meetingSla' => 82, 'slaAtRisk' => 11, 'missedSla' => 7, 'slaPercentage' => 89.0]
+                ['courierName' => 'DTDC Priority', 'meetingSla' => 85, 'slaAtRisk' => 9, 'missedSla' => 6, 'slaPercentage' => 93.8]
             ]
         ]);
     }
@@ -100,6 +101,71 @@ class AdminController {
                     'orderCount' => (int)$u['order_count']
                 ];
             }, $users)
+        ]);
+    }
+
+    public static function getSellerDetail(string $userId): void {
+        AuthMiddleware::requireAdmin();
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare("
+            SELECT u.*, w.balance as wallet_balance
+            FROM users u
+            LEFT JOIN wallets w ON u.id = w.user_id
+            WHERE u.id = ?
+        ");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            Response::error('Seller not found', 404);
+        }
+
+        $ordStmt = $db->prepare("
+            SELECT o.*, s.awb_number, s.status as shipment_status, s.rate_charged, c.name as courier_name,
+                   b.contact_name as buyer_name, b.city as buyer_city
+            FROM orders o
+            LEFT JOIN shipments s ON o.id = s.order_id
+            LEFT JOIN couriers c ON s.courier_id = c.id
+            LEFT JOIN addresses b ON o.buyer_address_id = b.id
+            WHERE o.user_id = ?
+            ORDER BY o.created_at DESC
+        ");
+        $ordStmt->execute([$userId]);
+        $orders = $ordStmt->fetchAll();
+
+        Response::json([
+            'user' => [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email'],
+                'phone' => $user['phone'],
+                'businessName' => $user['business_name'],
+                'kycStatus' => $user['kyc_status'],
+                'walletBalance' => (float)($user['wallet_balance'] ?? 0),
+                'role' => $user['role'],
+                'createdAt' => $user['created_at'],
+                'orderCount' => count($orders)
+            ],
+            'orders' => array_map(function($o) {
+                return [
+                    'id' => $o['id'],
+                    'orderNumber' => $o['order_number'],
+                    'awbNumber' => $o['awb_number'],
+                    'status' => $o['status'],
+                    'weight' => (float)$o['weight'],
+                    'billableWeight' => (float)$o['billable_weight'],
+                    'declaredValue' => (float)$o['declared_value'],
+                    'buyerAddress' => ['contactName' => $o['buyer_name'] ?? 'Buyer', 'city' => $o['buyer_city'] ?? 'City'],
+                    'shipment' => $o['awb_number'] ? [
+                        'status' => $o['shipment_status'],
+                        'awbNumber' => $o['awb_number'],
+                        'rateCharged' => (float)$o['rate_charged'],
+                        'courier' => ['name' => $o['courier_name']]
+                    ] : null,
+                    'createdAt' => $o['created_at']
+                ];
+            }, $orders)
         ]);
     }
 
@@ -283,5 +349,191 @@ class AdminController {
         ");
         $shipments = $stmt->fetchAll();
         Response::json(['shipments' => $shipments ?: []]);
+    }
+
+    public static function listRechargeRequests(): void {
+        AuthMiddleware::requireAdmin();
+        $db = Database::getConnection();
+
+        $stmt = $db->query("
+            SELECT r.*, u.name as user_name, u.email as user_email, u.phone as user_phone, u.business_name
+            FROM wallet_recharges r
+            JOIN users u ON r.user_id = u.id
+            ORDER BY r.created_at DESC
+            LIMIT 100
+        ");
+        $rows = $stmt->fetchAll();
+
+        Response::json([
+            'recharges' => array_map(function($r) {
+                return [
+                    'id' => $r['id'],
+                    'userId' => $r['user_id'],
+                    'userName' => $r['user_name'],
+                    'userEmail' => $r['user_email'],
+                    'userPhone' => $r['user_phone'],
+                    'businessName' => $r['business_name'] ?? 'Seller',
+                    'amount' => (float)$r['amount'],
+                    'paymentMethod' => $r['payment_method'],
+                    'upiId' => $r['upi_id'],
+                    'utrNumber' => $r['utr_number'],
+                    'status' => $r['status'],
+                    'adminNotes' => $r['admin_notes'],
+                    'createdAt' => $r['created_at'],
+                    'reviewedAt' => $r['reviewed_at']
+                ];
+            }, $rows)
+        ]);
+    }
+
+    public static function approveRechargeRequest(): void {
+        AuthMiddleware::requireAdmin();
+        $data = Response::getJsonInput();
+        $requestId = trim($data['requestId'] ?? '');
+
+        if (empty($requestId)) {
+            Response::error('Request ID is required', 400);
+        }
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT * FROM wallet_recharges WHERE id = ? FOR UPDATE");
+        $stmt->execute([$requestId]);
+        $recharge = $stmt->fetch();
+
+        if (!$recharge) {
+            Response::error('Recharge request not found', 404);
+        }
+
+        if ($recharge['status'] === 'APPROVED') {
+            Response::error('Recharge request already approved', 400);
+        }
+
+        $db->beginTransaction();
+        try {
+            $db->prepare("UPDATE wallet_recharges SET status = 'APPROVED', reviewed_at = NOW() WHERE id = ?")->execute([$requestId]);
+            $db->commit();
+
+            // Credit the wallet now that admin approved
+            $amount = (float)$recharge['amount'];
+            WalletController::creditWallet($recharge['user_id'], $amount, "UPI Recharge Approved (Ref: {$requestId})", $requestId);
+
+            Response::json([
+                'success' => true,
+                'status' => 'APPROVED',
+                'message' => "Recharge of ₹{$amount} approved and credited to wallet."
+            ]);
+        } catch (Exception $e) {
+            $db->rollBack();
+            Response::error('Failed to approve recharge: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public static function rejectRechargeRequest(): void {
+        AuthMiddleware::requireAdmin();
+        $data = Response::getJsonInput();
+        $requestId = trim($data['requestId'] ?? '');
+        $notes = trim($data['reason'] ?? $data['notes'] ?? 'Rejected by Admin');
+
+        if (empty($requestId)) {
+            Response::error('Request ID is required', 400);
+        }
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("UPDATE wallet_recharges SET status = 'REJECTED', admin_notes = ?, reviewed_at = NOW() WHERE id = ? AND status = 'UNDER_REVIEW'");
+        $stmt->execute([$notes, $requestId]);
+
+        Response::json([
+            'success' => true,
+            'status' => 'REJECTED',
+            'message' => 'Recharge request marked as rejected.'
+        ]);
+    }
+
+    public static function getSettings(): void {
+        $settingsFile = __DIR__ . '/../config/settings.json';
+        $defaults = [
+            'upiId' => 'hetex@icici',
+            'payeeName' => 'HetEx Logistics',
+            'helplineNumber' => '+91 98765 43210',
+            'helplineHours' => 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+            'supportEmail' => 'support@hetex.in'
+        ];
+
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->query("SELECT setting_key, setting_value FROM platform_settings");
+            $rows = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (!empty($rows)) {
+                if (isset($rows['upi_id'])) $defaults['upiId'] = $rows['upi_id'];
+                if (isset($rows['payee_name'])) $defaults['payeeName'] = $rows['payee_name'];
+                if (isset($rows['helpline_number'])) $defaults['helplineNumber'] = $rows['helpline_number'];
+                if (isset($rows['helpline_hours'])) $defaults['helplineHours'] = $rows['helpline_hours'];
+                if (isset($rows['support_email'])) $defaults['supportEmail'] = $rows['support_email'];
+            }
+        } catch (Throwable $e) {
+            if (file_exists($settingsFile)) {
+                $json = json_decode(file_get_contents($settingsFile), true);
+                if (is_array($json)) {
+                    $defaults = array_merge($defaults, $json);
+                }
+            }
+        }
+
+        Response::json(['settings' => $defaults]);
+    }
+
+    public static function updateSettings(): void {
+        AuthMiddleware::requireAdmin();
+        $data = Response::getJsonInput();
+
+        $settingsFile = __DIR__ . '/../config/settings.json';
+        $current = [
+            'upiId' => 'hetex@icici',
+            'payeeName' => 'HetEx Logistics',
+            'helplineNumber' => '+91 98765 43210',
+            'helplineHours' => 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+            'supportEmail' => 'support@hetex.in'
+        ];
+
+        if (file_exists($settingsFile)) {
+            $existing = json_decode(file_get_contents($settingsFile), true);
+            if (is_array($existing)) $current = array_merge($current, $existing);
+        }
+
+        if (isset($data['upiId']) && trim($data['upiId']) !== '') $current['upiId'] = trim($data['upiId']);
+        if (isset($data['payeeName']) && trim($data['payeeName']) !== '') $current['payeeName'] = trim($data['payeeName']);
+        if (isset($data['helplineNumber']) && trim($data['helplineNumber']) !== '') $current['helplineNumber'] = trim($data['helplineNumber']);
+        if (isset($data['helplineHours']) && trim($data['helplineHours']) !== '') $current['helplineHours'] = trim($data['helplineHours']);
+        if (isset($data['supportEmail']) && trim($data['supportEmail']) !== '') $current['supportEmail'] = trim($data['supportEmail']);
+
+        @file_put_contents($settingsFile, json_encode($current, JSON_PRETTY_PRINT));
+
+        try {
+            $db = Database::getConnection();
+            $db->exec("CREATE TABLE IF NOT EXISTS platform_settings (
+                setting_key VARCHAR(100) PRIMARY KEY,
+                setting_value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+            $map = [
+                'upi_id' => $current['upiId'],
+                'payee_name' => $current['payeeName'],
+                'helpline_number' => $current['helplineNumber'],
+                'helpline_hours' => $current['helplineHours'],
+                'support_email' => $current['supportEmail']
+            ];
+
+            $stmt = $db->prepare("INSERT INTO platform_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+            foreach ($map as $k => $v) {
+                $stmt->execute([$k, $v]);
+            }
+        } catch (Throwable $e) {}
+
+        Response::json([
+            'success' => true,
+            'settings' => $current,
+            'message' => 'Platform settings updated successfully!'
+        ]);
     }
 }

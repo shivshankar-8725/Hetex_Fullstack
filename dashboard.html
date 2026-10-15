@@ -25,7 +25,8 @@
       --warning: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--background); color: var(--text); min-height: 100vh; display: flex; }
+    html { font-size: 14px; -webkit-text-size-adjust: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 0.8125rem; background: var(--background); color: var(--text); min-height: 100vh; display: flex; }
     a { color: inherit; text-decoration: none; }
     button { cursor: pointer; font-family: inherit; }
     input, select, textarea { font-family: inherit; font-size: inherit; }
@@ -42,15 +43,16 @@
     .badge-navy { background: #f1f5f9; color: #334155; }
     
     /* Layout */
-    .sidebar { width: 250px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; min-height: 100vh; position: sticky; top: 0; z-index: 100; }
-    .sidebar-nav { list-style: none; padding: 1rem 0.75rem; flex: 1; overflow-y: auto; }
+    .sidebar { width: 250px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; max-height: 100vh; position: sticky; top: 0; z-index: 100; overflow: hidden; }
+    .sidebar-nav { list-style: none; padding: 0.75rem 0.5rem; flex: 1; overflow-y: auto; overflow-x: hidden; }
     .sidebar-nav li { margin-bottom: 0.25rem; }
+    .sidebar-footer { margin-top: auto; flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 10; }
     .nav-btn { width: 100%; display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 0.875rem; border-radius: 0.5rem; font-size: 0.875rem; font-weight: 600; color: var(--text-muted); background: none; border: none; text-align: left; transition: all 0.15s; }
     .nav-btn:hover { background: var(--brand-light); color: var(--brand); }
     .nav-btn.active { background: var(--brand); color: #fff; }
     .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-x: hidden; }
-    .topbar { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 40; }
-    .content-area { padding: 1.5rem; flex: 1; max-width: 1280px; width: 100%; margin: 0 auto; }
+    .topbar { height: 64px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 500; }
+    .content-area { padding: 1.5rem 2rem; flex: 1; width: 100%; max-width: 100%; margin: 0; box-sizing: border-box; }
     
     .tab-content { display: none; }
     .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
@@ -133,9 +135,228 @@
         width: 100% !important;
         margin-top: 0.25rem !important;
       }
-      .mobile-grid-1 {
-        grid-template-columns: 1fr !important;
-      }
+    } /* Close @media (max-width: 768px) */
+
+    /* Premium Topbar & Action Elements (Matching Image 2) */
+    .topbar-search-box {
+      position: relative;
+      flex: 1;
+      max-width: 440px;
+    }
+    .topbar-search-box input {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.45rem 1rem 0.45rem 2.25rem;
+      font-size: 0.8125rem;
+      outline: none;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+    .topbar-search-box input:focus {
+      background: #ffffff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .topbar-search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    .topbar-dark-btn {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .topbar-dark-btn:hover {
+      background: #1e293b;
+    }
+    .topbar-wallet-pill {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.625rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+      white-space: nowrap;
+    }
+    .wallet-recharge-link {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.25rem;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .wallet-recharge-link:hover {
+      background: #1e293b;
+    }
+    .topbar-icon-btn {
+      background: none;
+      border: none;
+      font-size: 1.125rem;
+      color: #64748b;
+      cursor: pointer;
+      position: relative;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .topbar-icon-btn:hover {
+      color: var(--navy);
+    }
+    .topbar-bell-dot {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+    .user-avatar-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #334155;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .user-avatar-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .topbar-signout-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: #64748b;
+      border-radius: 0.375rem;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    .topbar-signout-btn:hover {
+      background: #fee2e2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    /* Profile Dropdown Menu Card (Solid Opaque White, High Z-Index) */
+    .profile-dropdown-card {
+      position: absolute;
+      top: 60px;
+      right: 1.25rem;
+      width: 300px;
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 0.75rem !important;
+      box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.22), 0 10px 15px -6px rgba(15, 23, 42, 0.12) !important;
+      z-index: 99999 !important;
+      padding: 1.125rem !important;
+      display: none;
+      animation: fadeIn 0.15s ease;
+    }
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.55rem 0.65rem;
+      border-radius: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .profile-menu-item:hover {
+      background: #f1f5f9;
+      color: var(--brand);
+    }
+
+    /* Sidebar Hierarchical Style (Image 2) */
+    .sidebar-section-title {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      padding: 0.875rem 0.875rem 0.35rem 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .subnav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.45rem 0.875rem 0.45rem 1.125rem;
+      border-radius: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #475569;
+      background: none;
+      border: none;
+      text-align: left;
+      transition: all 0.15s;
+    }
+    .subnav-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .subnav-btn.active {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .subnav-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1.5px solid #94a3b8;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .subnav-btn.active .subnav-bullet {
+      background: #0f172a;
+      border-color: #0f172a;
     }
   </style>
 </head>
@@ -147,100 +368,365 @@
   <!-- Mobile Sidebar Backdrop -->
   <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
 
-  <!-- Sidebar -->
+  <!-- Sidebar (Matching Image 2) -->
   <aside class="sidebar" id="appSidebar">
-    <div style="height: 60px; min-height: 60px; padding: 0 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
-      <a href="/dashboard.html" style="display: flex; align-items: center; text-decoration: none;">
-        <img src="/logo.jpeg" alt="HetEx Logo" style="height: 36px; max-height: 36px; max-width: 175px; width: auto; object-fit: contain; display: block;" />
+    <div style="height: 64px; min-height: 64px; padding: 0 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+      <a href="/dashboard" style="display: flex; align-items: center; text-decoration: none;">
+        <img src="/logo.jpeg" alt="HetEx Courier Logistics" style="height: 38px; width: auto; max-width: 175px; object-fit: contain; display: block;" />
       </a>
       <button class="mobile-menu-btn" onclick="closeMobileSidebar()" style="border: none; font-size: 1.25rem; padding: 0.2rem; cursor: pointer;">✕</button>
     </div>
-    <ul class="sidebar-nav">
-      <li><button class="nav-btn active" onclick="switchTab('overview')">📊 Overview</button></li>
-      <li><button class="nav-btn" onclick="switchTab('orders')">📦 Orders & Shipments</button></li>
-      <li><button class="nav-btn" onclick="switchTab('create-order')">➕ Book Shipment</button></li>
-      <li><button class="nav-btn" onclick="switchTab('wallet')">💰 Wallet & Recharge</button></li>
-      <li><button class="nav-btn" onclick="switchTab('addresses')">📍 Address Book</button></li>
-      <li><button class="nav-btn" onclick="switchTab('rates')">🚚 Rate Calculator</button></li>
-      <li><button class="nav-btn" onclick="switchTab('track')">🔍 Live Tracking</button></li>
-      <li><button class="nav-btn" onclick="switchTab('ndr')">⚠️ NDR Management</button></li>
-      <li><button class="nav-btn" onclick="switchTab('tickets')">🎫 Support Tickets</button></li>
-      <li><button class="nav-btn" onclick="switchTab('profile')">⚙️ Profile Settings</button></li>
-      <li id="sidebarAdminLink" style="display: none;"><a href="/admin.html" class="nav-btn" style="color: #b91c1c; font-weight: 700; background: #fee2e2;">🛡️ Admin Operations</a></li>
+
+    <ul class="sidebar-nav" style="padding: 0.75rem 0.5rem;">
+      <li style="margin-bottom: 0.5rem;">
+        <button class="subnav-btn active" onclick="switchTab('overview')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #0f172a;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          <span style="font-weight: 700; color: #0f172a;">Dashboard</span>
+        </button>
+      </li>
+
+      <!-- Group 1: Shipping (Image 2) -->
+      <li class="sidebar-section-title">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Shipping</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('create-order')">
+          <span class="subnav-bullet"></span>
+          <span>New Order</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('orders')">
+          <span class="subnav-bullet"></span>
+          <span>Orders</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('track')">
+          <span class="subnav-bullet"></span>
+          <span>Track Order</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('ndr')">
+          <span class="subnav-bullet"></span>
+          <span>NDR</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('tickets')">
+          <span class="subnav-bullet"></span>
+          <span>Weight Disputes</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('wallet')">
+          <span class="subnav-bullet"></span>
+          <span>COD Remittance</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('tickets')">
+          <span class="subnav-bullet"></span>
+          <span>Support Tickets</span>
+        </button>
+      </li>
+
+      <!-- Group 2: Manage (Image 2) -->
+      <li class="sidebar-section-title" style="margin-top: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Manage</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('addresses')">
+          <span class="subnav-bullet"></span>
+          <span>Address Book</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('rates')">
+          <span class="subnav-bullet"></span>
+          <span>Serviceability Check</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('wallet')">
+          <span class="subnav-bullet"></span>
+          <span>Wallet</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('overview')">
+          <span class="subnav-bullet"></span>
+          <span>Analytics</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchTab('profile')">
+          <span class="subnav-bullet"></span>
+          <span>Settings</span>
+        </button>
+      </li>
+
+      <li id="sidebarAdminLink" style="display: none; margin-top: 0.5rem;">
+        <a href="/admin" class="subnav-btn" style="color: #b91c1c; font-weight: 700; background: #fee2e2;">
+          <span>🛡️</span>
+          <span>Admin Operations</span>
+        </a>
+      </li>
     </ul>
-    <div style="padding: 1rem 1.25rem; border-top: 1px solid var(--border);">
-      <div style="font-size: 0.75rem; color: var(--text-muted);">Signed in as</div>
-      <div id="sidebarUserName" style="font-size: 0.875rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seller</div>
+
+    <!-- Bottom User Info & Helpline Call Button (Always Pinned at Left Bottom Screen, Independent of Scroll) -->
+    <div class="sidebar-footer">
+      <div style="padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+          <div class="user-avatar-btn" id="sidebarAvatar" style="width: 28px; height: 28px; font-size: 0.75rem; flex-shrink: 0;">M</div>
+          <div style="overflow: hidden;">
+            <div id="sidebarUserName" style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seller</div>
+            <div style="font-size: 0.6875rem; color: var(--success); font-weight: 600;">● Active</div>
+          </div>
+        </div>
+        <button type="button" id="sidebarHelplineBtn" class="topbar-signout-btn" onclick="openHelplineModal()" title="HetEx Support Helpline" style="padding: 0.3rem 0.55rem; font-size: 0.8125rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.15s ease;">
+          <span>📞</span>
+        </button>
+      </div>
     </div>
   </aside>
 
   <!-- Main Area -->
   <div class="main-wrapper">
-    <!-- Topbar -->
-    <header class="topbar">
+    <!-- Topbar (Matching Image 4) -->
+    <header class="topbar" style="position: relative;">
       <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button type="button" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Toggle Menu">☰</button>
         <span style="font-weight: 800; font-size: 1.125rem; color: var(--navy); display: none;" class="mobile-header-title">HetEx Portal</span>
       </div>
-      <div id="topbarSearchWrapper" style="display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 480px;">
-        <input type="search" id="topbarSearchInput" placeholder="Search AWB, Order ID, or buyer name..."
-               class="form-control" style="padding: 0.375rem 0.75rem; font-size: 0.8125rem;" />
+
+      <!-- Centered Rounded Search Bar (from Image 4) -->
+      <div class="topbar-search-box">
+        <span class="topbar-search-icon">🔍</span>
+        <input type="search" id="topbarSearchInput" placeholder="Search AWB, order ID, or buyer name..." onkeydown="handleTopbarSearch(event)" />
       </div>
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <!-- Wallet Pill with Add Amount Button -->
-        <div style="display: flex; align-items: center; gap: 0.375rem; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.375rem 0.75rem; border-radius: 9999px;">
-          <span style="font-size: 0.75rem; font-weight: 700; color: #065f46;">Balance:</span>
-          <span id="topbarWalletBalance" style="font-size: 0.875rem; font-weight: 800; color: #047857;">₹0.00</span>
-          <button class="btn-primary" onclick="openRechargeModal()" style="padding: 0.125rem 0.5rem; font-size: 0.6875rem; border-radius: 9999px; background: #059669;">+ Add</button>
+
+      <!-- Action Items on Right (from Image 2) -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap;">
+        <!-- Notification Credits -->
+        <span style="font-size: 0.8125rem; color: #475569; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.25rem;" id="notificationCreditsPill">Notification Credits: <strong style="color: #0f172a;">0</strong></span>
+
+        <!-- Wallet Pill with Recharge Action (from Image 2) -->
+        <div class="topbar-wallet-pill">
+          <span style="font-size: 0.875rem;">💳</span>
+          <span id="topbarWalletBalance" style="font-weight: 800; color: #0f172a; font-size: 0.8125rem;">₹5,949.79</span>
+          <button type="button" onclick="openRechargeModal()" class="wallet-recharge-link">Recharge</button>
         </div>
 
-        <button class="btn-secondary" onclick="logout()" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Log Out</button>
+        <!-- Track Order Pill Button (from Image 2) -->
+        <button type="button" class="topbar-dark-btn" onclick="switchTab('track')">Track Order</button>
+
+        <!-- Tickets Pill Button (from Image 2) -->
+        <button type="button" class="topbar-dark-btn" onclick="switchTab('tickets')">Tickets</button>
+
+        <!-- Notification Bell with Dot (from Image 2) -->
+        <button type="button" class="topbar-icon-btn" onclick="showToast('You have 0 unread alerts', 'info')" title="Notifications">
+          <span>🔔</span>
+          <span class="topbar-bell-dot"></span>
+        </button>
+
+        <!-- User Avatar Circle Button (from Image 2) -->
+        <div class="user-avatar-btn" id="topbarUserAvatar" onclick="toggleProfileDropdown()" title="Click to open profile menu">
+          M
+        </div>
+      </div>
+
+      <!-- Profile Dropdown Menu Card (Appears on Avatar Click) -->
+      <div id="profileDropdownMenu" class="profile-dropdown-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem;">
+          <div class="user-avatar-btn" id="profileDropdownAvatar" style="width: 44px; height: 44px; font-size: 1.125rem;">M</div>
+          <div style="overflow: hidden; flex: 1;">
+            <h4 id="profileDropdownName" style="font-size: 0.9375rem; font-weight: 800; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seller</h4>
+            <p id="profileDropdownEmail" style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">seller@hetex.in</p>
+            <span class="badge badge-success" id="profileDropdownKycBadge" style="font-size: 0.625rem; margin-top: 2px;">• KYC Verified</span>
+          </div>
+        </div>
+
+        <div style="background: #f8fafc; border-radius: 0.5rem; padding: 0.625rem; margin-bottom: 0.75rem; font-size: 0.75rem; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+            <span style="color: var(--text-muted);">Prepaid Balance:</span>
+            <strong id="profileDropdownBalance" style="color: var(--brand);">₹0.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Business:</span>
+            <strong id="profileDropdownBusiness" style="color: var(--navy);">-</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('profile');" class="profile-menu-item">
+            <span>👤</span>
+            <span>My Profile & eKYC</span>
+          </a>
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('wallet');" class="profile-menu-item">
+            <span>💰</span>
+            <span>Wallet & Transactions</span>
+          </a>
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('tickets');" class="profile-menu-item">
+            <span>🎫</span>
+            <span>Support Tickets</span>
+          </a>
+        </div>
+
+        <!-- VISUAL SIGN OUT BUTTON INSIDE PROFILE DROPDOWN (As explicitly requested by user) -->
+        <div style="border-top: 1px solid var(--border); margin-top: 0.75rem; padding-top: 0.75rem;">
+          <button type="button" onclick="closeProfileDropdown(); promptSignout();" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-weight: 700; font-size: 0.8125rem; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s;">
+            <span>🚪</span>
+            <span>Sign Out of HetEx</span>
+          </button>
+        </div>
       </div>
     </header>
 
     <!-- Content Area -->
     <main class="content-area">
 
-      <!-- ================= TAB: OVERVIEW ================= -->
+      <!-- ================= TAB: OVERVIEW (Matching Image 2) ================= -->
       <section id="tab-overview" class="tab-content active">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
-          <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Logistics Dashboard</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Real-time fulfillment KPIs, delivery SLA and recent shipments</p>
+
+        <!-- Hero Banner with Live Date (from Image 2) -->
+        <div style="background: linear-gradient(100deg, #1e293b 0%, #1e2538 45%, #2a2d40 75%, #3d2f2b 100%); color: #fff; border-radius: 0.625rem; padding: 1.15rem 1.5rem; position: relative; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; position: relative; z-index: 2;">
+            <div>
+              <div id="heroDateBadge" style="font-size: 0.625rem; font-weight: 700; letter-spacing: 1px; color: #f59e0b; text-transform: uppercase; margin-bottom: 0.25rem;">THURSDAY, OCTOBER 15</div>
+              <h1 style="font-size: 1.15rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #ffffff; letter-spacing: -0.01em;">Delivery Dashboard & SLA Performance</h1>
+              <p style="font-size: 0.8125rem; color: #cbd5e1; margin: 0;">Welcome back, <span id="heroWelcomeName" style="color: #ffffff; font-weight: 700;">Meena</span>. Track live courier performance & SLA metrics.</p>
+            </div>
+            <button type="button" onclick="switchTab('create-order')" style="background: #ffffff; color: #0f172a; border: none; font-weight: 650; font-size: 0.775rem; padding: 0.45rem 0.9rem; border-radius: 0.375rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+              + Create Shipment
+            </button>
           </div>
-          <button class="btn-primary" onclick="switchTab('create-order')">+ Create Shipment</button>
+          <!-- Warm coppery ambient glow on right edge -->
+          <div style="position: absolute; right: -50px; bottom: -50px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(234, 88, 12, 0.22) 0%, rgba(245, 158, 11, 0.08) 50%, transparent 80%); pointer-events: none;"></div>
         </div>
 
-        <!-- 4 KPI Tiles -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-          <div class="card" style="padding: 1.25rem;">
-            <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Prepaid Balance</p>
-            <p id="kpiBalance" style="font-size: 1.75rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">₹0.00</p>
-            <p style="font-size: 0.75rem; color: var(--success); margin-top: 0.25rem;">Available for manifest & labels</p>
+        <!-- 4 KPI Tiles (from Image 2) -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.875rem; margin-bottom: 1rem;" class="mobile-grid-1">
+          <!-- Tile 1: Wallet Balance -->
+          <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">WALLET BALANCE</span>
+              <span style="width: 24px; height: 24px; border-radius: 4px; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">💳</span>
+            </div>
+            <p id="kpiBalance" style="font-size: 1.25rem; font-weight: 750; color: #10b981; margin-top: 0.35rem; line-height: 1.2;">₹5,949.79</p>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Available funds for booking</p>
           </div>
-          <div class="card" style="padding: 1.25rem;">
-            <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Shipments</p>
-            <p id="kpiTotalOrders" style="font-size: 1.75rem; font-weight: 800; color: var(--brand); margin-top: 0.25rem;">0</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Booked across carriers</p>
+
+          <!-- Tile 2: Total Shipments Booked -->
+          <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">TOTAL SHIPMENTS BOOKED</span>
+              <span style="width: 24px; height: 24px; border-radius: 4px; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">📦</span>
+            </div>
+            <p id="kpiTotalOrders" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.35rem; line-height: 1.2;">4</p>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Total orders processed</p>
           </div>
-          <div class="card" style="padding: 1.25rem;">
-            <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Freight Investment</p>
-            <p id="kpiFreightCost" style="font-size: 1.75rem; font-weight: 800; color: var(--brand); margin-top: 0.25rem;">₹0.00</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total shipping charges</p>
+
+          <!-- Tile 3: Freight Investment -->
+          <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">FREIGHT INVESTMENT</span>
+              <span style="width: 24px; height: 24px; border-radius: 4px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">🚚</span>
+            </div>
+            <p id="kpiFreightCost" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.35rem; line-height: 1.2;">₹129.85</p>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Total shipping expenditure</p>
           </div>
-          <div class="card" style="padding: 1.25rem;">
-            <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Average TAT</p>
-            <p id="kpiTat" style="font-size: 1.75rem; font-weight: 800; color: var(--accent); margin-top: 0.25rem;">3 Days</p>
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Overall SLA speed</p>
+
+          <!-- Tile 4: Average Delivery Time -->
+          <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">AVG DELIVERY TIME</span>
+              <span style="width: 24px; height: 24px; border-radius: 4px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">✅</span>
+            </div>
+            <p id="kpiTat" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.35rem; line-height: 1.2;">2.4 Days</p>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Overall fulfillment TAT</p>
           </div>
         </div>
 
-        <!-- Carrier SLA Performance (Live API Driven) -->
+        <!-- Charts Row: Courier Shipment Share & SLA Compliance (from Image 2) -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; margin-bottom: 1rem;" class="mobile-grid-1">
+          <!-- Chart 1: Courier Shipment Share (Donut Chart matching Image 2) -->
+          <div class="card" style="padding: 1rem 1.25rem;">
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--navy); margin-bottom: 0.15rem;">Courier Shipment Share</h3>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-bottom: 0.875rem;">Distribution of total delivery volume</p>
+
+            <div style="position: relative; width: 240px; height: 135px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+              <!-- Labels positioned around the donut matching Image 2 -->
+              <span style="position: absolute; top: 6px; right: 12px; font-size: 0.6875rem; font-weight: 600; color: #0284c7;">Delhivery 50%</span>
+              <span style="position: absolute; bottom: 8px; left: 4px; font-size: 0.6875rem; font-weight: 600; color: #d97706;">BlueDart 25%</span>
+              <span style="position: absolute; bottom: 8px; right: 4px; font-size: 0.6875rem; font-weight: 600; color: #10b981;">DTDC 25%</span>
+
+              <!-- Donut Chart SVG (Delhivery 50%, BlueDart 25%, DTDC 25%) -->
+              <svg width="120" height="120" viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                <!-- Background track -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#f1f5f9" stroke-width="14" />
+                <!-- Delhivery 50% (dasharray = 0.5 * 238.7 = 119.3) -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#38bdf8" stroke-width="14" stroke-dasharray="119.3 238.7" stroke-dashoffset="0" />
+                <!-- BlueDart 25% (dasharray = 0.25 * 238.7 = 59.7) -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#facc15" stroke-width="14" stroke-dasharray="59.7 238.7" stroke-dashoffset="-119.3" />
+                <!-- DTDC 25% (dasharray = 0.25 * 238.7 = 59.7) -->
+                <circle cx="50" cy="50" r="38" fill="transparent" stroke="#34d399" stroke-width="14" stroke-dasharray="59.7 238.7" stroke-dashoffset="-179" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Chart 2: Delivery Partner SLA Compliance (from Image 2) -->
+          <div class="card" style="padding: 1rem 1.25rem;">
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--navy); margin-bottom: 0.15rem;">Delivery Partner SLA Compliance</h3>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-bottom: 0.875rem;">Fulfillment accuracy by individual partner</p>
+
+            <div style="display: flex; justify-content: space-around; align-items: flex-end; min-height: 120px; padding: 0.5rem 0;">
+              <!-- Delhivery Gauge: 50% Red Arc -->
+              <div style="text-align: center;">
+                <svg width="76" height="44" viewBox="0 0 100 55">
+                  <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none" stroke="#e2e8f0" stroke-width="10" stroke-linecap="round" />
+                  <path d="M 12 50 A 38 38 0 0 1 50 12" fill="none" stroke="#ef4444" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <div style="font-size: 0.8125rem; font-weight: 750; color: #0f172a; margin-top: -6px;">50%</div>
+                <div style="font-size: 0.6875rem; font-weight: 600; color: #64748b; margin-top: 2px;">Delhivery</div>
+              </div>
+
+              <!-- BlueDart Gauge: 0% Arc -->
+              <div style="text-align: center;">
+                <svg width="76" height="44" viewBox="0 0 100 55">
+                  <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none" stroke="#e2e8f0" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <div style="font-size: 0.8125rem; font-weight: 750; color: #0f172a; margin-top: -6px;">0%</div>
+                <div style="font-size: 0.6875rem; font-weight: 600; color: #64748b; margin-top: 2px;">BlueDart</div>
+              </div>
+
+              <!-- DTDC Gauge: 0% Arc -->
+              <div style="text-align: center;">
+                <svg width="76" height="44" viewBox="0 0 100 55">
+                  <path d="M 12 50 A 38 38 0 0 1 88 50" fill="none" stroke="#e2e8f0" stroke-width="10" stroke-linecap="round" />
+                </svg>
+                <div style="font-size: 0.8125rem; font-weight: 750; color: #0f172a; margin-top: -6px;">0%</div>
+                <div style="font-size: 0.6875rem; font-weight: 600; color: #64748b; margin-top: 2px;">DTDC</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carrier SLA Live Performance (Real API Driven) -->
         <div class="card" style="padding: 1.25rem; margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <div>
-              <h3 style="font-size: 1rem; font-weight: 700; color: var(--navy);">Carrier SLA Performance</h3>
-              <p style="font-size: 0.75rem; color: var(--text-muted);">Real-time dispatch SLA, delivery accuracy and live rates across carrier APIs</p>
+              <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--navy); margin-bottom: 0.15rem;">Live Carrier Partner Performance</h3>
+              <p style="font-size: 0.6875rem; color: var(--text-muted);">Real-time dispatch speed, delivery accuracy and rates across connected carrier APIs</p>
             </div>
             <button onclick="loadCarrierSla()" class="btn-secondary" style="font-size: 0.6875rem; padding: 0.2rem 0.5rem;">🔄 Refresh</button>
           </div>
@@ -249,10 +735,10 @@
           </div>
         </div>
 
-        <!-- Recent Shipments Table -->
+        <!-- Recent Shipments Table (Clickable Order IDs) -->
         <div class="card" style="padding: 1.25rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3 style="font-size: 1rem; font-weight: 700; color: var(--navy);">Recent Orders</h3>
+            <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--navy);">Recent Orders</h3>
             <button class="btn-secondary" onclick="switchTab('orders')" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">View All Orders →</button>
           </div>
           <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -279,10 +765,10 @@
 
       <!-- ================= TAB: ORDERS ================= -->
       <section id="tab-orders" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Orders & Shipments</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage manifested parcels, download labels, and track deliveries</p>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Orders & Shipments</h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Manage manifested parcels, download labels, and track deliveries</p>
           </div>
           <button class="btn-primary" onclick="switchTab('create-order')">+ New Order</button>
         </div>
@@ -321,9 +807,9 @@
 
       <!-- ================= TAB: BOOK SHIPMENT ================= -->
       <section id="tab-create-order" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Book New Shipment</h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Select pickup location, consignee details, package specs, and choose live courier partner</p>
+        <div style="margin-bottom: 1.25rem;">
+          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Book New Shipment</h1>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Select pickup location, consignee details, package specs, and choose live courier partner</p>
         </div>
 
         <div id="createOrderAlert" style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1.25rem;"></div>
@@ -344,66 +830,94 @@
               </div>
             </div>
 
-            <!-- Buyer Details -->
+            <!-- Buyer Details with Smart Mobile First Autofill -->
             <div>
-              <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">2. Buyer / Consignee Address</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand);">2. Buyer / Consignee Address</h3>
+                <span style="font-size: 0.6875rem; color: var(--brand); font-weight: 700; background: var(--brand-light); padding: 0.2rem 0.5rem; border-radius: 9999px;">⚡ Smart Autofill Active</span>
+              </div>
+
+              <!-- Mobile Number Placed First -->
+              <div class="form-group">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>Buyer Mobile Number *</span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">Type 10 digits to auto-populate</span>
+                </label>
+                <div style="position: relative;">
+                  <input type="tel" id="buyerPhone" class="form-control" placeholder="e.g. 9516474537 or +91 95164 74537" maxlength="16" oninput="onBuyerPhoneInput(this.value)" onchange="onBuyerPhoneInput(this.value)" onblur="onBuyerPhoneInput(this.value)" onkeyup="onBuyerPhoneInput(this.value)" required style="font-weight: 600; letter-spacing: 0.5px;" autocomplete="tel" />
+                  <span id="phoneStatusIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; font-size: 1rem;"></span>
+                </div>
+                <div id="autofillNotice" style="display: none; font-size: 0.75rem; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.4rem 0.65rem; border-radius: 6px; margin-top: 0.4rem; font-weight: 600;">
+                  ✨ Customer (<span id="autofillCustName"></span>) found! Address populated (you can freely edit details below).
+                </div>
+              </div>
+
               <div class="form-group">
                 <label>Buyer Name *</label>
-                <input type="text" id="buyerName" class="form-control" placeholder="Rohan Mehra" required />
+                <input type="text" id="buyerName" class="form-control" placeholder="Rohan Mehra" oninput="cacheCurrentBuyerForm()" required />
               </div>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                 <div class="form-group">
-                  <label>Buyer Phone *</label>
-                  <input type="tel" id="buyerPhone" class="form-control" placeholder="9876543210" required />
+                  <label>Pincode *</label>
+                  <input type="text" id="buyerPincode" class="form-control" placeholder="400001" maxlength="6" oninput="onBuyerPincodeChanged(); cacheCurrentBuyerForm();" required />
                 </div>
                 <div class="form-group">
-                  <label>Pincode *</label>
-                  <input type="text" id="buyerPincode" class="form-control" placeholder="400001" maxlength="6" oninput="onBuyerPincodeChanged()" required />
+                  <label>City *</label>
+                  <input type="text" id="buyerCity" class="form-control" placeholder="Mumbai" oninput="cacheCurrentBuyerForm()" required />
                 </div>
               </div>
               <div class="form-group">
                 <label>Street Address *</label>
-                <input type="text" id="buyerAddress" class="form-control" placeholder="Flat 402, Green Heights, Sector 12" required />
+                <input type="text" id="buyerAddress" class="form-control" placeholder="Flat 402, Green Heights, Sector 12" oninput="cacheCurrentBuyerForm()" required />
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div class="form-group">
-                  <label>City *</label>
-                  <input type="text" id="buyerCity" class="form-control" placeholder="Mumbai" required />
-                </div>
-                <div class="form-group">
-                  <label>State *</label>
-                  <input type="text" id="buyerState" class="form-control" placeholder="Maharashtra" required />
-                </div>
+              <div class="form-group">
+                <label>State *</label>
+                <input type="text" id="buyerState" class="form-control" placeholder="Maharashtra" oninput="cacheCurrentBuyerForm()" required />
               </div>
             </div>
           </div>
 
-          <!-- Package Details -->
+          <!-- Multi-Item Package Specifications -->
           <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem;">
-            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">3. Package Specifications</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-              <div class="form-group">
-                <label>Item Description *</label>
-                <input type="text" id="itemDesc" class="form-control" value="Apparel Merchandise" required />
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand);">3. Shipment Items & Package Specifications</h3>
+                <p style="font-size: 0.75rem; color: var(--text-muted);">Add individual items with categories, quantities, weights, and package dimensions</p>
               </div>
-              <div class="form-group">
-                <label>Declared Value (₹) *</label>
-                <input type="number" id="declaredVal" class="form-control" value="1200" required />
+              <button type="button" onclick="addOrderItem()" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem; border-color: var(--brand); color: var(--brand);">
+                ➕ Add Item
+              </button>
+            </div>
+
+            <!-- Dynamic Items Container -->
+            <div id="orderItemsList" style="margin-bottom: 1rem;">
+              <!-- Populated by renderOrderItems() -->
+            </div>
+
+            <!-- Live Multi-Item Calculation Summary -->
+            <div class="card" style="padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.8125rem;">
+              <div>
+                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL ITEMS</span>
+                <p id="summaryItemCount" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">1</p>
               </div>
-              <div class="form-group">
-                <label>Actual Weight (kg) *</label>
-                <input type="number" id="actualWeight" step="0.1" class="form-control" value="0.5" oninput="calcVolWeight(); triggerDynamicRateFetch();" required />
+              <div>
+                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL DECLARED VALUE</span>
+                <p id="summaryDeclaredValue" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">₹800.00</p>
               </div>
-              <div class="form-group">
-                <label>Dimensions (L × W × H cm)</label>
-                <div style="display: flex; gap: 0.25rem;">
-                  <input type="number" id="dimL" placeholder="L" value="15" class="form-control" oninput="calcVolWeight(); triggerDynamicRateFetch();" />
-                  <input type="number" id="dimW" placeholder="W" value="10" class="form-control" oninput="calcVolWeight(); triggerDynamicRateFetch();" />
-                  <input type="number" id="dimH" placeholder="H" value="5" class="form-control" oninput="calcVolWeight(); triggerDynamicRateFetch();" />
-                </div>
+              <div>
+                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">DEAD WEIGHT</span>
+                <p id="summaryDeadWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.40 kg</p>
+              </div>
+              <div>
+                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">VOLUMETRIC WEIGHT</span>
+                <p id="summaryVolWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.30 kg</p>
+              </div>
+              <div>
+                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">BILLABLE FREIGHT WEIGHT</span>
+                <p id="summaryBillableWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--brand); margin-top: 2px;">0.40 kg</p>
               </div>
             </div>
-            <p id="volWeightText" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Billable weight: 0.50 kg</p>
+            <p id="volWeightText" style="display: none;">Billable weight: 0.50 kg</p>
           </div>
 
           <!-- Payment Mode -->
@@ -440,19 +954,19 @@
 
       <!-- ================= TAB: WALLET ================= -->
       <section id="tab-wallet" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Wallet & Payments</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Recharge balance, view transactions, and manage Razorpay payments</p>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Wallet & Payments</h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Recharge balance, view transactions, and manage Razorpay payments</p>
           </div>
           <button class="btn-primary" onclick="openRechargeModal()">+ Add Funds</button>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="mobile-grid-1">
-          <div class="card" style="padding: 1.5rem; background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff;">
-            <p style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; color: #93c5fd;">Current Balance</p>
-            <p id="walletLargeBalance" style="font-size: 2.25rem; font-weight: 800; margin: 0.5rem 0;">₹0.00</p>
-            <p style="font-size: 0.75rem; color: #cbd5e1; margin-bottom: 1.25rem;">Automatic deductions per order shipment</p>
+          <div class="card" style="padding: 1.25rem; background: linear-gradient(135deg, #1e3a8a, #0f172a); color: #fff;">
+            <p style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; color: #93c5fd; letter-spacing: 0.03em;">Current Balance</p>
+            <p id="walletLargeBalance" style="font-size: 1.25rem; font-weight: 750; margin: 0.35rem 0; line-height: 1.2;">₹0.00</p>
+            <p style="font-size: 0.6875rem; color: #cbd5e1; margin-bottom: 1rem;">Automatic deductions per order shipment</p>
             <button class="btn-primary" onclick="openRechargeModal()" style="background: #fff; color: var(--brand); width: 100%;">Recharge Now</button>
           </div>
           <div class="card" style="padding: 1.5rem;">
@@ -464,6 +978,33 @@
               <button class="btn-secondary" onclick="quickRecharge(5000)">+ ₹5,000</button>
             </div>
             <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 1rem;">Supports UPI, NetBanking, Debit/Credit Cards via Razorpay or Instant Simulation.</p>
+          </div>
+        </div>
+
+        <!-- Pending UPI Recharges Section (Under Review) -->
+        <div id="walletPendingRechargesCard" class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; display: none; border-left: 4px solid var(--warning); background: #fffbeb;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 800; color: #92400e;">⏳ Pending UPI Recharge Requests</h3>
+              <p style="font-size: 0.75rem; color: #b45309;">These requests are under admin verification and will be credited upon approval.</p>
+            </div>
+            <span class="badge badge-warning" style="font-size: 0.75rem;">Awaiting Review</span>
+          </div>
+          <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; background: #fff; border-radius: 0.375rem; border: 1px solid #fde68a;">
+            <table>
+              <thead>
+                <tr style="background: #fef3c7;">
+                  <th>Request ID</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>UTR / Ref</th>
+                  <th>Submitted At</th>
+                  <th>Admin Action</th>
+                </tr>
+              </thead>
+              <tbody id="walletPendingRechargesBody">
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -491,10 +1032,10 @@
 
       <!-- ================= TAB: ADDRESSES ================= -->
       <section id="tab-addresses" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Address Book</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage pickup warehouses and frequently used destination addresses</p>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Address Book</h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Manage pickup warehouses and frequently used destination addresses</p>
           </div>
           <button class="btn-primary" onclick="openAddAddressModal()">+ Add Pickup Warehouse</button>
         </div>
@@ -506,9 +1047,9 @@
 
       <!-- ================= TAB: RATES ================= -->
       <section id="tab-rates" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Courier Rate Calculator</h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Compare live freight rates and estimated delivery turnaround across all carriers</p>
+        <div style="margin-bottom: 1.25rem;">
+          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Courier Rate Calculator</h1>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Compare live freight rates and estimated delivery turnaround across all carriers</p>
         </div>
 
         <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -546,9 +1087,9 @@
 
       <!-- ================= TAB: LIVE TRACK ================= -->
       <section id="tab-track" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Internal Shipment Tracker</h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Query live courier milestone events directly from carrier APIs</p>
+        <div style="margin-bottom: 1.25rem;">
+          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Internal Shipment Tracker</h1>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Query live courier milestone events directly from carrier APIs</p>
         </div>
 
         <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
@@ -563,9 +1104,9 @@
 
       <!-- ================= TAB: NDR ================= -->
       <section id="tab-ndr" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">NDR (Non-Delivery Reports)</h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Action delivery failure exceptions to prevent Return to Origin (RTO)</p>
+        <div style="margin-bottom: 1.25rem;">
+          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">NDR (Non-Delivery Reports)</h1>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Action delivery failure exceptions to prevent Return to Origin (RTO)</p>
         </div>
 
         <div class="card" style="padding: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -589,10 +1130,10 @@
 
       <!-- ================= TAB: TICKETS ================= -->
       <section id="tab-tickets" class="tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
           <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Support Tickets</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Raise shipping disputes, weight queries, and courier escalations</p>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Support Tickets</h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Raise shipping disputes, weight queries, and courier escalations</p>
           </div>
           <button class="btn-primary" onclick="openNewTicketModal()">+ Raise Ticket</button>
         </div>
@@ -618,9 +1159,9 @@
 
       <!-- ================= TAB: PROFILE & KYC ================= -->
       <section id="tab-profile" class="tab-content">
-        <div style="margin-bottom: 1.5rem;">
-          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Profile & KYC</h1>
-          <p style="color: var(--text-muted); font-size: 0.875rem;">Account identity, business name, and GST/PAN verification</p>
+        <div style="margin-bottom: 1.25rem;">
+          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Profile & KYC</h1>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Account identity, business name, and GST/PAN verification</p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1000px;" class="mobile-grid-1">
@@ -710,28 +1251,344 @@
     </main>
   </div>
 
-  <!-- Modal: Recharge Wallet (Razorpay & Instant Save) -->
+  <!-- Modal: Recharge Wallet (Hostinger Style Layout - Image 3) -->
   <div id="rechargeModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <h3 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 1rem;">Recharge Prepaid Wallet</h3>
-      <div class="form-group">
-        <label>Enter Amount (₹)</label>
-        <input type="number" id="rechargeAmountInput" class="form-control" value="1000" min="100" />
+    <div class="modal-content" style="max-width: 820px; width: 100%; padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem;">
+            <span>💳 Wallet Recharge & Payment</span>
+          </h3>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Select payment method and complete verification</p>
+        </div>
+        <button class="btn-secondary" onclick="closeRechargeModal()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✕ Close</button>
       </div>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
-        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 500">₹500</button>
-        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 1000">₹1,000</button>
-        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 2000">₹2,000</button>
-        <button class="btn-secondary" onclick="document.getElementById('rechargeAmountInput').value = 5000">₹5,000</button>
+
+      <!-- Step 1: Two-column Form View -->
+      <div id="rechargeModalFormView">
+        <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.25rem;" class="mobile-grid-1">
+          <!-- Left Column: Payment Options Accordion (Hostinger style) -->
+          <div>
+            <h4 style="font-size: 0.8125rem; font-weight: 800; text-transform: uppercase; color: var(--navy); letter-spacing: 0.5px; margin-bottom: 0.75rem;">
+              Choose Payment Method
+            </h4>
+
+            <!-- Accordion Option 1: UPI / Dynamic QR (Active) -->
+            <div class="card" style="border: 2px solid var(--brand); margin-bottom: 0.75rem; overflow: hidden; background: #fff;">
+              <div style="padding: 0.75rem 1rem; background: var(--brand-light); display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                <div style="display: flex; align-items: center; gap: 0.625rem;">
+                  <span style="font-size: 1.125rem;">📱</span>
+                  <div>
+                    <strong style="font-size: 0.875rem; color: var(--brand-dark);">UPI / Dynamic QR Code</strong>
+                    <div style="font-size: 0.6875rem; color: var(--text-muted);">GPay, PhonePe, Paytm, BHIM</div>
+                  </div>
+                </div>
+                <span class="badge badge-success" style="font-size: 0.625rem;">RECOMMENDED</span>
+              </div>
+
+              <div style="padding: 1rem;">
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                  <label style="font-size: 0.8125rem; font-weight: 700;">Recharge Amount (₹)</label>
+                  <input type="number" id="rechargeAmountInput" class="form-control" value="1000" min="50" oninput="onRechargeAmountChange()" style="font-size: 1.125rem; font-weight: 800; color: var(--navy);" />
+                </div>
+
+                <div style="display: flex; gap: 0.35rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                  <button type="button" class="btn-secondary" onclick="setRechargeAmount(500)" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">₹500</button>
+                  <button type="button" class="btn-secondary" onclick="setRechargeAmount(1000)" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">₹1,000</button>
+                  <button type="button" class="btn-secondary" onclick="setRechargeAmount(2000)" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">₹2,000</button>
+                  <button type="button" class="btn-secondary" onclick="setRechargeAmount(5000)" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">₹5,000</button>
+                  <button type="button" class="btn-secondary" onclick="setRechargeAmount(10000)" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">₹10,000</button>
+                </div>
+
+                <!-- Dynamic QR Box -->
+                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 0.5rem; padding: 1rem; text-align: center; margin-bottom: 1rem;">
+                  <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Scan with any UPI app</p>
+                  <div style="display: flex; justify-content: center; margin: 0.5rem 0;">
+                    <div style="background: #fff; padding: 0.5rem; border-radius: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--border);">
+                      <img id="upiQrImage" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi%3A%2F%2Fpay%3Fpa%3Dhetex%40icici%26pn%3DHetEx%2520Logistics%26am%3D1000.00%26cu%3DINR%26tn%3DRecharge" alt="UPI QR Code" style="width: 150px; height: 150px; display: block;" />
+                    </div>
+                  </div>
+                  <p id="upiDisplayAmount" style="font-size: 1.125rem; font-weight: 850; color: var(--navy); margin-bottom: 0.15rem;">₹1,000.00</p>
+                  <p style="font-size: 0.75rem; color: var(--text-muted);">VPA: <strong id="upiDisplayVpa" style="color: var(--navy);">hetex@icici</strong></p>
+                  <p id="upiRefText" style="font-size: 0.6875rem; color: var(--brand); font-family: monospace; margin-top: 0.2rem;">Ref: HTX-UPIR-1001</p>
+                  <div style="margin-top: 0.4rem;">
+                    <a id="upiDeepLink" href="upi://pay?pa=hetex@icici&pn=HetEx%20Logistics&am=1000.00&cu=INR&tn=Recharge" class="btn-secondary" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; color: var(--brand);">📲 Tap to Open UPI App</a>
+                  </div>
+                </div>
+
+                <!-- 12-digit UTR input -->
+                <div class="form-group" style="margin-bottom: 0.75rem;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">12-digit UPI Reference / UTR Number <span style="color: var(--text-muted); font-weight: normal;">(Optional)</span></label>
+                  <input type="text" id="upiUtrInput" class="form-control" placeholder="e.g. 429182749102" maxlength="22" style="font-size: 0.8125rem;" />
+                  <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Entering UTR assists admin in instant verification.</p>
+                </div>
+
+                <button type="button" id="btnSubmitUpiPaid" class="btn-primary" onclick="submitUpiPaymentPaid()" style="width: 100%; padding: 0.625rem; font-size: 0.875rem; background: var(--success); border-color: var(--success);">
+                  ✅ I Have Paid — Submit for Review
+                </button>
+              </div>
+            </div>
+
+            <!-- Accordion Option 2: Cards -->
+            <div class="card" style="border: 1px solid var(--border); margin-bottom: 0.5rem; opacity: 0.85;">
+              <div style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.625rem;">
+                  <span style="font-size: 1.125rem;">💳</span>
+                  <div>
+                    <strong style="font-size: 0.8125rem; color: var(--navy);">Credit / Debit Cards</strong>
+                    <div style="font-size: 0.6875rem; color: var(--text-muted);">Visa, MasterCard, RuPay</div>
+                  </div>
+                </div>
+                <span class="badge badge-navy" style="font-size: 0.625rem;">Instant</span>
+              </div>
+            </div>
+
+            <!-- Accordion Option 3: Net Banking -->
+            <div class="card" style="border: 1px solid var(--border); opacity: 0.85;">
+              <div style="padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.625rem;">
+                  <span style="font-size: 1.125rem;">🏦</span>
+                  <div>
+                    <strong style="font-size: 0.8125rem; color: var(--navy);">Net Banking & Corporate Wallets</strong>
+                    <div style="font-size: 0.6875rem; color: var(--text-muted);">SBI, HDFC, ICICI, Axis & 50+ Banks</div>
+                  </div>
+                </div>
+                <span class="badge badge-navy" style="font-size: 0.625rem;">Online</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Order Summary (Hostinger style) -->
+          <div>
+            <div class="card" style="padding: 1.25rem; background: #f8fafc; border: 1px solid var(--border); position: sticky; top: 0;">
+              <h4 style="font-size: 0.875rem; font-weight: 800; color: var(--navy); border-bottom: 1px solid var(--border); padding-bottom: 0.625rem; margin-bottom: 1rem;">
+                Recharge Summary
+              </h4>
+
+              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.625rem;">
+                <span style="color: var(--text-muted);">Wallet Credit:</span>
+                <strong id="rechargeSummarySubtotal" style="color: var(--navy);">₹1,000.00</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.625rem;">
+                <span style="color: var(--text-muted);">Convenience Fee:</span>
+                <span style="color: var(--success); font-weight: 700;">FREE (₹0.00)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.625rem;">
+                <span style="color: var(--text-muted);">Taxes & GST:</span>
+                <span style="color: var(--navy); font-weight: 600;">₹0.00</span>
+              </div>
+
+              <div style="border-top: 1px dashed var(--border); margin: 0.75rem 0; padding-top: 0.75rem; display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="font-size: 0.875rem; font-weight: 800; color: var(--navy);">Total Amount:</span>
+                <span id="rechargeSummaryTotal" style="font-size: 1.35rem; font-weight: 900; color: var(--brand);">₹1,000.00</span>
+              </div>
+
+              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.375rem; padding: 0.75rem; margin-top: 1rem; font-size: 0.6875rem; color: #1e40af; line-height: 1.45;">
+                <p style="font-weight: 700; margin-bottom: 0.25rem;">ℹ️ HetEx Wallet Security Policy:</p>
+                <p>After clicking "Paid", your request is queued as <strong>Under Review</strong> on the Admin Panel. Funds are credited directly upon admin verification.</p>
+              </div>
+
+              <div style="margin-top: 1.25rem; font-size: 0.6875rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.35rem;">
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <span>🔒</span> <span>256-bit SSL Bank Grade Encryption</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <span>🛡️</span> <span>NPCI UPI Certified Merchant Gateway</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-        <button class="btn-primary" onclick="executeRazorpayRecharge()" style="width: 100%; padding: 0.75rem;">
-          💳 Pay via Razorpay / UPI
+
+      <!-- Step 2: Under Review Confirmation View -->
+      <div id="rechargeModalSubmittedView" style="display: none; text-align: center; padding: 2rem 1rem;">
+        <div style="width: 64px; height: 64px; background: #fef3c7; border: 3px solid #fde68a; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto; font-size: 2rem;">
+          ⏳
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 850; color: var(--navy); margin-bottom: 0.5rem;">Payment Submitted for Admin Review</h3>
+        <p style="margin-bottom: 1rem;">
+          <span class="badge badge-warning" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;">Status: UNDER REVIEW</span>
+        </p>
+        <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; max-width: 440px; margin: 0 auto 1.5rem auto; padding: 1rem; text-align: left; font-size: 0.8125rem;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Amount Submitted:</span>
+            <strong id="submittedAmountText" style="color: var(--brand);">₹1,000.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+            <span style="color: var(--text-muted);">Request ID:</span>
+            <code id="submittedReqIdText" style="font-weight: 700; color: var(--navy);">HTX-UPIR-...</code>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">Approval SLA:</span>
+            <span style="color: var(--success); font-weight: 700;">Within 15 minutes</span>
+          </div>
+        </div>
+        <p style="font-size: 0.8125rem; color: var(--text-muted); max-width: 500px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+          Your payment is now visible on the Admin Operations Panel. Your wallet balance will be credited automatically as soon as the HetEx admin approves the transaction.
+        </p>
+        <button class="btn-primary" onclick="closeRechargeModal()" style="padding: 0.625rem 2rem; font-size: 0.875rem;">
+          Done
         </button>
-        <button class="btn-secondary" onclick="executeInstantRecharge()" style="width: 100%; padding: 0.625rem; font-size: 0.8125rem;">
-          ⚡ Instant Test Wallet Credit (Direct Simulation)
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Helpline Support Details (Configured via Admin) -->
+  <div id="helplineModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 420px; text-align: center; padding: 1.5rem 1.25rem; border-radius: 0.75rem;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 0.875rem auto; border: 3px solid #a7f3d0;">
+        📞
+      </div>
+      <h3 style="font-size: 1.125rem; font-weight: 750; color: var(--navy); margin-bottom: 0.25rem;">
+        HetEx Support Helpline
+      </h3>
+      <p style="font-size: 0.75rem; color: #64748b; line-height: 1.45; margin-bottom: 1rem;">
+        Need direct assistance with pickups, tracking, or wallet recharges? Our support team is ready to help.
+      </p>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.875rem 1rem; margin-bottom: 1rem; text-align: left;">
+        <div style="margin-bottom: 0.625rem;">
+          <span style="font-size: 0.625rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Official Customer Care Helpline</span>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a id="helplinePhoneLink" href="tel:+919876543210" style="font-size: 1.125rem; font-weight: 800; color: var(--brand); text-decoration: none;">
+              <span id="helplinePhoneNumber">+91 98765 43210</span>
+            </a>
+            <button type="button" class="btn-secondary" onclick="copyHelplineNumber()" style="font-size: 0.6875rem; padding: 0.2rem 0.5rem;">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #475569; display: flex; flex-direction: column; gap: 0.25rem;">
+          <div>🕒 <strong>Hours:</strong> <span id="helplineHoursText">Mon - Sat: 9:00 AM - 8:00 PM IST</span></div>
+          <div>✉️ <strong>Support Email:</strong> <a id="helplineEmailLink" href="mailto:support@hetex.in" style="color: var(--brand); text-decoration: underline;"><span id="helplineEmailText">support@hetex.in</span></a></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <a id="helplineCallNowBtn" href="tel:+919876543210" class="btn-primary" style="flex: 1; padding: 0.45rem 0.85rem; font-size: 0.775rem; text-decoration: none;">
+          📞 Call Now
+        </a>
+        <button type="button" class="btn-secondary" onclick="closeHelplineModal()" style="padding: 0.45rem 0.85rem; font-size: 0.775rem;">
+          Close
         </button>
-        <button class="btn-secondary" onclick="closeRechargeModal()" style="margin-top: 0.5rem;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sign Out Warning Confirmation (Strict Requirement) -->
+  <div id="signoutConfirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 440px; text-align: center; padding: 2rem 1.5rem;">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem auto; border: 3px solid #fecaca;">
+        ⚠️
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">
+        Sign Out of HetEx?
+      </h3>
+      <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5; margin-bottom: 1.5rem;">
+        Are you sure you want to sign out? Any unsaved shipment details, drafts, or active entries will be lost. You will need to log back in to access your seller account.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button type="button" class="btn-secondary" onclick="closeSignoutModal()" style="padding: 0.625rem 1.25rem; font-weight: 600; flex: 1;">
+          Cancel
+        </button>
+        <button type="button" class="btn-primary" onclick="confirmLogout()" style="background: #dc2626; border-color: #dc2626; color: #fff; padding: 0.625rem 1.25rem; font-weight: 700; flex: 1; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);">
+          Yes, Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Detailed Order View (Clickable Order ID) -->
+  <div id="orderDetailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 820px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <h3 id="modalOrderNumber" style="font-size: 1.25rem; font-weight: 800; color: var(--navy);">Order Details</h3>
+            <span id="modalOrderStatusBadge" class="badge badge-info">STATUS</span>
+          </div>
+          <p id="modalOrderDate" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"></p>
+        </div>
+        <button class="btn-secondary" onclick="closeOrderDetailModal()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✕ Close</button>
+      </div>
+
+      <!-- Shipment & Tracking Card -->
+      <div class="card" style="padding: 1rem; margin-bottom: 1rem; background: #f8fafc; border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">AWB / Tracking Number</p>
+            <p id="modalOrderAwb" style="font-size: 1.125rem; font-weight: 800; font-family: monospace; color: var(--brand); margin-top: 2px;">-</p>
+            <p id="modalOrderCourier" style="font-size: 0.8125rem; color: var(--text); margin-top: 2px;">Courier: -</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a id="modalOrderLabelBtn" href="#" target="_blank" class="btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🖨️ Print Shipping Labels</a>
+            <button id="modalOrderTrackBtn" onclick="" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔍 Track Shipment</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consignee and Warehouse Addresses in 2 cols -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;" class="mobile-grid-1">
+        <div class="card" style="padding: 1rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--brand); text-transform: uppercase; margin-bottom: 0.5rem;">📍 Ship To (Consignee)</p>
+          <h4 id="modalBuyerName" style="font-weight: 700; color: var(--navy); font-size: 0.9375rem;">-</h4>
+          <p id="modalBuyerAddress" style="font-size: 0.8125rem; color: var(--text); margin-top: 0.25rem;">-</p>
+          <p id="modalBuyerCityState" style="font-size: 0.8125rem; color: var(--text); font-weight: 600; margin-top: 0.25rem;">-</p>
+          <p id="modalBuyerPhone" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">-</p>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--navy); text-transform: uppercase; margin-bottom: 0.5rem;">🏭 Pickup / Warehouse</p>
+          <h4 id="modalPickupName" style="font-weight: 700; color: var(--navy); font-size: 0.9375rem;">-</h4>
+          <p id="modalPickupAddress" style="font-size: 0.8125rem; color: var(--text); margin-top: 0.25rem;">-</p>
+          <p id="modalPickupCityState" style="font-size: 0.8125rem; color: var(--text); font-weight: 600; margin-top: 0.25rem;">-</p>
+          <p id="modalPickupPhone" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">-</p>
+        </div>
+      </div>
+
+      <!-- Multi-Item Details Table -->
+      <div class="card" style="padding: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h4 style="font-size: 0.875rem; font-weight: 700; color: var(--navy);">Consignment Items (<span id="modalItemCount">0</span>)</h4>
+          <span id="modalPaymentModeBadge" class="badge badge-navy">PREPAID</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 1px solid var(--border);">
+                <th style="padding: 0.5rem; text-align: left;">Item Description</th>
+                <th style="padding: 0.5rem; text-align: left;">Category</th>
+                <th style="padding: 0.5rem; text-align: center;">Qty</th>
+                <th style="padding: 0.5rem; text-align: right;">Unit Weight</th>
+                <th style="padding: 0.5rem; text-align: right;">Dimensions</th>
+                <th style="padding: 0.5rem; text-align: right;">Declared Value</th>
+              </tr>
+            </thead>
+            <tbody id="modalItemsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cost & Shipping Summary Footer -->
+      <div class="card" style="padding: 1rem; background: #f8fafc; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.8125rem;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Total Dead Weight</span>
+          <p id="modalTotalDeadWeight" style="font-weight: 700; font-size: 0.9375rem;">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Billable Weight</span>
+          <p id="modalTotalBillableWeight" style="font-weight: 700; font-size: 0.9375rem; color: var(--brand);">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Total Value</span>
+          <p id="modalTotalDeclaredVal" style="font-weight: 700; font-size: 0.9375rem;">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Freight Charged</span>
+          <p id="modalRateCharged" style="font-weight: 800; font-size: 1rem; color: var(--success);">-</p>
+        </div>
       </div>
     </div>
   </div>
@@ -852,29 +1709,142 @@
       bd.classList.remove('active');
     }
 
-    // Auth Check
+    // Clean URL normalization: ensure no .html in browser URL
+    (function() {
+      try {
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+        }
+      } catch (e) {}
+    })();
+
+    // Auth Check & Header Bindings
     const token = localStorage.getItem('hetex_token');
     const userJson = localStorage.getItem('hetex_user');
     let currentUser = null;
 
     if (!token) {
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     } else {
       try {
         currentUser = JSON.parse(userJson || '{}');
-        document.getElementById('sidebarUserName').textContent = currentUser.name || 'Seller';
-        if (currentUser.role === 'ADMIN') {
-          const admLink = document.getElementById('sidebarAdminLink');
-          if (admLink) admLink.style.display = 'block';
-        }
-      } catch (e) {}
+      } catch (e) {
+        currentUser = {};
+      }
+      initUserHeaderInfo();
     }
 
-    function logout() {
+    function initUserHeaderInfo() {
+      const name = currentUser.name || 'Meena';
+      const initial = name.trim().charAt(0).toUpperCase() || 'M';
+      
+      const sbName = document.getElementById('sidebarUserName');
+      if (sbName) sbName.textContent = name;
+      
+      const sbAvatar = document.getElementById('sidebarAvatar');
+      if (sbAvatar) sbAvatar.textContent = initial;
+
+      const topAvatar = document.getElementById('topbarUserAvatar');
+      if (topAvatar) topAvatar.textContent = initial;
+
+      const pAvatar = document.getElementById('profileDropdownAvatar');
+      if (pAvatar) pAvatar.textContent = initial;
+
+      const pName = document.getElementById('profileDropdownName');
+      if (pName) pName.textContent = name;
+
+      const pEmail = document.getElementById('profileDropdownEmail');
+      if (pEmail) pEmail.textContent = currentUser.email || 'seller@hetex.in';
+
+      const pBiz = document.getElementById('profileDropdownBusiness');
+      if (pBiz) pBiz.textContent = currentUser.businessName || 'HetEx Seller';
+
+      const hName = document.getElementById('heroWelcomeName');
+      if (hName) hName.textContent = name;
+
+      // Dynamic Hero Banner Date Badge (e.g. THURSDAY, OCTOBER 15)
+      try {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
+        const elDate = document.getElementById('heroDateBadge');
+        if (elDate) elDate.textContent = dateStr;
+      } catch (e) {}
+
+      if (currentUser.role === 'ADMIN') {
+        const admLink = document.getElementById('sidebarAdminLink');
+        if (admLink) admLink.style.display = 'block';
+      }
+    }
+
+    // Topbar Search Handler
+    function handleTopbarSearch(e) {
+      if (e.key === 'Enter') {
+        const q = (e.target.value || '').trim();
+        if (!q) return;
+        if (q.startsWith('AWB') || q.startsWith('HTX') || q.length >= 8) {
+          quickTrack(q);
+        } else {
+          switchTab('orders');
+          const filtered = currentOrders.filter(o => 
+            (o.orderNumber && o.orderNumber.toLowerCase().includes(q.toLowerCase())) ||
+            (o.shipment?.awbNumber && o.shipment.awbNumber.toLowerCase().includes(q.toLowerCase())) ||
+            (o.buyerAddress?.contactName && o.buyerAddress.contactName.toLowerCase().includes(q.toLowerCase())) ||
+            (o.buyerAddress?.city && o.buyerAddress.city.toLowerCase().includes(q.toLowerCase()))
+          );
+          renderOrdersTable(filtered);
+          showToast('Found ' + filtered.length + ' matching orders for "' + q + '"', 'info');
+        }
+      }
+    }
+
+    // Profile Dropdown Menu Controls
+    function toggleProfileDropdown() {
+      const menu = document.getElementById('profileDropdownMenu');
+      if (!menu) return;
+      menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function closeProfileDropdown() {
+      const menu = document.getElementById('profileDropdownMenu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    // Close profile dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const menu = document.getElementById('profileDropdownMenu');
+      const avatar = document.getElementById('topbarUserAvatar');
+      if (menu && menu.style.display === 'block') {
+        if (!menu.contains(e.target) && !avatar.contains(e.target)) {
+          menu.style.display = 'none';
+        }
+      }
+    });
+
+    // Sign Out Warning Modal Controls (Strict Requirement)
+    function promptSignout() {
+      closeProfileDropdown();
+      const modal = document.getElementById('signoutConfirmModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeSignoutModal() {
+      const modal = document.getElementById('signoutConfirmModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmLogout() {
       localStorage.removeItem('hetex_token');
       localStorage.removeItem('hetex_user');
       document.cookie = "hetex_session=; path=/; max-age=0;";
-      window.location.href = '/login.html';
+      window.location.href = '/login';
+    }
+
+    function logout() {
+      promptSignout();
     }
 
     // Switch Tabs
@@ -914,13 +1884,13 @@
           return;
         }
         container.innerHTML = couriers.map(c => {
-          return '<div class="card" style="padding: 1.125rem; border-top: 3px solid ' + (c.logoColor || 'var(--brand)') + ';">' +
+          return '<div class="card" style="padding: 0.875rem 1rem; border-top: 3px solid ' + (c.logoColor || 'var(--brand)') + ';">' +
             '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">' +
-              '<h4 style="font-weight: 700; font-size: 0.875rem; color: var(--navy);">' + c.name + '</h4>' +
+              '<h4 style="font-weight: 700; font-size: 0.8125rem; color: var(--navy);">' + c.name + '</h4>' +
               '<span class="badge badge-success" style="font-size: 0.625rem;">⭐ ' + c.rating + '</span>' +
             '</div>' +
-            '<p style="font-size: 1.625rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">' + c.slaPercent + '%</p>' +
-            '<p style="font-size: 0.75rem; color: var(--text-muted);">ETA: ' + c.etaDays + ' Days · Base: ₹' + c.baseRate + '/kg</p>' +
+            '<p style="font-size: 1.25rem; font-weight: 750; color: var(--brand); margin: 0.25rem 0; line-height: 1.2;">' + c.slaPercent + '%</p>' +
+            '<p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">ETA: ' + c.etaDays + ' Days · Base: ₹' + c.baseRate + '/kg</p>' +
           '</div>';
         }).join('');
       } catch (e) {
@@ -929,16 +1899,25 @@
     }
 
     // ==========================================
-    // 1. WALLET & RECHARGE LOGIC
+    // 1. WALLET & RECHARGE LOGIC (DYNAMIC UPI QR & ADMIN REVIEW)
     // ==========================================
+    let currentRechargeRequestId = '';
+    let upiDebounceTimer = null;
+
     async function loadWallet() {
       try {
         const res = await fetch('/api/wallet', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
         const bal = parseFloat(d.balance || 0).toFixed(2);
         document.getElementById('topbarWalletBalance').textContent = '₹' + bal;
-        document.getElementById('kpiBalance').textContent = '₹' + bal;
+        const elKpi = document.getElementById('kpiBalance');
+        if (elKpi) {
+          elKpi.textContent = '₹' + bal;
+          elKpi.style.color = '#10b981';
+        }
         document.getElementById('walletLargeBalance').textContent = '₹' + bal;
+        const elPBal = document.getElementById('profileDropdownBalance');
+        if (elPBal) elPBal.textContent = '₹' + bal;
 
         const txs = d.transactions || [];
         const tbody = document.getElementById('walletLedgerBody');
@@ -958,88 +1937,240 @@
           }).join('');
         }
       } catch (e) {}
-    }
 
-    function openRechargeModal() { document.getElementById('rechargeModal').style.display = 'flex'; }
-    function closeRechargeModal() { document.getElementById('rechargeModal').style.display = 'none'; }
-
-    async function quickRecharge(amt) {
-      document.getElementById('rechargeAmountInput').value = amt;
-      openRechargeModal();
-    }
-
-    // Razorpay Flow
-    async function executeRazorpayRecharge() {
-      const amt = parseFloat(document.getElementById('rechargeAmountInput').value || 1000);
-      if (isNaN(amt) || amt <= 0) {
-        showToast('Please enter a valid amount', 'error');
-        return;
-      }
+      // Fetch Pending / Past UPI Recharges (Under Review / Approved / Rejected)
       try {
-        const orderRes = await fetch('/api/wallet/create-order', {
+        const rRes = await fetch('/api/wallet/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (rRes.ok) {
+          const rData = await rRes.json();
+          const recharges = rData.recharges || [];
+          const card = document.getElementById('walletPendingRechargesCard');
+          const rBody = document.getElementById('walletPendingRechargesBody');
+          
+          if (recharges.length > 0 && card && rBody) {
+            card.style.display = 'block';
+            rBody.innerHTML = recharges.map(r => {
+              let badgeClass = 'badge-warning';
+              let actionNote = '⏳ Waiting for admin verification';
+              if (r.status === 'APPROVED') {
+                badgeClass = 'badge-success';
+                actionNote = '✅ Approved & Balance Credited';
+              } else if (r.status === 'REJECTED') {
+                badgeClass = 'badge-danger';
+                actionNote = '❌ Rejected by Admin';
+              }
+
+              return '<tr>' +
+                '<td style="font-family: monospace; font-weight: 700; color: var(--navy);">' + r.id + '</td>' +
+                '<td style="font-weight: 800; color: var(--brand);">₹' + parseFloat(r.amount).toFixed(2) + '</td>' +
+                '<td><span class="badge ' + badgeClass + '">' + r.status.replace(/_/g, ' ') + '</span></td>' +
+                '<td style="font-family: monospace; font-size: 0.75rem;">' + (r.utrNumber || r.utr_number || '<span style="color:var(--text-muted)">-</span>') + '</td>' +
+                '<td style="font-size: 0.75rem;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString() : '-') + '</td>' +
+                '<td style="font-size: 0.75rem; font-weight: 600;">' + actionNote + '</td>' +
+              '</tr>';
+            }).join('');
+          } else if (card) {
+            card.style.display = 'none';
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ==========================================
+    // HELPLINE SUPPORT & PLATFORM SETTINGS
+    // ==========================================
+    let platformSettings = {
+      helplineNumber: '+91 98765 43210',
+      helplineHours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+      supportEmail: 'support@hetex.in',
+      upiId: 'hetex@icici',
+      payeeName: 'HetEx Logistics'
+    };
+
+    async function loadPlatformSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const d = await res.json();
+          if (d && d.settings) {
+            platformSettings = { ...platformSettings, ...d.settings };
+            applyPlatformSettings();
+          }
+        }
+      } catch (e) {
+        applyPlatformSettings();
+      }
+    }
+
+    function applyPlatformSettings() {
+      const pNum = platformSettings.helplineNumber || '+91 98765 43210';
+      const cleanNum = pNum.replace(/[^\d+]/g, '');
+      const elNum = document.getElementById('helplinePhoneNumber');
+      if (elNum) elNum.textContent = pNum;
+
+      const elLink = document.getElementById('helplinePhoneLink');
+      if (elLink) elLink.href = 'tel:' + cleanNum;
+
+      const elCallBtn = document.getElementById('helplineCallNowBtn');
+      if (elCallBtn) elCallBtn.href = 'tel:' + cleanNum;
+
+      const elHours = document.getElementById('helplineHoursText');
+      if (elHours) elHours.textContent = platformSettings.helplineHours || 'Mon - Sat: 9:00 AM - 8:00 PM IST';
+
+      const elEmail = document.getElementById('helplineEmailText');
+      if (elEmail) elEmail.textContent = platformSettings.supportEmail || 'support@hetex.in';
+
+      const elEmailLink = document.getElementById('helplineEmailLink');
+      if (elEmailLink) elEmailLink.href = 'mailto:' + (platformSettings.supportEmail || 'support@hetex.in');
+
+      const elVpa = document.getElementById('upiDisplayVpa');
+      if (elVpa && platformSettings.upiId) elVpa.textContent = platformSettings.upiId;
+
+      const sidebarBtn = document.getElementById('sidebarHelplineBtn');
+      if (sidebarBtn) sidebarBtn.title = 'HetEx Support Helpline: ' + pNum;
+
+      document.querySelectorAll('.dynamic-helpline-phone').forEach(el => el.textContent = pNum);
+      document.querySelectorAll('.dynamic-support-email').forEach(el => el.textContent = platformSettings.supportEmail || 'support@hetex.in');
+      document.querySelectorAll('.dynamic-helpline-hours').forEach(el => el.textContent = platformSettings.helplineHours || 'Mon - Sat: 9:00 AM - 8:00 PM IST');
+    }
+
+    function openHelplineModal() {
+      loadPlatformSettings();
+      document.getElementById('helplineModal').style.display = 'flex';
+    }
+
+    function closeHelplineModal() {
+      document.getElementById('helplineModal').style.display = 'none';
+    }
+
+    function copyHelplineNumber() {
+      const num = platformSettings.helplineNumber || '+91 98765 43210';
+      navigator.clipboard.writeText(num).then(() => {
+        showToast('Helpline number copied: ' + num, 'success');
+      }).catch(() => {
+        showToast('Helpline number: ' + num, 'info');
+      });
+    }
+
+    function openRechargeModal() {
+      loadPlatformSettings();
+      document.getElementById('rechargeModalFormView').style.display = 'block';
+      document.getElementById('rechargeModalSubmittedView').style.display = 'none';
+      document.getElementById('rechargeModal').style.display = 'flex';
+      const curAmt = parseFloat(document.getElementById('rechargeAmountInput').value || 1000) || 1000;
+      updateRechargeSummary(curAmt);
+      generateDynamicUpiQr();
+    }
+
+    function closeRechargeModal() {
+      document.getElementById('rechargeModal').style.display = 'none';
+      document.getElementById('rechargeModalFormView').style.display = 'block';
+      document.getElementById('rechargeModalSubmittedView').style.display = 'none';
+    }
+
+    function updateRechargeSummary(amt) {
+      const formatted = '₹' + parseFloat(amt).toFixed(2);
+      const sub = document.getElementById('rechargeSummarySubtotal');
+      const tot = document.getElementById('rechargeSummaryTotal');
+      if (sub) sub.textContent = formatted;
+      if (tot) tot.textContent = formatted;
+    }
+
+    function setRechargeAmount(amt) {
+      document.getElementById('rechargeAmountInput').value = amt;
+      updateRechargeSummary(amt);
+      onRechargeAmountChange();
+    }
+
+    function onRechargeAmountChange() {
+      const amt = parseFloat(document.getElementById('rechargeAmountInput').value || 1000) || 1000;
+      updateRechargeSummary(amt);
+      clearTimeout(upiDebounceTimer);
+      upiDebounceTimer = setTimeout(generateDynamicUpiQr, 350);
+    }
+
+    async function generateDynamicUpiQr() {
+      const amtInput = document.getElementById('rechargeAmountInput');
+      const amt = parseFloat(amtInput ? amtInput.value : 1000) || 1000;
+      if (amt <= 0) return;
+
+      try {
+        const res = await fetch('/api/wallet/upi-create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ amount: amt })
         });
-        const orderData = await orderRes.json();
-        if (!orderRes.ok) throw new Error(orderData.error || 'Failed to create payment order');
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to generate dynamic UPI QR');
 
-        const { razorpayOrderId, razorpayKeyId } = orderData;
+        currentRechargeRequestId = d.requestId;
+        const qrImg = document.getElementById('upiQrImage');
+        if (qrImg) qrImg.src = d.qrDataUrl || d.qrCodeUrl;
 
-        if (typeof window.Razorpay !== 'undefined') {
-          const options = {
-            key: razorpayKeyId || 'rzp_test_simulated_key',
-            amount: Math.round(amt * 100),
-            currency: 'INR',
-            name: 'HetEx Logistics',
-            description: 'Prepaid Wallet Recharge',
-            order_id: razorpayOrderId,
-            handler: async function(response) {
-              await verifyPaymentRecharge(amt, response.razorpay_order_id || razorpayOrderId, response.razorpay_payment_id);
-            },
-            prefill: {
-              name: currentUser?.name || 'Seller',
-              email: currentUser?.email || 'seller@hetex.in'
-            },
-            theme: { color: '#2563eb' }
-          };
-          const rzp = new window.Razorpay(options);
-          rzp.open();
-        } else {
-          // Direct fallback simulation if SDK not reachable
-          await verifyPaymentRecharge(amt, razorpayOrderId, 'pay_sim_' + Date.now());
+        const dispAmt = document.getElementById('upiDisplayAmount');
+        if (dispAmt) dispAmt.textContent = '₹' + parseFloat(d.amount).toFixed(2);
+
+        const refText = document.getElementById('upiRefText');
+        if (refText) refText.textContent = 'Ref: ' + d.requestId;
+
+        const deepLink = document.getElementById('upiDeepLink');
+        if (deepLink) deepLink.href = d.upiUrl;
+
+        if (d.upiId) {
+          const vpaEl = document.getElementById('upiDisplayVpa');
+          if (vpaEl) vpaEl.textContent = d.upiId;
         }
-      } catch (e) {
-        showToast(e.message, 'error');
+
+      } catch (err) {
+        showToast(err.message, 'error');
       }
     }
 
-    // Instant Simulation Flow
-    async function executeInstantRecharge() {
+    async function submitUpiPaymentPaid() {
+      const btn = document.getElementById('btnSubmitUpiPaid');
+      const utr = document.getElementById('upiUtrInput').value.trim();
       const amt = parseFloat(document.getElementById('rechargeAmountInput').value || 1000);
-      if (isNaN(amt) || amt <= 0) {
-        showToast('Please enter a valid amount', 'error');
-        return;
-      }
-      await verifyPaymentRecharge(amt, 'order_sim_' + Date.now(), 'pay_sim_' + Date.now());
-    }
 
-    async function verifyPaymentRecharge(amt, orderId, paymentId) {
+      btn.disabled = true;
+      btn.textContent = 'Submitting Request...';
+
       try {
-        const res = await fetch('/api/wallet/verify-payment', {
+        const res = await fetch('/api/wallet/upi-paid', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ amount: amt, razorpayOrderId: orderId, razorpayPaymentId: paymentId })
+          body: JSON.stringify({
+            requestId: currentRechargeRequestId,
+            amount: amt,
+            utrNumber: utr
+          })
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Verification failed');
+        btn.disabled = false;
+        btn.textContent = '✅ I Have Paid — Submit for Review';
 
-        closeRechargeModal();
+        if (!res.ok) throw new Error(data.error || 'Failed to submit payment');
+
+        // Populate step 2 Under Review Confirmation
+        document.getElementById('submittedAmountText').textContent = '₹' + parseFloat(data.amount || amt).toFixed(2);
+        document.getElementById('submittedReqIdText').textContent = data.requestId || currentRechargeRequestId;
+
+        // Switch to Under Review View (Never credit wallet until admin approves!)
+        document.getElementById('rechargeModalFormView').style.display = 'none';
+        document.getElementById('rechargeModalSubmittedView').style.display = 'block';
+
+        showToast('Recharge request submitted! Status: UNDER REVIEW.', 'info');
         await loadWallet();
-        showToast('₹' + amt.toFixed(2) + ' credited to your wallet successfully!', 'success');
-      } catch (e) {
-        showToast('Payment failed: ' + e.message, 'error');
+
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '✅ I Have Paid — Submit for Review';
+        showToast(err.message, 'error');
       }
+    }
+
+    function quickRecharge(amt) {
+      setRechargeAmount(amt);
+      openRechargeModal();
     }
 
     // ==========================================
@@ -1179,7 +2310,7 @@
                 '<h4 style="font-weight: 700; color: var(--navy);">' + name + '</h4>' +
                 '<span class="badge badge-navy">Zone ' + (c.zones || '1') + '</span>' +
               '</div>' +
-              '<p style="font-size: 1.5rem; font-weight: 800; color: var(--brand); margin: 0.25rem 0;">₹' + rate + '</p>' +
+              '<p style="font-size: 1.25rem; font-weight: 750; color: var(--brand); margin: 0.25rem 0; line-height: 1.2;">₹' + rate + '</p>' +
               '<p style="font-size: 0.75rem; color: var(--text-muted);">ETA Turnaround: <strong>' + eta + ' Days</strong></p>' +
               '<p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Base: ₹' + base + (cod > 0 ? (' + COD: ₹' + cod) : '') + ' + Margin: ₹' + margin + '</p>' +
             '</div>' +
@@ -1353,6 +2484,9 @@
         const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
         const u = d.user || currentUser;
+        currentUser = { ...currentUser, ...u };
+        initUserHeaderInfo();
+
         document.getElementById('profName').value = u.name || '';
         document.getElementById('profBusiness').value = u.businessName || 'HetEx Seller';
         document.getElementById('profEmail').value = u.email || '';
@@ -1488,17 +2622,298 @@
     }
 
     // ==========================================
-    // 7. ORDER BOOKING & DYNAMIC PINCODE RATES
+    // 7. SMART ADDRESS AUTOFILL (MOBILE FIRST)
     // ==========================================
+    let phoneAutofillTimer = null;
+    let lastAutofilledPhone = '';
+
+    // Cache of customer addresses in LocalStorage for 0ms instant populating
+    function getCustomerAddressCache() {
+      try {
+        return JSON.parse(localStorage.getItem('htx_customer_history') || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveCustomerAddressCache(phone, addr) {
+      if (!phone || phone.length !== 10 || !addr) return;
+      try {
+        const cache = getCustomerAddressCache();
+        cache[phone] = {
+          contactName: addr.contactName || '',
+          phone: phone,
+          addressLine1: addr.addressLine1 || addr.address || '',
+          city: addr.city || '',
+          state: addr.state || '',
+          pincode: addr.pincode || '',
+          updatedAt: Date.now()
+        };
+        localStorage.setItem('htx_customer_history', JSON.stringify(cache));
+      } catch (e) {}
+    }
+
+    function cacheCurrentBuyerForm() {
+      const phoneInput = document.getElementById('buyerPhone');
+      if (!phoneInput) return;
+      const digits = (phoneInput.value || '').replace(/\D/g, '');
+      const cleanPhone = digits.length >= 10 ? digits.slice(-10) : '';
+      if (cleanPhone.length !== 10) return;
+
+      const name = (document.getElementById('buyerName')?.value || '').trim();
+      const addr = (document.getElementById('buyerAddress')?.value || '').trim();
+      const pin = (document.getElementById('buyerPincode')?.value || '').trim();
+      const city = (document.getElementById('buyerCity')?.value || '').trim();
+      const state = (document.getElementById('buyerState')?.value || '').trim();
+
+      if (name || addr || pin) {
+        saveCustomerAddressCache(cleanPhone, {
+          contactName: name,
+          phone: cleanPhone,
+          addressLine1: addr,
+          city: city,
+          state: state,
+          pincode: pin
+        });
+      }
+    }
+
+    function applyAutofillAddress(addr) {
+      if (!addr) return;
+      const nameInput = document.getElementById('buyerName');
+      const pinInput = document.getElementById('buyerPincode');
+      const cityInput = document.getElementById('buyerCity');
+      const addrInput = document.getElementById('buyerAddress');
+      const stateInput = document.getElementById('buyerState');
+      const notice = document.getElementById('autofillNotice');
+      const custNameSpan = document.getElementById('autofillCustName');
+      const statusIcon = document.getElementById('phoneStatusIcon');
+
+      if (addr.contactName && nameInput) nameInput.value = addr.contactName;
+      if (addr.pincode && pinInput) {
+        pinInput.value = addr.pincode;
+        if (typeof onBuyerPincodeChanged === 'function') {
+          onBuyerPincodeChanged();
+        }
+      }
+      if (addr.city && cityInput) cityInput.value = addr.city;
+      if (addr.addressLine1 && addrInput) addrInput.value = addr.addressLine1;
+      if (addr.state && stateInput) stateInput.value = addr.state;
+
+      if (statusIcon) {
+        statusIcon.style.display = 'block';
+        statusIcon.textContent = '✅';
+      }
+      if (notice) {
+        notice.style.display = 'block';
+        if (custNameSpan) custNameSpan.textContent = addr.contactName || 'Saved Customer';
+      }
+    }
+
+    function onBuyerPhoneInput(val) {
+      const digits = (val || '').toString().replace(/\D/g, '');
+      const cleanPhone = digits.length >= 10 ? digits.slice(-10) : '';
+      const notice = document.getElementById('autofillNotice');
+      const statusIcon = document.getElementById('phoneStatusIcon');
+
+      if (!cleanPhone || cleanPhone.length !== 10) {
+        if (notice) notice.style.display = 'none';
+        if (statusIcon) statusIcon.style.display = 'none';
+        lastAutofilledPhone = '';
+        return;
+      }
+
+      if (cleanPhone === lastAutofilledPhone) return;
+
+      // 1. Instant Local Cache lookup (0ms)
+      const cache = getCustomerAddressCache();
+      if (cache[cleanPhone] && (cache[cleanPhone].contactName || cache[cleanPhone].addressLine1)) {
+        lastAutofilledPhone = cleanPhone;
+        applyAutofillAddress(cache[cleanPhone]);
+        showToast('✨ Customer (' + (cache[cleanPhone].contactName || 'Saved') + ') autofilled from history', 'info');
+      }
+
+      // 2. Server lookup from database / orders / address book
+      clearTimeout(phoneAutofillTimer);
+      phoneAutofillTimer = setTimeout(async () => {
+        try {
+          const res = await fetch('/api/addresses/lookup?phone=' + encodeURIComponent(cleanPhone), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (!res.ok) return;
+          const d = await res.json();
+          if (d && d.found && d.address) {
+            lastAutofilledPhone = cleanPhone;
+            applyAutofillAddress(d.address);
+            saveCustomerAddressCache(cleanPhone, d.address);
+            showToast('✨ Customer (' + (d.address.contactName || 'Saved') + ') address verified & populated!', 'success');
+          }
+        } catch (e) {
+          console.warn('Autofill lookup error:', e);
+        }
+      }, 150);
+    }
+
+    // ==========================================
+    // 7.1 MULTI-ITEM SHIPMENT MANAGEMENT
+    // ==========================================
+    const ITEM_CATEGORIES = [
+      'Apparel & Clothing',
+      'Electronics & Gadgets',
+      'Health & Beauty',
+      'Home & Kitchen',
+      'Books & Stationery',
+      'Footwear',
+      'General Merchandise'
+    ];
+
+    let orderItems = [
+      {
+        name: 'Standard Package Item',
+        category: 'Apparel & Clothing',
+        quantity: 1,
+        declaredValue: 800,
+        weight: 0.4,
+        length: 15,
+        width: 10,
+        height: 5
+      }
+    ];
+
+    function renderOrderItems() {
+      const container = document.getElementById('orderItemsList');
+      if (!container) return;
+
+      container.innerHTML = orderItems.map((item, idx) => {
+        const itemVol = ((parseFloat(item.length) || 10) * (parseFloat(item.width) || 10) * (parseFloat(item.height) || 5)) / 5000;
+        const catOptions = ITEM_CATEGORIES.map(c => 
+          '<option value="' + c + '" ' + (item.category === c ? 'selected' : '') + '>' + c + '</option>'
+        ).join('');
+
+        return '<div class="card" style="padding: 1rem; margin-bottom: 0.75rem; border: 1px solid var(--border); background: #fafafa;">' +
+          '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">' +
+            '<span style="font-size: 0.8125rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.4rem;">' +
+              '<span style="background: var(--brand); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.6875rem;">' + (idx + 1) + '</span>' +
+              ' Item #' + (idx + 1) +
+            '</span>' +
+            (orderItems.length > 1 ? '<button type="button" onclick="removeOrderItem(' + idx + ')" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem; color: var(--danger); border-color: #fca5a5;">🗑️ Remove</button>' : '') +
+          '</div>' +
+          '<div style="display: grid; grid-template-columns: 2fr 1.5fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;" class="mobile-grid-1">' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Item Name / Description *</label>' +
+              '<input type="text" class="form-control" value="' + (item.name || '') + '" placeholder="e.g. Cotton Polo T-Shirt" oninput="updateItemField(' + idx + ', &quot;name&quot;, this.value)" required style="font-size: 0.8125rem;" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Category *</label>' +
+              '<select class="form-control" onchange="updateItemField(' + idx + ', &quot;category&quot;, this.value)" style="font-size: 0.8125rem;">' +
+                catOptions +
+              '</select>' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Quantity *</label>' +
+              '<input type="number" class="form-control" value="' + (item.quantity || 1) + '" min="1" oninput="updateItemField(' + idx + ', &quot;quantity&quot;, this.value)" required style="font-size: 0.8125rem; font-weight: 700; text-align: center;" />' +
+            '</div>' +
+          '</div>' +
+          '<div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 0.75rem;" class="mobile-grid-1">' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Unit Declared Value (₹)</label>' +
+              '<input type="number" class="form-control" value="' + (item.declaredValue || 500) + '" min="1" step="10" oninput="updateItemField(' + idx + ', &quot;declaredValue&quot;, this.value)" required style="font-size: 0.8125rem;" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Unit Weight (kg)</label>' +
+              '<input type="number" class="form-control" value="' + (item.weight || 0.4) + '" min="0.05" step="0.05" oninput="updateItemField(' + idx + ', &quot;weight&quot;, this.value)" required style="font-size: 0.8125rem;" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.75rem; font-weight: 600;">Dimensions L × W × H (cm)</label>' +
+              '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.25rem;">' +
+                '<input type="number" class="form-control" placeholder="L" value="' + (item.length || 15) + '" min="1" oninput="updateItemField(' + idx + ', &quot;length&quot;, this.value)" style="font-size: 0.75rem; padding: 0.4rem;" />' +
+                '<input type="number" class="form-control" placeholder="W" value="' + (item.width || 10) + '" min="1" oninput="updateItemField(' + idx + ', &quot;width&quot;, this.value)" style="font-size: 0.75rem; padding: 0.4rem;" />' +
+                '<input type="number" class="form-control" placeholder="H" value="' + (item.height || 5) + '" min="1" oninput="updateItemField(' + idx + ', &quot;height&quot;, this.value)" style="font-size: 0.75rem; padding: 0.4rem;" />' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="margin-top: 0.5rem; text-align: right; font-size: 0.6875rem; color: var(--text-muted);">' +
+            'Unit Volumetric: ' + itemVol.toFixed(3) + ' kg | Total Units Declared: ₹' + ((item.quantity || 1) * (item.declaredValue || 0)).toFixed(2) +
+          '</div>' +
+        '</div>';
+      }).join('');
+
+      recalcAllItemsSummary();
+    }
+
+    function addOrderItem() {
+      orderItems.push({
+        name: '',
+        category: 'General Merchandise',
+        quantity: 1,
+        declaredValue: 500,
+        weight: 0.4,
+        length: 15,
+        width: 10,
+        height: 5
+      });
+      renderOrderItems();
+      showToast('Shipment item added', 'info');
+    }
+
+    function removeOrderItem(idx) {
+      if (orderItems.length <= 1) return;
+      orderItems.splice(idx, 1);
+      renderOrderItems();
+      triggerDynamicRateFetch();
+    }
+
+    function updateItemField(idx, field, val) {
+      if (!orderItems[idx]) return;
+      if (field === 'name' || field === 'category') {
+        orderItems[idx][field] = val;
+      } else {
+        orderItems[idx][field] = parseFloat(val) || 0;
+      }
+      recalcAllItemsSummary();
+    }
+
+    function recalcAllItemsSummary() {
+      let totalUnits = 0;
+      let totalDeclared = 0;
+      let totalDeadWeight = 0;
+      let totalVolWeight = 0;
+
+      orderItems.forEach(item => {
+        const qty = parseInt(item.quantity) || 1;
+        totalUnits += qty;
+        totalDeclared += qty * (parseFloat(item.declaredValue) || 0);
+        totalDeadWeight += qty * (parseFloat(item.weight) || 0.4);
+        const singleVol = ((parseFloat(item.length) || 15) * (parseFloat(item.width) || 10) * (parseFloat(item.height) || 5)) / 5000;
+        totalVolWeight += qty * singleVol;
+      });
+
+      const totalBillable = Math.max(totalDeadWeight, totalVolWeight, 0.5);
+
+      const elCount = document.getElementById('summaryItemCount');
+      if (elCount) elCount.textContent = totalUnits;
+
+      const elDec = document.getElementById('summaryDeclaredValue');
+      if (elDec) elDec.textContent = '₹' + totalDeclared.toFixed(2);
+
+      const elDead = document.getElementById('summaryDeadWeight');
+      if (elDead) elDead.textContent = totalDeadWeight.toFixed(2) + ' kg';
+
+      const elVol = document.getElementById('summaryVolWeight');
+      if (elVol) elVol.textContent = totalVolWeight.toFixed(2) + ' kg';
+
+      const elBill = document.getElementById('summaryBillableWeight');
+      if (elBill) elBill.textContent = totalBillable.toFixed(2) + ' kg';
+
+      const volText = document.getElementById('volWeightText');
+      if (volText) volText.textContent = 'Volumetric: ' + totalVolWeight.toFixed(2) + ' kg | Billable: ' + totalBillable.toFixed(2) + ' kg';
+
+      return { totalUnits, totalDeclared, totalDeadWeight, totalVolWeight, totalBillable };
+    }
+
     function calcVolWeight() {
-      const act = parseFloat(document.getElementById('actualWeight').value || 0.5);
-      const l = parseFloat(document.getElementById('dimL').value || 15);
-      const w = parseFloat(document.getElementById('dimW').value || 10);
-      const h = parseFloat(document.getElementById('dimH').value || 5);
-      const vol = (l * w * h) / 5000;
-      const billable = Math.max(act, vol);
-      document.getElementById('volWeightText').textContent = 'Volumetric: ' + vol.toFixed(2) + ' kg | Billable: ' + billable.toFixed(2) + ' kg';
-      return billable;
+      const summary = recalcAllItemsSummary();
+      return summary.totalBillable;
     }
 
     function toggleCodInput() {
@@ -1580,7 +2995,7 @@
       }
     }
 
-    // Book Shipment Submission (Real Order Booking API)
+    // Book Shipment Submission (Multi-Item Order Booking API)
     document.getElementById('createOrderForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const alertBox = document.getElementById('createOrderAlert');
@@ -1597,6 +3012,18 @@
       if (!selectedCourierInput) {
         showToast('Please select a courier partner quote', 'error');
         return;
+      }
+
+      // Validate items
+      if (orderItems.length === 0) {
+        showToast('Please add at least one item to the shipment', 'error');
+        return;
+      }
+      for (let i = 0; i < orderItems.length; i++) {
+        if (!orderItems[i].name || orderItems[i].name.trim() === '') {
+          showToast('Please provide a description/name for Item #' + (i + 1), 'error');
+          return;
+        }
       }
 
       // Create buyer address record first
@@ -1617,22 +3044,32 @@
         });
         const buyerAddrData = await buyerAddrRes.json();
         if (!buyerAddrRes.ok) throw new Error(buyerAddrData.error || 'Failed to create consignee address');
-        buyerAddrId = buyerAddrData.id;
+        buyerAddrId = buyerAddrData.id || buyerAddrData.address?.id || '';
+        cacheCurrentBuyerForm();
       } catch (err) {
         showToast(err.message, 'error');
         return;
       }
 
+      const summary = recalcAllItemsSummary();
       const payMode = document.getElementById('paymentModeSelect').value;
+
       const payload = {
         pickupAddressId: pickupId,
         buyerAddressId: buyerAddrId,
-        itemDescription: document.getElementById('itemDesc').value.trim(),
-        declaredValue: parseFloat(document.getElementById('declaredVal').value || 1000),
-        weight: parseFloat(document.getElementById('actualWeight').value || 0.5),
-        length: parseFloat(document.getElementById('dimL').value || 15),
-        width: parseFloat(document.getElementById('dimW').value || 10),
-        height: parseFloat(document.getElementById('dimH').value || 5),
+        buyerName: document.getElementById('buyerName').value.trim(),
+        buyerPhone: document.getElementById('buyerPhone').value.trim(),
+        buyerAddress: document.getElementById('buyerAddress').value.trim(),
+        buyerCity: document.getElementById('buyerCity').value.trim(),
+        buyerState: document.getElementById('buyerState').value.trim(),
+        buyerPincode: document.getElementById('buyerPincode').value.trim(),
+        items: orderItems,
+        itemDescription: orderItems.map(i => i.name + ' (x' + i.quantity + ')').join(', '),
+        declaredValue: summary.totalDeclared,
+        weight: summary.totalDeadWeight,
+        length: orderItems[0]?.length || 15,
+        width: orderItems[0]?.width || 10,
+        height: orderItems[0]?.height || 5,
         paymentMode: payMode,
         codAmount: payMode === 'COD' ? parseFloat(document.getElementById('codAmountInput').value || 0) : 0,
         courierId: selectedCourierInput.value
@@ -1672,7 +3109,17 @@
 
         // Reset form & reload data
         document.getElementById('createOrderForm').reset();
-        calcVolWeight();
+        orderItems = [{
+          name: 'Standard Package Item',
+          category: 'Apparel & Clothing',
+          quantity: 1,
+          declaredValue: 800,
+          weight: 0.4,
+          length: 15,
+          width: 10,
+          height: 5
+        }];
+        renderOrderItems();
         loadWallet();
         loadOrders();
 
@@ -1689,7 +3136,7 @@
     }
 
     // ==========================================
-    // 8. ORDERS & SHIPMENTS LISTING
+    // 8. ORDERS LISTING & CLICKABLE ORDER ID MODAL
     // ==========================================
     let currentOrders = [];
     async function loadOrders(status = '') {
@@ -1733,7 +3180,11 @@
         if (st === 'NDR') badgeClass = 'badge-warning';
 
         return '<tr>' +
-          '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+          '<td style="font-weight: 700;">' +
+            '<a href="javascript:void(0)" onclick="openOrderDetailModal(&quot;' + o.id + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="Click to view full order details">' +
+              o.orderNumber +
+            '</a>' +
+          '</td>' +
           '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awb + '</td>' +
           '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
           '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
@@ -1764,7 +3215,11 @@
         if (st === 'DELIVERED') badgeClass = 'badge-success';
         if (st === 'CANCELLED') badgeClass = 'badge-danger';
         return '<tr>' +
-          '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+          '<td style="font-weight: 700;">' +
+            '<a href="javascript:void(0)" onclick="openOrderDetailModal(&quot;' + o.id + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="Click to view full order details">' +
+              o.orderNumber +
+            '</a>' +
+          '</td>' +
           '<td style="font-family: monospace; color: var(--brand);">' + awb + '</td>' +
           '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
           '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
@@ -1774,6 +3229,116 @@
           '<td><button onclick="quickTrack(&quot;' + awb + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem;">Track</button></td>' +
         '</tr>';
       }).join('');
+    }
+
+    // ==========================================
+    // 8.1 DETAILED ORDER VIEW MODAL LOGIC
+    // ==========================================
+    async function openOrderDetailModal(orderId) {
+      try {
+        const res = await fetch('/api/orders/' + orderId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          const errD = await res.json().catch(() => ({}));
+          throw new Error(errD.error || 'Order details could not be loaded');
+        }
+        const data = await res.json();
+        const o = data.order || data;
+
+        document.getElementById('modalOrderNumber').textContent = o.orderNumber || 'Order #' + orderId;
+        
+        const st = o.shipment?.status || o.status || 'CONFIRMED';
+        const badge = document.getElementById('modalOrderStatusBadge');
+        badge.textContent = st.replace(/_/g, ' ');
+        badge.className = 'badge ' + (st === 'DELIVERED' ? 'badge-success' : (st === 'CANCELLED' ? 'badge-danger' : 'badge-info'));
+
+        document.getElementById('modalOrderDate').textContent = 'Booked on: ' + (o.createdAt ? new Date(o.createdAt).toLocaleString() : 'Recent');
+
+        // Shipment info
+        const awb = o.shipment?.awbNumber || '-';
+        document.getElementById('modalOrderAwb').textContent = awb;
+        document.getElementById('modalOrderCourier').textContent = 'Courier: ' + (o.shipment?.courier?.name || o.shipment?.courierName || 'Delhivery');
+
+        const labelBtn = document.getElementById('modalOrderLabelBtn');
+        labelBtn.href = '/api/shipment-label/' + (o.shipment?.id || o.id);
+
+        const trackBtn = document.getElementById('modalOrderTrackBtn');
+        trackBtn.onclick = function() {
+          closeOrderDetailModal();
+          if (awb && awb !== '-') quickTrack(awb);
+          else showToast('No tracking number assigned yet', 'info');
+        };
+
+        // Consignee details
+        const b = o.buyerAddress || {};
+        document.getElementById('modalBuyerName').textContent = b.contactName || 'Consignee';
+        document.getElementById('modalBuyerAddress').textContent = b.addressLine1 || '-';
+        document.getElementById('modalBuyerCityState').textContent = (b.city || '') + (b.state ? (', ' + b.state) : '') + (b.pincode ? (' - ' + b.pincode) : '');
+        document.getElementById('modalBuyerPhone').textContent = 'Phone: ' + (b.phone || '-');
+
+        // Warehouse details
+        const p = o.pickupAddress || {};
+        document.getElementById('modalPickupName').textContent = p.contactName || 'Warehouse';
+        document.getElementById('modalPickupAddress').textContent = p.addressLine1 || '-';
+        document.getElementById('modalPickupCityState').textContent = (p.city || '') + (p.state ? (', ' + p.state) : '') + (p.pincode ? (' - ' + p.pincode) : '');
+        document.getElementById('modalPickupPhone').textContent = 'Contact: ' + (p.phone || '-');
+
+        // Items Table
+        const items = o.items && o.items.length > 0 ? o.items : [
+          {
+            name: o.itemDescription || 'Standard Parcel',
+            category: 'General Merchandise',
+            quantity: 1,
+            weight: o.weight || 0.5,
+            length: o.length || 15,
+            width: o.width || 10,
+            height: o.height || 5,
+            declaredValue: o.declaredValue || 500
+          }
+        ];
+
+        let totalUnits = 0;
+        let totalVal = 0;
+        let totalDead = 0;
+
+        const itemsTbody = document.getElementById('modalItemsTableBody');
+        itemsTbody.innerHTML = items.map(it => {
+          const q = parseInt(it.quantity) || 1;
+          const val = parseFloat(it.declaredValue) || 0;
+          const wt = parseFloat(it.weight) || 0.5;
+          totalUnits += q;
+          totalVal += (q * val);
+          totalDead += (q * wt);
+
+          return '<tr>' +
+            '<td style="font-weight: 600; color: var(--navy);">' + (it.name || 'Shipment Item') + '</td>' +
+            '<td><span class="badge badge-navy">' + (it.category || 'General') + '</span></td>' +
+            '<td style="text-align: center; font-weight: 700;">' + q + '</td>' +
+            '<td style="text-align: right;">' + wt.toFixed(2) + ' kg</td>' +
+            '<td style="text-align: right; color: var(--text-muted);">' + (it.length || 15) + '×' + (it.width || 10) + '×' + (it.height || 5) + ' cm</td>' +
+            '<td style="text-align: right; font-weight: 700;">₹' + val.toFixed(2) + '</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('modalItemCount').textContent = totalUnits;
+        document.getElementById('modalPaymentModeBadge').textContent = o.paymentMode || 'PREPAID';
+
+        // Summary footer
+        document.getElementById('modalTotalDeadWeight').textContent = (o.weight ? parseFloat(o.weight).toFixed(2) : totalDead.toFixed(2)) + ' kg';
+        document.getElementById('modalTotalBillableWeight').textContent = (o.billableWeight ? parseFloat(o.billableWeight).toFixed(2) : totalDead.toFixed(2)) + ' kg';
+        document.getElementById('modalTotalDeclaredVal').textContent = '₹' + (o.declaredValue ? parseFloat(o.declaredValue).toFixed(2) : totalVal.toFixed(2));
+        document.getElementById('modalRateCharged').textContent = '₹' + parseFloat(o.shipment?.rateCharged || 46.2).toFixed(2);
+
+        document.getElementById('orderDetailModal').style.display = 'flex';
+
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    function closeOrderDetailModal() {
+      document.getElementById('orderDetailModal').style.display = 'none';
     }
 
     function quickTrack(awb) {
@@ -1801,6 +3366,8 @@
     }
 
     // Initial Load
+    loadPlatformSettings();
+    renderOrderItems();
     loadWallet();
     loadOrders();
     loadAddresses();

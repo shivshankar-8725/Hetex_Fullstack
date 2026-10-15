@@ -4,6 +4,7 @@
  */
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/credentials.php';
 require_once __DIR__ . '/../utils/response.php';
 
 class WalletController {
@@ -62,12 +63,12 @@ class WalletController {
             Response::error('Enter a valid positive amount', 400);
         }
 
-        $razorpayKeyId = getenv('RAZORPAY_KEY_ID') ?: 'rzp_test_simulated_key';
-        $razorpaySecret = getenv('RAZORPAY_KEY_SECRET') ?: 'rzp_test_simulated_secret';
+        $razorpayKeyId = Credentials::get('RAZORPAY_KEY_ID', 'rzp_test_simulated_key');
+        $razorpaySecret = Credentials::get('RAZORPAY_KEY_SECRET', 'rzp_test_simulated_secret');
 
         $orderId = 'order_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 14);
 
-        if (!empty(getenv('RAZORPAY_KEY_ID'))) {
+        if (!empty($razorpayKeyId) && !str_contains($razorpayKeyId, 'YOUR_') && !str_contains($razorpayKeyId, 'simulated')) {
             $ch = curl_init('https://api.razorpay.com/v1/orders');
             $payload = json_encode([
                 'amount' => (int)($amount * 100),
@@ -117,9 +118,85 @@ class WalletController {
             'imageUrl' => $qrImageUrl,
             'razorpayOrderId' => $orderId,
             'amount' => $amount,
-            'currency' => 'INR',
-            'isReal' => false,
-            'message' => 'Scan QR to pay using any UPI app (GPay, PhonePe, Paytm)'
+            'currency' => 'INR'
+        ]);
+    }
+
+    public static function createUpiRecharge(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $amount = (float)($data['amount'] ?? 1000);
+
+        if ($amount < 1) {
+            Response::error('Enter a valid positive recharge amount', 400);
+        }
+
+        $requestId = 'HTX-UPIR-' . strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
+        $upiId = 'hetex@icici';
+        $payeeName = 'HetEx Logistics';
+        $upiUrl = "upi://pay?pa={$upiId}&pn=" . urlencode($payeeName) . "&am=" . number_format($amount, 2, '.', '') . "&cu=INR&tn=" . urlencode("Recharge {$requestId}");
+        $qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" . urlencode($upiUrl);
+
+        Response::json([
+            'success' => true,
+            'requestId' => $requestId,
+            'amount' => $amount,
+            'upiId' => $upiId,
+            'payeeName' => $payeeName,
+            'upiUrl' => $upiUrl,
+            'qrImageUrl' => $qrImageUrl,
+            'message' => 'Scan QR to pay via any UPI app'
+        ]);
+    }
+
+    public static function submitUpiPayment(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $amount = (float)($data['amount'] ?? 0);
+        $requestId = trim($data['requestId'] ?? ('HTX-UPIR-' . time()));
+        $utrNumber = trim($data['utrNumber'] ?? '');
+
+        if ($amount < 1) {
+            Response::error('Invalid recharge amount', 400);
+        }
+
+        $db = Database::getConnection();
+        // Insert with status UNDER_REVIEW - NEVER credit wallet here!
+        $db->prepare("
+            INSERT INTO wallet_recharges (id, user_id, amount, payment_method, upi_id, utr_number, status, created_at)
+            VALUES (?, ?, ?, 'UPI', 'hetex@icici', ?, 'UNDER_REVIEW', NOW())
+        ")->execute([$requestId, $auth['userId'], $amount, $utrNumber ?: null]);
+
+        Response::json([
+            'success' => true,
+            'status' => 'UNDER_REVIEW',
+            'requestId' => $requestId,
+            'amount' => $amount,
+            'message' => 'Your UPI payment has been submitted and is currently UNDER REVIEW. Wallet will be credited upon admin approval.'
+        ]);
+    }
+
+    public static function getUserRecharges(): void {
+        $auth = AuthMiddleware::authenticate();
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare("SELECT * FROM wallet_recharges WHERE user_id = ? ORDER BY created_at DESC LIMIT 50");
+        $stmt->execute([$auth['userId']]);
+        $rows = $stmt->fetchAll();
+
+        Response::json([
+            'recharges' => array_map(function($r) {
+                return [
+                    'id' => $r['id'],
+                    'amount' => (float)$r['amount'],
+                    'paymentMethod' => $r['payment_method'],
+                    'upiId' => $r['upi_id'],
+                    'utrNumber' => $r['utr_number'],
+                    'status' => $r['status'],
+                    'createdAt' => $r['created_at'],
+                    'reviewedAt' => $r['reviewed_at']
+                ];
+            }, $rows)
         ]);
     }
 
@@ -150,7 +227,7 @@ class WalletController {
         $body = file_get_contents('php://input');
         $headers = getallheaders();
         $signature = $headers['X-Razorpay-Signature'] ?? $headers['x-razorpay-signature'] ?? '';
-        $secret = getenv('RAZORPAY_WEBHOOK_SECRET') ?: '';
+        $secret = Credentials::get('RAZORPAY_WEBHOOK_SECRET', '');
 
         if (!empty($secret)) {
             $expected = hash_hmac('sha256', $body, $secret);

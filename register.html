@@ -171,7 +171,7 @@
       </form>
 
       <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.875rem; text-align: center; color: var(--text-muted);">
-        Already registered? <a href="/login.html" style="color: var(--brand); font-weight: 700;">Log in here</a>
+        Already registered? <a href="/login" style="color: var(--brand); font-weight: 700;">Log in here</a>
       </div>
     </div>
   </div>
@@ -206,6 +206,19 @@
   </div>
 
   <script>
+    // Clean URL normalization: ensure no .html in browser URL
+    (function() {
+      try {
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+        }
+      } catch (e) {}
+    })();
+
     let registeredEmail = '';
 
     document.getElementById('regForm').addEventListener('submit', async function(e) {
@@ -231,7 +244,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const data = await res.json();
+        let data = {};
+        const text = await res.text();
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { throw new Error('Server connection error (HTTP ' + res.status + ')'); }
 
         if (!res.ok) {
           throw new Error(data.error || 'Registration failed');
@@ -268,7 +283,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: registeredEmail, code: code })
         });
-        const data = await res.json();
+        let data = {};
+        const text = await res.text();
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { throw new Error('Server connection error (HTTP ' + res.status + ')'); }
 
         if (!res.ok) {
           throw new Error(data.error || 'Invalid OTP code');
@@ -285,7 +302,7 @@
         alertBox.textContent = 'Verification successful! Loading dashboard...';
 
         setTimeout(() => {
-          window.location.href = '/dashboard.html';
+          window.location.href = '/dashboard';
         }, 600);
 
       } catch (err) {

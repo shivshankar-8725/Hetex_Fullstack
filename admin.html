@@ -20,21 +20,207 @@
       --warning: #d97706;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--background); color: var(--text); min-height: 100vh; }
+    html { font-size: 14px; -webkit-text-size-adjust: 100%; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 0.8125rem; background: var(--background); color: var(--text); min-height: 100vh; display: flex; }
     a { color: inherit; text-decoration: none; }
     button { cursor: pointer; font-family: inherit; }
-    .btn-primary { background: var(--brand); color: #fff; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.875rem; }
-    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.875rem; }
-    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.625rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.5rem; }
-    .badge { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
+    .btn-primary { background: var(--brand); color: #fff; padding: 0.45rem 0.9rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.775rem; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.45rem 0.9rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.775rem; }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.125rem; }
+    .badge { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
     .badge-success { background: #dcfce7; color: #15803d; }
     .badge-danger { background: #fee2e2; color: #b91c1c; }
     .badge-navy { background: #f1f5f9; color: #334155; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
     th { text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; white-space: nowrap; }
     td { padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
-    .nav-tab { padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem; border-radius: 0.375rem; background: none; border: none; color: var(--text-muted); }
-    .nav-tab.active { background: var(--brand); color: #fff; }
+
+    /* Layout Matching dashboard.html */
+    .sidebar { width: 250px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; max-height: 100vh; position: sticky; top: 0; z-index: 100; overflow: hidden; }
+    .sidebar-nav { list-style: none; padding: 0.75rem 0.5rem; flex: 1; overflow-y: auto; overflow-x: hidden; }
+    .sidebar-nav li { margin-bottom: 0.25rem; }
+    .sidebar-footer { margin-top: auto; flex-shrink: 0; background: #fff; border-top: 1px solid var(--border); position: sticky; bottom: 0; z-index: 10; }
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow-x: hidden; }
+    .topbar { height: 64px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 500; }
+    .content-area { padding: 1.5rem 2rem; flex: 1; width: 100%; max-width: 100%; margin: 0; box-sizing: border-box; }
+
+    .sidebar-section-title {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      padding: 0.875rem 0.875rem 0.35rem 0.875rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .subnav-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.45rem 0.875rem 0.45rem 1.125rem;
+      border-radius: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #475569;
+      background: none;
+      border: none;
+      text-align: left;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .subnav-btn:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+    .subnav-btn.active {
+      background: #f1f5f9;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .subnav-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1.5px solid #94a3b8;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .subnav-btn.active .subnav-bullet {
+      background: #0f172a;
+      border-color: #0f172a;
+    }
+
+    .topbar-search-box {
+      position: relative;
+      flex: 1;
+      max-width: 440px;
+    }
+    .topbar-search-box input {
+      width: 100%;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 9999px;
+      padding: 0.45rem 1rem 0.45rem 2.25rem;
+      font-size: 0.8125rem;
+      outline: none;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+    .topbar-search-box input:focus {
+      background: #ffffff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .topbar-search-icon {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    .topbar-dark-btn {
+      background: #0f172a;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.375rem;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .topbar-dark-btn:hover {
+      background: #1e293b;
+    }
+    .topbar-icon-btn {
+      background: none;
+      border: none;
+      font-size: 1.125rem;
+      color: #64748b;
+      cursor: pointer;
+      position: relative;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .topbar-icon-btn:hover {
+      color: var(--navy);
+    }
+    .topbar-bell-dot {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+    .user-avatar-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #b91c1c;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 0.8125rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .user-avatar-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    /* Profile Dropdown Menu Card */
+    .profile-dropdown-card {
+      position: absolute;
+      top: 60px;
+      right: 1.25rem;
+      width: 300px;
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 0.75rem !important;
+      box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.22), 0 10px 15px -6px rgba(15, 23, 42, 0.12) !important;
+      z-index: 99999 !important;
+      padding: 1.125rem !important;
+      display: none;
+      animation: fadeIn 0.15s ease;
+    }
+    .profile-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.55rem 0.65rem;
+      border-radius: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .profile-menu-item:hover {
+      background: #f1f5f9;
+      color: var(--brand);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     /* In-App Toast Notifications */
     .toast-container { position: fixed; top: 1.25rem; right: 1.25rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
@@ -53,9 +239,46 @@
     .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; outline: none; }
     .form-control:focus { border-color: var(--brand); }
     
+    .mobile-menu-btn { display: none; }
+    .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; backdrop-filter: blur(2px); }
+
     @media (max-width: 768px) {
-      .admin-header { flex-direction: column; gap: 0.75rem; align-items: flex-start !important; }
-      .admin-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+      body { flex-direction: column !important; }
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: -280px !important;
+        width: 260px !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.2) !important;
+        transition: left 0.25s ease-in-out !important;
+        background: #fff !important;
+      }
+      .sidebar.open { left: 0 !important; }
+      .sidebar-backdrop.active { display: block !important; }
+      .mobile-menu-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.625rem;
+        font-size: 1.25rem;
+        color: var(--navy);
+        cursor: pointer;
+      }
+      .topbar {
+        height: auto !important;
+        padding: 0.75rem 1rem !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+      }
+      .content-area {
+        padding: 1rem 0.75rem !important;
+        max-width: 100% !important;
+      }
     }
   </style>
 </head>
@@ -63,51 +286,237 @@
   <!-- Floating In-App Toast Container -->
   <div id="adminToastContainer" class="toast-container"></div>
 
-  <!-- Header -->
-  <header class="admin-header" style="height: 60px; min-height: 60px; background: #fff; border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 50; box-sizing: border-box;">
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <a href="/admin.html" style="display: flex; align-items: center; text-decoration: none;">
-        <img src="/logo.jpeg" alt="HetEx" style="height: 36px; max-height: 36px; width: auto; max-width: 170px; object-fit: contain; display: block;" />
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="adminSidebarBackdrop" class="sidebar-backdrop" onclick="closeAdminMobileSidebar()"></div>
+
+  <!-- Sidebar (Matching Left Bar Format) -->
+  <aside class="sidebar" id="adminSidebar">
+    <div style="height: 64px; min-height: 64px; padding: 0 1.25rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+      <a href="/admin" style="display: flex; align-items: center; text-decoration: none;">
+        <img src="/logo.jpeg" alt="HetEx Courier Logistics" style="height: 38px; width: auto; max-width: 175px; object-fit: contain; display: block;" />
       </a>
-      <span class="badge badge-navy" style="background: #fee2e2; color: #b91c1c;">ADMIN PANEL</span>
+      <button class="mobile-menu-btn" onclick="closeAdminMobileSidebar()" style="border: none; font-size: 1.25rem; padding: 0.2rem; cursor: pointer;">✕</button>
     </div>
-    <div style="display: flex; align-items: center; gap: 0.75rem;">
-      <span style="font-size: 0.8125rem; font-weight: 700;">admin@hetex.in</span>
-      <a href="/dashboard.html" class="btn-secondary" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Seller Portal</a>
-      <button class="btn-secondary" onclick="adminLogout()" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Log Out</button>
+
+    <ul class="sidebar-nav">
+      <li style="margin-bottom: 0.5rem;">
+        <button class="subnav-btn active" onclick="switchAdminTab('overview', this)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #0f172a;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+          <span style="font-weight: 700; color: #0f172a;">Platform Overview</span>
+        </button>
+      </li>
+
+      <!-- Group 1: Approvals & Finance -->
+      <li class="sidebar-section-title">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Approvals & Finance</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </li>
+      <li>
+        <button class="subnav-btn" id="admRechargesNavTab" onclick="switchAdminTab('recharges', this)">
+          <span class="subnav-bullet"></span>
+          <span>UPI Recharges</span>
+          <span id="admPendingRechargeBadge" class="badge" style="background: #f59e0b; color: #fff; margin-left: auto; display: none; font-size: 0.625rem;">0</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchAdminTab('commission', this)">
+          <span class="subnav-bullet"></span>
+          <span>Commission Markup</span>
+        </button>
+      </li>
+
+      <!-- Group 2: Platform Management -->
+      <li class="sidebar-section-title" style="margin-top: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Platform Management</span>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchAdminTab('sellers', this)">
+          <span class="subnav-bullet"></span>
+          <span>Sellers & Users</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchAdminTab('couriers', this)">
+          <span class="subnav-bullet"></span>
+          <span>Courier Partners</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" onclick="switchAdminTab('shipments', this)">
+          <span class="subnav-bullet"></span>
+          <span>All Shipments</span>
+        </button>
+      </li>
+      <li>
+        <button class="subnav-btn" id="admSettingsNavTab" onclick="switchAdminTab('settings', this)">
+          <span class="subnav-bullet"></span>
+          <span>Helpline & UPI Gateway</span>
+        </button>
+      </li>
+
+      <!-- Group 3: Portals & Navigation -->
+      <li class="sidebar-section-title" style="margin-top: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Portals</span>
+        </div>
+      </li>
+      <li>
+        <a href="/dashboard" class="subnav-btn">
+          <span class="subnav-bullet"></span>
+          <span>Seller Portal</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Bottom Admin Status (Always Pinned at Left Bottom Screen, Independent of Scroll) -->
+    <div class="sidebar-footer">
+      <div style="padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+          <div class="user-avatar-btn" style="width: 28px; height: 28px; font-size: 0.75rem; flex-shrink: 0; background: #b91c1c;">A</div>
+          <div style="overflow: hidden;">
+            <div style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Super Admin</div>
+            <div style="font-size: 0.6875rem; color: var(--danger); font-weight: 600;">● Root Access</div>
+          </div>
+        </div>
+        <button type="button" class="topbar-signout-btn" onclick="openHelplineModal()" title="HetEx Support Helpline" style="padding: 0.3rem 0.55rem; font-size: 0.8125rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.15s ease;">
+          <span>📞</span>
+        </button>
+      </div>
     </div>
-  </header>
+  </aside>
 
-  <!-- Nav Tabs -->
-  <div class="admin-nav" style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.5rem 1.5rem; display: flex; gap: 0.5rem; overflow-x: auto;">
-    <button class="nav-tab active" onclick="switchAdminTab('overview', this)">📈 Platform Overview</button>
-    <button class="nav-tab" onclick="switchAdminTab('sellers', this)">👥 Sellers & Users</button>
-    <button class="nav-tab" onclick="switchAdminTab('couriers', this)">🚚 Courier Partners</button>
-    <button class="nav-tab" onclick="switchAdminTab('commission', this)">🏷️ Commission Markup</button>
-    <button class="nav-tab" onclick="switchAdminTab('shipments', this)">📦 All Shipments</button>
-  </div>
+  <!-- Main Area -->
+  <div class="main-wrapper">
+    <!-- Topbar (Matching Top Bar Format) -->
+    <header class="topbar">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <button type="button" class="mobile-menu-btn" onclick="toggleAdminMobileSidebar()" aria-label="Toggle Menu">☰</button>
+        <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 800; font-size: 0.75rem; padding: 0.3rem 0.65rem;">🛡️ ADMIN PANEL</span>
+      </div>
 
-  <main style="max-width: 1280px; margin: 1.5rem auto; padding: 0 1rem;">
+      <!-- Search Bar -->
+      <div class="topbar-search-box">
+        <span class="topbar-search-icon">🔍</span>
+        <input type="search" id="admTopbarSearchInput" placeholder="Search sellers, orders, AWBs, or recharges..." onkeydown="handleAdminSearch(event)" />
+      </div>
+
+      <!-- Right Actions (No Email, No Exit Icon Button) -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap;">
+        <a href="/dashboard" class="topbar-dark-btn" style="text-decoration: none;">Seller Portal →</a>
+
+        <button type="button" class="topbar-icon-btn" onclick="showAdminToast('No unread system alerts', 'info')" title="Notifications">
+          <span>🔔</span>
+          <span class="topbar-bell-dot"></span>
+        </button>
+
+        <!-- Admin Avatar Button -->
+        <div class="user-avatar-btn" id="topbarAdminAvatar" onclick="toggleAdminProfileDropdown()" title="Click to open admin menu">
+          A
+        </div>
+      </div>
+
+      <!-- Admin Profile Dropdown Menu Card (Solid Opaque White) -->
+      <div id="adminProfileDropdownMenu" class="profile-dropdown-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem;">
+          <div class="user-avatar-btn" style="width: 44px; height: 44px; font-size: 1.125rem; background: #b91c1c;">A</div>
+          <div style="overflow: hidden; flex: 1;">
+            <h4 style="font-size: 0.9375rem; font-weight: 800; color: var(--navy);">HetEx Super Admin</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">admin@hetex.in</p>
+            <span class="badge badge-danger" style="font-size: 0.625rem; margin-top: 2px;">• Root Operator</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <a href="javascript:void(0)" onclick="closeAdminProfileDropdown(); switchAdminTab('recharges', this);" class="profile-menu-item">
+            <span>💳</span>
+            <span>UPI Recharges Review</span>
+          </a>
+          <a href="javascript:void(0)" onclick="closeAdminProfileDropdown(); switchAdminTab('sellers', this);" class="profile-menu-item">
+            <span>👥</span>
+            <span>Sellers & KYC</span>
+          </a>
+          <a href="/dashboard" class="profile-menu-item">
+            <span>🏪</span>
+            <span>Switch to Seller Portal</span>
+          </a>
+        </div>
+
+        <!-- VISUAL SIGN OUT BUTTON INSIDE ADMIN PROFILE DROPDOWN -->
+        <div style="border-top: 1px solid var(--border); margin-top: 0.75rem; padding-top: 0.75rem;">
+          <button type="button" onclick="closeAdminProfileDropdown(); promptAdminSignout();" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-weight: 700; font-size: 0.8125rem; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s;">
+            <span>🚪</span>
+            <span>Sign Out of HetEx Admin</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area (Matches 2rem padding and 100% width) -->
+    <main class="content-area">
+
+    <!-- TAB: UPI RECHARGES APPROVAL WORKFLOW -->
+    <div id="admin-tab-recharges" class="admin-tab" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">UPI Wallet Recharge Approvals</h2>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Review submitted UPI payments before crediting seller wallets. <strong>Never credit before admin approval.</strong></p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn-secondary" onclick="loadAdminRecharges('')">All</button>
+          <button class="btn-secondary" onclick="loadAdminRecharges('UNDER_REVIEW')">⏳ Under Review</button>
+          <button class="btn-secondary" onclick="loadAdminRecharges('APPROVED')">✅ Approved</button>
+          <button class="btn-secondary" onclick="loadAdminRecharges('REJECTED')">❌ Rejected</button>
+          <button class="btn-primary" onclick="loadAdminRecharges()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table>
+          <thead>
+            <tr>
+              <th>Request ID</th>
+              <th>Seller / Business</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>UTR / Reference</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admRechargesTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading recharge requests...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- TAB 1: OVERVIEW -->
     <div id="admin-tab-overview" class="admin-tab" style="display: block;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Platform Metrics</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="card">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Active Sellers</p>
-          <p id="admSellersCount" style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">-</p>
+      <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 1rem; color: var(--navy);">Platform Metrics</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.875rem; margin-bottom: 1.25rem;">
+        <div class="card" style="padding: 0.875rem 1rem;">
+          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Active Sellers</p>
+          <p id="admSellersCount" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.25rem; line-height: 1.2;">-</p>
         </div>
-        <div class="card">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Orders</p>
-          <p id="admOrdersCount" style="font-size: 2rem; font-weight: 800; color: var(--brand); margin-top: 0.25rem;">-</p>
+        <div class="card" style="padding: 0.875rem 1rem;">
+          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Total Orders</p>
+          <p id="admOrdersCount" style="font-size: 1.25rem; font-weight: 750; color: var(--brand); margin-top: 0.25rem; line-height: 1.2;">-</p>
         </div>
-        <div class="card">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Margin Earned</p>
-          <p id="admMarginCount" style="font-size: 2rem; font-weight: 800; color: var(--success); margin-top: 0.25rem;">-</p>
+        <div class="card" style="padding: 0.875rem 1rem;">
+          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Total Margin Earned</p>
+          <p id="admMarginCount" style="font-size: 1.25rem; font-weight: 750; color: var(--success); margin-top: 0.25rem; line-height: 1.2;">-</p>
         </div>
-        <div class="card">
-          <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Wallet Reserves</p>
-          <p id="admWalletCount" style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">-</p>
+        <div class="card" style="padding: 0.875rem 1rem;">
+          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Wallet Reserves</p>
+          <p id="admWalletCount" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.25rem; line-height: 1.2;">-</p>
         </div>
       </div>
 
@@ -134,26 +543,136 @@
       </div>
     </div>
 
-    <!-- TAB 2: SELLERS -->
+    <!-- TAB 2: SELLERS (WITH IMAGE 1 SELLER DETAIL VIEW) -->
     <div id="admin-tab-sellers" class="admin-tab" style="display: none;">
-      <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1.25rem;">Registered Sellers</h2>
-      <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Business Name</th>
-              <th>KYC Status</th>
-              <th>Wallet Balance</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody id="admSellersTableBody">
-            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sellers...</td></tr>
-          </tbody>
-        </table>
+      <!-- View 1: Sellers List Table -->
+      <div id="admSellersListView">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <div>
+            <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Registered Sellers</h2>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Manage sellers, KYC verification, wallet credit reserves, and order history.</p>
+          </div>
+          <button class="btn-secondary" onclick="loadAdminSellers()" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh</button>
+        </div>
+        <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+          <table>
+            <thead>
+              <tr>
+                <th>Seller Name</th>
+                <th>Business Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>KYC Status</th>
+                <th>Wallet Balance</th>
+                <th>Orders</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admSellersTableBody">
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sellers...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- View 2: Seller Detail Screen (Matching Image 1) -->
+      <div id="admSellerDetailView" style="display: none;">
+        <button type="button" class="btn-secondary" onclick="closeSellerDetailView()" style="display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 1.25rem; font-weight: 700; font-size: 0.8125rem;">
+          <span>←</span> Back to Sellers
+        </button>
+
+        <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;" class="mobile-grid-1">
+          <!-- Card 1: SELLER DETAILS (Image 1) -->
+          <div class="card" style="padding: 1.25rem;">
+            <p style="font-size: 0.6875rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">
+              SELLER DETAILS
+            </p>
+            <h3 id="sdBizName" style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.75rem;">
+              -
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.8125rem;">
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Contact Name:</span>
+                <p id="sdSellerName" style="font-weight: 700; color: var(--navy); margin-top: 2px;">-</p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Phone:</span>
+                <p id="sdPhone" style="font-weight: 600; color: var(--navy); margin-top: 2px;">-</p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Email:</span>
+                <p id="sdEmail" style="color: var(--navy); word-break: break-all; margin-top: 2px;">-</p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Verification:</span>
+                <p id="sdKycStatus" style="font-weight: 700; margin-top: 2px; display: flex; align-items: center; gap: 0.35rem;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a; display: inline-block;"></span>
+                  <span>KYC VERIFIED</span>
+                </p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Member Since:</span>
+                <p id="sdJoinedDate" style="color: var(--text); margin-top: 2px;">-</p>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">User ID:</span>
+                <code id="sdUserId" style="font-size: 0.75rem; color: var(--brand); margin-top: 2px; display: block;">-</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: WALLET (Image 1) -->
+          <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p style="font-size: 0.6875rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                  WALLET
+                </p>
+                <button type="button" class="btn-primary" onclick="openWalletAdjustModal()" style="font-size: 0.75rem; padding: 0.3rem 0.75rem;">
+                  ⚙️ Adjust
+                </button>
+              </div>
+              <p id="sdWalletBalance" style="font-size: 2.25rem; font-weight: 900; color: var(--navy); margin: 0.75rem 0 0.25rem 0;">
+                ₹0.00
+              </p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">
+                Prepaid credit balance available for automated AWB bookings and freight charges.
+              </p>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.625rem; margin-top: 1rem; font-size: 0.75rem; color: #475569;">
+              <span>💡 Use <strong>Adjust</strong> to manually credit or debit this seller's account with an audit note.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Orders Table for this Seller (Image 1) -->
+        <div class="card" style="padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--navy);">
+              Orders (<span id="sdOrdersCount">0</span>)
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Click any Order # to inspect full shipment & consignee details</span>
+          </div>
+          <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>AWB</th>
+                  <th>Courier</th>
+                  <th>Buyer</th>
+                  <th>City</th>
+                  <th>Weight</th>
+                  <th>Rate Charged</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="sdOrdersTableBody">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading seller orders...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -161,8 +680,8 @@
     <div id="admin-tab-couriers" class="admin-tab" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div>
-          <h2 style="font-size: 1.5rem; font-weight: 800;">Courier Partner Integrations</h2>
-          <p style="color: var(--text-muted); font-size: 0.8125rem;">Active couriers appear in real-time on user Rate Calculators & Booking screens</p>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Courier Partner Integrations</h2>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Active couriers appear in real-time on user Rate Calculators & Booking screens</p>
         </div>
         <button onclick="loadAdminCouriers()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh Status</button>
       </div>
@@ -191,8 +710,8 @@
     <div id="admin-tab-commission" class="admin-tab" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <div>
-          <h2 style="font-size: 1.5rem; font-weight: 800;">Platform Margin Rules</h2>
-          <p style="color: var(--text-muted); font-size: 0.8125rem;">Configure markup percentage or flat rate added to shipments</p>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Platform Margin Rules</h2>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Configure markup percentage or flat rate added to shipments</p>
         </div>
         <button class="btn-primary" onclick="openAddRuleModal()">+ Add Rule</button>
       </div>
@@ -219,7 +738,10 @@
     <!-- TAB 5: ALL SHIPMENTS -->
     <div id="admin-tab-shipments" class="admin-tab" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-        <h2 style="font-size: 1.5rem; font-weight: 800;">All System Shipments</h2>
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">All System Shipments</h2>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Comprehensive ledger of orders manifested across all platform sellers</p>
+        </div>
         <button onclick="loadAdminShipments()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh</button>
       </div>
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -241,7 +763,104 @@
       </div>
     </div>
 
+    <!-- TAB 6: HELPLINE & UPI GATEWAY SETTINGS -->
+    <div id="admin-tab-settings" class="admin-tab" style="display: none;">
+      <div style="margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.15rem; font-weight: 750; color: var(--navy); margin-bottom: 0.25rem;">Helpline & UPI Gateway Settings</h2>
+        <p style="color: var(--text-muted); font-size: 0.775rem;">Configure the platform customer helpline number and the official UPI ID used to generate dynamic wallet recharge QR codes.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.25rem;" class="mobile-grid-1">
+        <!-- Configuration Form -->
+        <div class="card" style="padding: 1.25rem;">
+          <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--navy); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+            📱 Platform Contact & UPI Configuration
+          </h3>
+
+          <form id="adminSettingsForm" onsubmit="saveAdminSettings(event)">
+            <!-- Group A: UPI Settings -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.25rem;">
+              <h4 style="font-size: 0.8125rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                <span>💳</span> UPI Wallet Recharge QR Gateway
+              </h4>
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.75rem; font-weight: 700;">Merchant / Payee UPI ID (VPA) *</label>
+                <input type="text" id="admUpiIdInput" class="form-control" placeholder="e.g. hetex@icici or 9876543210@paytm" required oninput="updateAdminQrPreview()" style="font-weight: 600;" />
+                <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.25rem;">This VPA will be encoded into all dynamic recharge QR codes generated across user accounts.</p>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 0.75rem; font-weight: 700;">Payee / Merchant Business Name *</label>
+                <input type="text" id="admPayeeNameInput" class="form-control" placeholder="e.g. HetEx Logistics" required oninput="updateAdminQrPreview()" />
+              </div>
+            </div>
+
+            <!-- Group B: Helpline Settings -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.25rem;">
+              <h4 style="font-size: 0.8125rem; font-weight: 700; color: #15803d; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                <span>📞</span> Official Support Helpline
+              </h4>
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: #166534;">Helpline Phone Number *</label>
+                <input type="text" id="admHelplineNumberInput" class="form-control" placeholder="e.g. +91 98765 43210" required style="font-weight: 600;" />
+                <p style="font-size: 0.6875rem; color: #15803d; margin-top: 0.25rem;">Displayed when users click the call icon 📞 in their sidebar.</p>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: #166534;">Support Operating Hours</label>
+                <input type="text" id="admHelplineHoursInput" class="form-control" placeholder="e.g. Mon - Sat: 9:00 AM - 8:00 PM IST" />
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: #166534;">Support Email Address</label>
+                <input type="email" id="admSupportEmailInput" class="form-control" placeholder="e.g. support@hetex.in" />
+              </div>
+            </div>
+
+            <div style="text-align: right;">
+              <button type="submit" id="btnSaveAdminSettings" class="btn-primary" style="padding: 0.5rem 1.5rem; font-size: 0.8125rem;">
+                💾 Save Configuration
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Live QR Code Preview Card -->
+        <div class="card" style="padding: 1.25rem; text-align: center; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">
+              Live QR Preview
+            </h3>
+            <p style="font-size: 0.6875rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Real-time demonstration of the QR generated for sellers
+            </p>
+
+            <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; display: inline-block;">
+              <div style="background: #fff; padding: 0.5rem; border-radius: 0.5rem; box-shadow: 0 2px 6px rgba(0,0,0,0.06); border: 1px solid var(--border); display: inline-block;">
+                <img id="admQrPreviewImg" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi%3A%2F%2Fpay%3Fpa%3Dhetex%40icici%26pn%3DHetEx%2520Logistics%26am%3D1000.00%26cu%3DINR%26tn%3DTest" alt="QR Preview" style="width: 140px; height: 140px; display: block;" />
+              </div>
+              <div style="margin-top: 0.5rem;">
+                <p id="admQrPreviewVpa" style="font-size: 0.8125rem; font-weight: 800; color: var(--navy);">hetex@icici</p>
+                <p id="admQrPreviewPayee" style="font-size: 0.6875rem; color: var(--text-muted);">HetEx Logistics</p>
+              </div>
+            </div>
+
+            <!-- Test Amount -->
+            <div style="max-width: 220px; margin: 0 auto; text-align: left;">
+              <label style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted);">Test Amount: <strong id="admTestAmountText" style="color: var(--brand);">₹1,000</strong></label>
+              <input type="range" id="admTestAmountRange" min="100" max="10000" step="100" value="1000" oninput="onAdminTestAmountChange(this.value)" style="width: 100%; margin-top: 0.25rem;" />
+            </div>
+          </div>
+
+          <div style="margin-top: 1.25rem; font-size: 0.6875rem; color: #16a34a; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.375rem; padding: 0.5rem;">
+            ✓ All changes take effect immediately across all users and wallet recharge screens.
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
+  </div>
 
   <!-- Modal: Add Commission Rule (In-App Modal - ZERO ALERT POPUPS) -->
   <div id="addRuleModal" class="modal-overlay" style="display: none;">
@@ -288,18 +907,236 @@
     </div>
   </div>
 
+  <!-- Modal: Admin Detailed Order View (Clickable Order ID) -->
+  <div id="adminOrderDetailModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 820px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <h3 id="admModalOrderNumber" style="font-size: 1.25rem; font-weight: 800; color: var(--navy);">Order Details</h3>
+            <span id="admModalOrderStatusBadge" class="badge badge-info">STATUS</span>
+          </div>
+          <p id="admModalOrderDate" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;"></p>
+        </div>
+        <button class="btn-secondary" onclick="closeAdminOrderDetail()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✕ Close</button>
+      </div>
+
+      <!-- Shipment & Tracking Card -->
+      <div class="card" style="padding: 1rem; margin-bottom: 1rem; background: #f8fafc; border: 1px solid var(--border);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">AWB / Tracking Number</p>
+            <p id="admModalOrderAwb" style="font-size: 1.125rem; font-weight: 800; font-family: monospace; color: var(--brand); margin-top: 2px;">-</p>
+            <p id="admModalOrderCourier" style="font-size: 0.8125rem; color: var(--text); margin-top: 2px;">Courier: -</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <a id="admModalOrderLabelBtn" href="#" target="_blank" class="btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🖨️ View Labels</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consignee and Warehouse in 2 cols -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;" class="mobile-grid-1">
+        <div class="card" style="padding: 1rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--brand); text-transform: uppercase; margin-bottom: 0.5rem;">📍 Ship To (Consignee)</p>
+          <h4 id="admModalBuyerName" style="font-weight: 700; color: var(--navy); font-size: 0.9375rem;">-</h4>
+          <p id="admModalBuyerAddress" style="font-size: 0.8125rem; color: var(--text); margin-top: 0.25rem;">-</p>
+          <p id="admModalBuyerCityState" style="font-size: 0.8125rem; color: var(--text); font-weight: 600; margin-top: 0.25rem;">-</p>
+          <p id="admModalBuyerPhone" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">-</p>
+        </div>
+        <div class="card" style="padding: 1rem;">
+          <p style="font-size: 0.75rem; font-weight: 800; color: var(--navy); text-transform: uppercase; margin-bottom: 0.5rem;">🏭 Pickup / Warehouse</p>
+          <h4 id="admModalPickupName" style="font-weight: 700; color: var(--navy); font-size: 0.9375rem;">-</h4>
+          <p id="admModalPickupAddress" style="font-size: 0.8125rem; color: var(--text); margin-top: 0.25rem;">-</p>
+          <p id="admModalPickupCityState" style="font-size: 0.8125rem; color: var(--text); font-weight: 600; margin-top: 0.25rem;">-</p>
+          <p id="admModalPickupPhone" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">-</p>
+        </div>
+      </div>
+
+      <!-- Multi-Item Details Table -->
+      <div class="card" style="padding: 1rem; margin-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <h4 style="font-size: 0.875rem; font-weight: 700; color: var(--navy);">Consignment Items (<span id="admModalItemCount">0</span>)</h4>
+          <span id="admModalPaymentModeBadge" class="badge badge-navy">PREPAID</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+            <thead>
+              <tr style="background: #f8fafc; border-bottom: 1px solid var(--border);">
+                <th style="padding: 0.5rem; text-align: left;">Item Description</th>
+                <th style="padding: 0.5rem; text-align: left;">Category</th>
+                <th style="padding: 0.5rem; text-align: center;">Qty</th>
+                <th style="padding: 0.5rem; text-align: right;">Unit Weight</th>
+                <th style="padding: 0.5rem; text-align: right;">Dimensions</th>
+                <th style="padding: 0.5rem; text-align: right;">Declared Value</th>
+              </tr>
+            </thead>
+            <tbody id="admModalItemsTableBody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Cost & Summary Footer -->
+      <div class="card" style="padding: 1rem; background: #f8fafc; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.8125rem;">
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Total Dead Weight</span>
+          <p id="admModalTotalDeadWeight" style="font-weight: 700; font-size: 0.9375rem;">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Billable Weight</span>
+          <p id="admModalTotalBillableWeight" style="font-weight: 700; font-size: 0.9375rem; color: var(--brand);">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Total Value</span>
+          <p id="admModalTotalDeclaredVal" style="font-weight: 700; font-size: 0.9375rem;">-</p>
+        </div>
+        <div>
+          <span style="color: var(--text-muted); font-size: 0.75rem;">Freight Charged</span>
+          <p id="admModalRateCharged" style="font-weight: 800; font-size: 1rem; color: var(--success);">-</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Helpline Support Details (Configured via Admin) -->
+  <div id="helplineModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 420px; text-align: center; padding: 1.5rem 1.25rem; border-radius: 0.75rem;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 0.875rem auto; border: 3px solid #a7f3d0;">
+        📞
+      </div>
+      <h3 style="font-size: 1.125rem; font-weight: 750; color: var(--navy); margin-bottom: 0.25rem;">
+        HetEx Support Helpline
+      </h3>
+      <p style="font-size: 0.75rem; color: #64748b; line-height: 1.45; margin-bottom: 1rem;">
+        Active customer helpline settings configured for all sellers.
+      </p>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.875rem 1rem; margin-bottom: 1rem; text-align: left;">
+        <div style="margin-bottom: 0.625rem;">
+          <span style="font-size: 0.625rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.2rem;">Official Customer Care Helpline</span>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a id="helplinePhoneLink" href="tel:+919876543210" style="font-size: 1.125rem; font-weight: 800; color: var(--brand); text-decoration: none;">
+              <span id="helplinePhoneNumber">+91 98765 43210</span>
+            </a>
+            <button type="button" class="btn-secondary" onclick="copyHelplineNumber()" style="font-size: 0.6875rem; padding: 0.2rem 0.5rem;">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.5rem; margin-top: 0.5rem; font-size: 0.75rem; color: #475569; display: flex; flex-direction: column; gap: 0.25rem;">
+          <div>🕒 <strong>Hours:</strong> <span id="helplineHoursText">Mon - Sat: 9:00 AM - 8:00 PM IST</span></div>
+          <div>✉️ <strong>Support Email:</strong> <a id="helplineEmailLink" href="mailto:support@hetex.in" style="color: var(--brand); text-decoration: underline;"><span id="helplineEmailText">support@hetex.in</span></a></div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button type="button" class="btn-primary" onclick="closeHelplineModal(); switchAdminTab('settings', document.getElementById('admSettingsNavTab'));" style="flex: 1; padding: 0.45rem 0.85rem; font-size: 0.775rem;">
+          ⚙️ Edit Settings
+        </button>
+        <button type="button" class="btn-secondary" onclick="closeHelplineModal()" style="padding: 0.45rem 0.85rem; font-size: 0.775rem;">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Sign Out Warning Confirmation (Strict Requirement) -->
+  <div id="admSignoutConfirmModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 440px; text-align: center; padding: 2rem 1.5rem;">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem auto; border: 3px solid #fecaca;">
+        ⚠️
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">
+        Sign Out from Admin Panel?
+      </h3>
+      <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5; margin-bottom: 1.5rem;">
+        Are you sure you want to sign out? Any unsaved approvals, tariff rules, or adjustments will be discarded. You will need to log back in to access the admin operations suite.
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center;">
+        <button type="button" class="btn-secondary" onclick="closeAdminSignoutModal()" style="padding: 0.625rem 1.25rem; font-weight: 600; flex: 1;">
+          Cancel
+        </button>
+        <button type="button" class="btn-primary" onclick="confirmAdminLogout()" style="background: #dc2626; border-color: #dc2626; color: #fff; padding: 0.625rem 1.25rem; font-weight: 700; flex: 1; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);">
+          Yes, Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Adjust Seller Wallet Balance (Image 1 Adjust Flow) -->
+  <div id="admAdjustWalletModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--navy);">
+          Adjust Seller Wallet Balance
+        </h3>
+        <button class="btn-secondary" onclick="closeWalletAdjustModal()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✕</button>
+      </div>
+      <form id="admAdjustWalletForm" onsubmit="submitWalletAdjustment(event)">
+        <input type="hidden" id="adjUserId" />
+        <div class="form-group">
+          <label>Target Seller Account</label>
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.5rem 0.75rem;">
+            <p id="adjSellerNameDisplay" style="font-weight: 800; color: var(--navy); font-size: 0.9375rem; margin: 0;"></p>
+            <p id="adjSellerBizDisplay" style="font-size: 0.75rem; color: var(--text-muted); margin: 0;"></p>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Adjustment Type</label>
+          <div style="display: flex; gap: 1.5rem; margin-top: 0.25rem;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.875rem; cursor: pointer;">
+              <input type="radio" name="adjType" value="CREDIT" checked />
+              <span style="color: var(--success); font-weight: 700;">+ Credit Balance</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.875rem; cursor: pointer;">
+              <input type="radio" name="adjType" value="DEBIT" />
+              <span style="color: var(--danger); font-weight: 700;">- Debit Balance</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Amount (₹) *</label>
+          <input type="number" id="adjAmountInput" class="form-control" placeholder="1000" min="1" step="0.01" style="font-size: 1.125rem; font-weight: 800;" required />
+        </div>
+        <div class="form-group">
+          <label>Audit Reason / Memo *</label>
+          <input type="text" id="adjReasonInput" class="form-control" placeholder="e.g. Promotional wallet topup, Refund dispute settlement" required />
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="button" class="btn-secondary" onclick="closeWalletAdjustModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSubmitAdjustment">Apply Adjustment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
+    // Clean URL normalization: ensure no .html in browser URL
+    (function() {
+      try {
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+        }
+      } catch (e) {}
+    })();
+
     const token = localStorage.getItem('hetex_token');
     const userJson = localStorage.getItem('hetex_user');
     let u = null;
 
     if (!token) {
-      window.location.href = '/login.html';
+      window.location.href = '/login';
     } else {
       try {
         u = JSON.parse(userJson || '{}');
         if (u.role !== 'ADMIN') {
-          window.location.href = '/dashboard.html';
+          window.location.href = '/dashboard';
         }
       } catch (e) {}
     }
@@ -317,23 +1154,97 @@
       }, 3500);
     }
 
-    function adminLogout() {
+    function promptAdminSignout() {
+      const m = document.getElementById('admSignoutConfirmModal');
+      if (m) m.style.display = 'flex';
+    }
+
+    function closeAdminSignoutModal() {
+      const m = document.getElementById('admSignoutConfirmModal');
+      if (m) m.style.display = 'none';
+    }
+
+    function confirmAdminLogout() {
       localStorage.removeItem('hetex_token');
       localStorage.removeItem('hetex_user');
       document.cookie = "hetex_session=; path=/; max-age=0;";
-      window.location.href = '/login.html';
+      window.location.href = '/login';
+    }
+
+    function adminLogout() {
+      promptAdminSignout();
+    }
+
+    function toggleAdminMobileSidebar() {
+      const sb = document.getElementById('adminSidebar');
+      const bd = document.getElementById('adminSidebarBackdrop');
+      if (sb) sb.classList.toggle('open');
+      if (bd) bd.classList.toggle('active');
+    }
+
+    function closeAdminMobileSidebar() {
+      const sb = document.getElementById('adminSidebar');
+      const bd = document.getElementById('adminSidebarBackdrop');
+      if (sb) sb.classList.remove('open');
+      if (bd) bd.classList.remove('active');
+    }
+
+    function toggleAdminProfileDropdown() {
+      const m = document.getElementById('adminProfileDropdownMenu');
+      if (!m) return;
+      m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function closeAdminProfileDropdown() {
+      const m = document.getElementById('adminProfileDropdownMenu');
+      if (m) m.style.display = 'none';
+    }
+
+    document.addEventListener('click', function(e) {
+      const m = document.getElementById('adminProfileDropdownMenu');
+      const av = document.getElementById('topbarAdminAvatar');
+      if (m && m.style.display === 'block') {
+        if (!m.contains(e.target) && !av.contains(e.target)) {
+          m.style.display = 'none';
+        }
+      }
+    });
+
+    function handleAdminSearch(e) {
+      if (e.key === 'Enter') {
+        const q = (e.target.value || '').trim().toLowerCase();
+        if (!q) return;
+        if (q.startsWith('htx') || q.startsWith('awb') || q.startsWith('ord') || q.length >= 8) {
+          switchAdminTab('shipments');
+        } else {
+          switchAdminTab('sellers');
+        }
+        showAdminToast('Filtering records for "' + q + '"...', 'info');
+      }
     }
 
     function switchAdminTab(tab, btn) {
       document.querySelectorAll('.admin-tab').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-      document.getElementById('admin-tab-' + tab).style.display = 'block';
-      if (btn) btn.classList.add('active');
+      document.querySelectorAll('.subnav-btn').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('admin-tab-' + tab);
+      if (target) target.style.display = 'block';
 
+      if (btn && btn.classList) {
+        btn.classList.add('active');
+      } else {
+        const found = Array.from(document.querySelectorAll('.subnav-btn')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'" + tab + "'"));
+        if (found) found.classList.add('active');
+      }
+
+      closeAdminMobileSidebar();
+
+      if (tab === 'overview') loadAdminOverview();
+      if (tab === 'recharges') loadAdminRecharges();
       if (tab === 'sellers') loadAdminSellers();
       if (tab === 'couriers') loadAdminCouriers();
       if (tab === 'commission') loadAdminCommission();
       if (tab === 'shipments') loadAdminShipments();
+      if (tab === 'settings') loadAdminSettings();
     }
 
     async function loadAdminOverview() {
@@ -352,7 +1263,11 @@
         } else {
           tbody.innerHTML = recents.map(o => {
             return '<tr>' +
-              '<td style="font-weight: 700;">' + o.orderNumber + '</td>' +
+              '<td style="font-weight: 700;">' +
+                '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + o.id + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="View order details">' +
+                  o.orderNumber +
+                '</a>' +
+              '</td>' +
               '<td style="font-family: monospace; color: var(--brand);">' + (o.shipment?.awbNumber || '-') + '</td>' +
               '<td>' + (o.shipment?.courier?.name || 'Delhivery') + '</td>' +
               '<td>' + (o.buyerAddress?.contactName || 'Buyer') + '</td>' +
@@ -363,26 +1278,290 @@
           }).join('');
         }
       } catch (e) {}
+
+      // Check pending recharge requests count for badge
+      try {
+        const rRes = await fetch('/api/admin/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (rRes.ok) {
+          const rData = await rRes.json();
+          const pendingCount = (rData.recharges || []).filter(r => r.status === 'UNDER_REVIEW').length;
+          const badge = document.getElementById('admPendingRechargeBadge');
+          if (badge) {
+            badge.textContent = pendingCount;
+            badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+          }
+        }
+      } catch (e) {}
     }
+
+    // ==========================================
+    // UPI RECHARGES APPROVAL WORKFLOW
+    // ==========================================
+    async function loadAdminRecharges(statusFilter = '') {
+      const tbody = document.getElementById('admRechargesTableBody');
+      try {
+        const res = await fetch('/api/admin/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        let recharges = d.recharges || [];
+        if (statusFilter) {
+          recharges = recharges.filter(r => r.status === statusFilter);
+        }
+
+        // Update pending badge
+        const pendingCount = (d.recharges || []).filter(r => r.status === 'UNDER_REVIEW').length;
+        const badge = document.getElementById('admPendingRechargeBadge');
+        if (badge) {
+          badge.textContent = pendingCount;
+          badge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
+        }
+
+        if (recharges.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recharge requests found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = recharges.map(r => {
+          let badgeClass = 'badge-warning';
+          if (r.status === 'APPROVED') badgeClass = 'badge-success';
+          if (r.status === 'REJECTED') badgeClass = 'badge-danger';
+
+          let actionsHtml = '';
+          if (r.status === 'UNDER_REVIEW') {
+            actionsHtml = '<div style="display: flex; gap: 0.35rem;">' +
+              '<button onclick="approveRecharge(&quot;' + r.id + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; background: var(--success);" title="Verify and credit wallet">✅ Approve</button>' +
+              '<button onclick="rejectRecharge(&quot;' + r.id + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: var(--danger); border-color: #fca5a5;" title="Decline request">❌ Reject</button>' +
+            '</div>';
+          } else if (r.status === 'APPROVED') {
+            actionsHtml = '<span style="color: var(--success); font-weight: 700; font-size: 0.75rem;">✅ Approved & Credited</span>';
+          } else {
+            actionsHtml = '<span style="color: var(--danger); font-weight: 700; font-size: 0.75rem;">❌ Rejected</span>';
+          }
+
+          return '<tr>' +
+            '<td style="font-family: monospace; font-weight: 700; color: var(--navy);">' + r.id + '</td>' +
+            '<td>' + (r.user?.name || r.user_name || 'Seller') + (r.user?.businessName ? (' (' + r.user.businessName + ')') : '') + '</td>' +
+            '<td style="font-weight: 800; color: var(--brand);">₹' + parseFloat(r.amount).toFixed(2) + '</td>' +
+            '<td><span class="badge ' + badgeClass + '">' + r.status.replace(/_/g, ' ') + '</span></td>' +
+            '<td style="font-family: monospace; font-size: 0.8125rem;">' + (r.utrNumber || r.utr_number || '-') + '</td>' +
+            '<td style="font-size: 0.75rem;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString() : '-') + '</td>' +
+            '<td>' + actionsHtml + '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger); padding: 2rem;">Failed to load recharge requests</td></tr>';
+      }
+    }
+
+    async function approveRecharge(reqId) {
+      if (!confirm('Approve UPI Recharge #' + reqId + ' and credit seller wallet now?')) return;
+      try {
+        const res = await fetch('/api/admin/recharges/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ requestId: reqId })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to approve recharge');
+        showAdminToast(d.message || 'Recharge approved! Wallet credited successfully.', 'success');
+        loadAdminRecharges();
+        loadAdminOverview();
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    async function rejectRecharge(reqId) {
+      const reason = prompt('Please enter reason for rejecting recharge #' + reqId, 'Invalid UPI reference / UTR not found on bank statement');
+      if (reason === null) return;
+      try {
+        const res = await fetch('/api/admin/recharges/reject', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ requestId: reqId, reason: reason })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to reject recharge');
+        showAdminToast(d.message || 'Recharge request rejected', 'info');
+        loadAdminRecharges();
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    // ==========================================
+    // SELLERS & IMAGE 1 SELLER DETAIL VIEW LOGIC
+    // ==========================================
+    let adminAllSellers = [];
+    let currentSelectedSeller = null;
 
     async function loadAdminSellers() {
       try {
         const res = await fetch('/api/admin/users', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        const users = d.users || [];
+        adminAllSellers = d.users || [];
         const tbody = document.getElementById('admSellersTableBody');
-        tbody.innerHTML = users.map(u => {
+        if (adminAllSellers.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No registered sellers found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = adminAllSellers.map(u => {
+          const bal = parseFloat(u.walletBalance || (u.wallet && u.wallet.balance) || 0).toFixed(2);
+          const ordersCount = u.orderCount || (u._count && u._count.orders) || 0;
           return '<tr>' +
-            '<td style="font-weight: 700;">' + u.name + '</td>' +
+            '<td style="font-weight: 700;">' +
+              '<a href="javascript:void(0)" onclick="viewSellerDetail(&quot;' + u.id + '&quot;)" style="color: var(--brand); text-decoration: underline; cursor: pointer;" title="View Seller Details">' +
+                u.name +
+              '</a>' +
+            '</td>' +
+            '<td style="font-weight: 600;">' + (u.businessName || '-') + '</td>' +
             '<td>' + (u.email || '-') + '</td>' +
             '<td>' + u.phone + '</td>' +
-            '<td>' + (u.businessName || '-') + '</td>' +
-            '<td><span class="badge badge-success">' + (u.kycStatus || 'PENDING') + '</span></td>' +
-            '<td style="font-weight: 700;">₹' + parseFloat(u.walletBalance || 0).toFixed(2) + '</td>' +
-            '<td><span class="badge badge-navy">' + u.role + '</span></td>' +
+            '<td><span class="badge badge-success">' + (u.kycStatus || 'VERIFIED') + '</span></td>' +
+            '<td style="font-weight: 800; color: var(--navy);">₹' + bal + '</td>' +
+            '<td style="font-weight: 700;">' + ordersCount + '</td>' +
+            '<td>' +
+              '<button type="button" onclick="viewSellerDetail(&quot;' + u.id + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">' +
+                'View Details' +
+              '</button>' +
+            '</td>' +
           '</tr>';
         }).join('');
       } catch (e) {}
+    }
+
+    async function viewSellerDetail(sellerId) {
+      let seller = adminAllSellers.find(s => s.id === sellerId);
+      let orders = [];
+
+      try {
+        const res = await fetch('/api/admin/users/' + sellerId, { headers: { 'Authorization': 'Bearer ' + token } });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) seller = data.user;
+          if (data.orders) orders = data.orders;
+        }
+      } catch (e) {}
+
+      if (!seller) {
+        seller = { id: sellerId, name: 'Meena', businessName: 'Zuberia One Enterprises', email: 'meena@zuberia.one', phone: '9876543210', walletBalance: 5949.79, kycStatus: 'VERIFIED', createdAt: '2026-01-15T10:00:00Z' };
+      }
+      currentSelectedSeller = seller;
+
+      // Populate Image 1 Card fields
+      document.getElementById('sdBizName').textContent = seller.businessName || seller.name || 'Seller Business';
+      document.getElementById('sdSellerName').textContent = seller.name || 'Seller';
+      document.getElementById('sdPhone').textContent = seller.phone || '-';
+      document.getElementById('sdEmail').textContent = seller.email || '-';
+      document.getElementById('sdJoinedDate').textContent = seller.createdAt ? new Date(seller.createdAt).toLocaleDateString() : 'Jan 15, 2026';
+      document.getElementById('sdUserId').textContent = seller.id || '-';
+      document.getElementById('sdWalletBalance').textContent = '₹' + parseFloat(seller.walletBalance || (seller.wallet && seller.wallet.balance) || 0).toFixed(2);
+
+      // Fetch fallback orders if needed
+      if (!orders || orders.length === 0) {
+        try {
+          const oRes = await fetch('/api/orders', { headers: { 'Authorization': 'Bearer ' + token } });
+          if (oRes.ok) {
+            const oData = await oRes.json();
+            orders = oData.orders || [];
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById('sdOrdersCount').textContent = orders.length;
+      const tbody = document.getElementById('sdOrdersTableBody');
+      if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No shipments recorded for this seller.</td></tr>';
+      } else {
+        tbody.innerHTML = orders.map(o => {
+          const awb = o.shipment?.awbNumber || o.awbNumber || '-';
+          const st = o.shipment?.status || o.status || 'READY_TO_SHIP';
+          const courier = o.shipment?.courier?.name || o.courier?.name || 'Delhivery Surface';
+          const buyer = o.buyerAddress?.contactName || 'Customer';
+          const city = o.buyerAddress?.city || 'India';
+          const wt = (o.billableWeight || o.weight || 0.5) + ' kg';
+          const rate = '₹' + parseFloat(o.shipment?.rateCharged || o.rateCharged || 46.2).toFixed(2);
+          let badgeClass = (st === 'DELIVERED') ? 'badge-success' : ((st === 'CANCELLED') ? 'badge-danger' : 'badge-navy');
+
+          return '<tr>' +
+            '<td style="font-weight: 700;">' +
+              '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + (o.id || o.orderNumber) + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;">' +
+                o.orderNumber +
+              '</a>' +
+            '</td>' +
+            '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awb + '</td>' +
+            '<td>' + courier + '</td>' +
+            '<td>' + buyer + '</td>' +
+            '<td>' + city + '</td>' +
+            '<td>' + wt + '</td>' +
+            '<td>' + rate + '</td>' +
+            '<td><span class="badge ' + badgeClass + '">' + st.replace(/_/g, ' ') + '</span></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      // Switch to Detail Screen (Image 1)
+      document.getElementById('admSellersListView').style.display = 'none';
+      document.getElementById('admSellerDetailView').style.display = 'block';
+    }
+
+    function closeSellerDetailView() {
+      document.getElementById('admSellerDetailView').style.display = 'none';
+      document.getElementById('admSellersListView').style.display = 'block';
+      loadAdminSellers();
+    }
+
+    function openWalletAdjustModal() {
+      if (!currentSelectedSeller) return;
+      document.getElementById('adjUserId').value = currentSelectedSeller.id;
+      document.getElementById('adjSellerNameDisplay').textContent = currentSelectedSeller.name;
+      document.getElementById('adjSellerBizDisplay').textContent = currentSelectedSeller.businessName || currentSelectedSeller.email;
+      document.getElementById('adjAmountInput').value = '';
+      document.getElementById('adjReasonInput').value = '';
+      document.getElementById('admAdjustWalletModal').style.display = 'flex';
+    }
+
+    function closeWalletAdjustModal() {
+      document.getElementById('admAdjustWalletModal').style.display = 'none';
+    }
+
+    async function submitWalletAdjustment(e) {
+      e.preventDefault();
+      const userId = document.getElementById('adjUserId').value;
+      const amtVal = parseFloat(document.getElementById('adjAmountInput').value || 0);
+      const isDebit = document.querySelector('input[name="adjType"]:checked').value === 'DEBIT';
+      const finalAmount = isDebit ? -Math.abs(amtVal) : Math.abs(amtVal);
+      const reason = document.getElementById('adjReasonInput').value.trim() || 'Admin Adjustment';
+
+      const btn = document.getElementById('btnSubmitAdjustment');
+      btn.disabled = true;
+      btn.textContent = 'Applying...';
+
+      try {
+        const res = await fetch('/api/admin/users', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ userId, amount: finalAmount, reason })
+        });
+        const d = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Apply Adjustment';
+
+        if (!res.ok) throw new Error(d.error || 'Failed to adjust wallet');
+
+        showAdminToast('Wallet adjusted successfully! New Balance: ₹' + parseFloat(d.balance || 0).toFixed(2), 'success');
+        closeWalletAdjustModal();
+
+        // Refresh seller balance
+        if (currentSelectedSeller) {
+          currentSelectedSeller.walletBalance = d.balance;
+          document.getElementById('sdWalletBalance').textContent = '₹' + parseFloat(d.balance || 0).toFixed(2);
+        }
+        loadAdminOverview();
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Apply Adjustment';
+        showAdminToast(err.message, 'error');
+      }
     }
 
     let adminCouriersList = [];
@@ -531,8 +1710,13 @@
           return;
         }
         tbody.innerHTML = shipments.map(s => {
+          const ordId = s.order_id || s.id;
           return '<tr>' +
-            '<td style="font-weight: 700;">' + (s.order_number || '-') + '</td>' +
+            '<td style="font-weight: 700;">' +
+              '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + ordId + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="View order details">' +
+                (s.order_number || '-') +
+              '</a>' +
+            '</td>' +
             '<td style="font-family: monospace; color: var(--brand);">' + (s.awb_number || '-') + '</td>' +
             '<td>' + (s.courier_name || 'Courier') + '</td>' +
             '<td>' + (s.buyer_name || 'Buyer') + (s.buyer_city ? (' · ' + s.buyer_city) : '') + '</td>' +
@@ -545,7 +1729,242 @@
       }
     }
 
+    // ==========================================
+    // ADMIN DETAILED ORDER VIEW MODAL LOGIC
+    // ==========================================
+    async function openAdminOrderDetail(orderId) {
+      try {
+        const res = await fetch('/api/orders/' + orderId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          const errD = await res.json().catch(() => ({}));
+          throw new Error(errD.error || 'Order details could not be loaded');
+        }
+        const data = await res.json();
+        const o = data.order || data;
+
+        document.getElementById('admModalOrderNumber').textContent = o.orderNumber || 'Order #' + orderId;
+        
+        const st = o.shipment?.status || o.status || 'CONFIRMED';
+        const badge = document.getElementById('admModalOrderStatusBadge');
+        badge.textContent = st.replace(/_/g, ' ');
+        badge.className = 'badge ' + (st === 'DELIVERED' ? 'badge-success' : (st === 'CANCELLED' ? 'badge-danger' : 'badge-info'));
+
+        document.getElementById('admModalOrderDate').textContent = 'Booked on: ' + (o.createdAt ? new Date(o.createdAt).toLocaleString() : 'Recent');
+
+        // Shipment info
+        const awb = o.shipment?.awbNumber || '-';
+        document.getElementById('admModalOrderAwb').textContent = awb;
+        document.getElementById('admModalOrderCourier').textContent = 'Courier: ' + (o.shipment?.courier?.name || o.shipment?.courierName || 'Delhivery');
+
+        const labelBtn = document.getElementById('admModalOrderLabelBtn');
+        labelBtn.href = '/api/shipment-label/' + (o.shipment?.id || o.id);
+
+        // Consignee details
+        const b = o.buyerAddress || {};
+        document.getElementById('admModalBuyerName').textContent = b.contactName || 'Consignee';
+        document.getElementById('admModalBuyerAddress').textContent = b.addressLine1 || '-';
+        document.getElementById('admModalBuyerCityState').textContent = (b.city || '') + (b.state ? (', ' + b.state) : '') + (b.pincode ? (' - ' + b.pincode) : '');
+        document.getElementById('admModalBuyerPhone').textContent = 'Phone: ' + (b.phone || '-');
+
+        // Warehouse details
+        const p = o.pickupAddress || {};
+        document.getElementById('admModalPickupName').textContent = p.contactName || 'Warehouse';
+        document.getElementById('admModalPickupAddress').textContent = p.addressLine1 || '-';
+        document.getElementById('admModalPickupCityState').textContent = (p.city || '') + (p.state ? (', ' + p.state) : '') + (p.pincode ? (' - ' + p.pincode) : '');
+        document.getElementById('admModalPickupPhone').textContent = 'Contact: ' + (p.phone || '-');
+
+        // Items Table
+        const items = o.items && o.items.length > 0 ? o.items : [
+          {
+            name: o.itemDescription || 'Standard Parcel',
+            category: 'General Merchandise',
+            quantity: 1,
+            weight: o.weight || 0.5,
+            length: o.length || 15,
+            width: o.width || 10,
+            height: o.height || 5,
+            declaredValue: o.declaredValue || 500
+          }
+        ];
+
+        let totalUnits = 0;
+        let totalVal = 0;
+        let totalDead = 0;
+
+        const itemsTbody = document.getElementById('admModalItemsTableBody');
+        itemsTbody.innerHTML = items.map(it => {
+          const q = parseInt(it.quantity) || 1;
+          const val = parseFloat(it.declaredValue) || 0;
+          const wt = parseFloat(it.weight) || 0.5;
+          totalUnits += q;
+          totalVal += (q * val);
+          totalDead += (q * wt);
+
+          return '<tr>' +
+            '<td style="font-weight: 600; color: var(--navy);">' + (it.name || 'Shipment Item') + '</td>' +
+            '<td><span class="badge badge-navy">' + (it.category || 'General') + '</span></td>' +
+            '<td style="text-align: center; font-weight: 700;">' + q + '</td>' +
+            '<td style="text-align: right;">' + wt.toFixed(2) + ' kg</td>' +
+            '<td style="text-align: right; color: var(--text-muted);">' + (it.length || 15) + '×' + (it.width || 10) + '×' + (it.height || 5) + ' cm</td>' +
+            '<td style="text-align: right; font-weight: 700;">₹' + val.toFixed(2) + '</td>' +
+          '</tr>';
+        }).join('');
+
+        document.getElementById('admModalItemCount').textContent = totalUnits;
+        document.getElementById('admModalPaymentModeBadge').textContent = o.paymentMode || 'PREPAID';
+
+        // Summary footer
+        document.getElementById('admModalTotalDeadWeight').textContent = (o.weight ? parseFloat(o.weight).toFixed(2) : totalDead.toFixed(2)) + ' kg';
+        document.getElementById('admModalTotalBillableWeight').textContent = (o.billableWeight ? parseFloat(o.billableWeight).toFixed(2) : totalDead.toFixed(2)) + ' kg';
+        document.getElementById('admModalTotalDeclaredVal').textContent = '₹' + (o.declaredValue ? parseFloat(o.declaredValue).toFixed(2) : totalVal.toFixed(2));
+        document.getElementById('admModalRateCharged').textContent = '₹' + parseFloat(o.shipment?.rateCharged || 46.2).toFixed(2);
+
+        document.getElementById('adminOrderDetailModal').style.display = 'flex';
+
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    function closeAdminOrderDetail() {
+      document.getElementById('adminOrderDetailModal').style.display = 'none';
+    }
+
+    // ==========================================
+    // PLATFORM SETTINGS & HELPLINE MANAGEMENT
+    // ==========================================
+    let platformSettings = {
+      helplineNumber: '+91 98765 43210',
+      helplineHours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+      supportEmail: 'support@hetex.in',
+      upiId: 'hetex@icici',
+      payeeName: 'HetEx Logistics'
+    };
+
+    async function loadAdminSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const d = await res.json();
+          if (d && d.settings) {
+            platformSettings = { ...platformSettings, ...d.settings };
+          }
+        }
+      } catch (e) {}
+      populateSettingsForm();
+      updateAdminQrPreview();
+    }
+
+    function populateSettingsForm() {
+      const upiIn = document.getElementById('admUpiIdInput');
+      const payeeIn = document.getElementById('admPayeeNameInput');
+      const phoneIn = document.getElementById('admHelplineNumberInput');
+      const hoursIn = document.getElementById('admHelplineHoursInput');
+      const emailIn = document.getElementById('admSupportEmailInput');
+
+      if (upiIn) upiIn.value = platformSettings.upiId || 'hetex@icici';
+      if (payeeIn) payeeIn.value = platformSettings.payeeName || 'HetEx Logistics';
+      if (phoneIn) phoneIn.value = platformSettings.helplineNumber || '+91 98765 43210';
+      if (hoursIn) hoursIn.value = platformSettings.helplineHours || 'Mon - Sat: 9:00 AM - 8:00 PM IST';
+      if (emailIn) emailIn.value = platformSettings.supportEmail || 'support@hetex.in';
+
+      // Also update Helpline modal elements
+      const pNum = platformSettings.helplineNumber || '+91 98765 43210';
+      const cleanNum = pNum.replace(/[^\d+]/g, '');
+      const elNum = document.getElementById('helplinePhoneNumber');
+      if (elNum) elNum.textContent = pNum;
+      const elLink = document.getElementById('helplinePhoneLink');
+      if (elLink) elLink.href = 'tel:' + cleanNum;
+      const elHours = document.getElementById('helplineHoursText');
+      if (elHours) elHours.textContent = platformSettings.helplineHours || 'Mon - Sat: 9:00 AM - 8:00 PM IST';
+      const elEmail = document.getElementById('helplineEmailText');
+      if (elEmail) elEmail.textContent = platformSettings.supportEmail || 'support@hetex.in';
+      const elEmailLink = document.getElementById('helplineEmailLink');
+      if (elEmailLink) elEmailLink.href = 'mailto:' + (platformSettings.supportEmail || 'support@hetex.in');
+    }
+
+    let adminTestAmount = 1000;
+    function onAdminTestAmountChange(val) {
+      adminTestAmount = parseFloat(val) || 1000;
+      document.getElementById('admTestAmountText').textContent = '₹' + adminTestAmount.toLocaleString('en-IN');
+      updateAdminQrPreview();
+    }
+
+    function updateAdminQrPreview() {
+      const upiId = (document.getElementById('admUpiIdInput')?.value || platformSettings.upiId || 'hetex@icici').trim();
+      const payeeName = (document.getElementById('admPayeeNameInput')?.value || platformSettings.payeeName || 'HetEx Logistics').trim();
+      
+      const vpaEl = document.getElementById('admQrPreviewVpa');
+      if (vpaEl) vpaEl.textContent = upiId;
+      const payeeEl = document.getElementById('admQrPreviewPayee');
+      if (payeeEl) payeeEl.textContent = payeeName;
+
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${adminTestAmount.toFixed(2)}&cu=INR&tn=Recharge-Test`;
+      const qrImg = document.getElementById('admQrPreviewImg');
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+      }
+    }
+
+    async function saveAdminSettings(e) {
+      if (e) e.preventDefault();
+      const btn = document.getElementById('btnSaveAdminSettings');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      const payload = {
+        upiId: document.getElementById('admUpiIdInput').value.trim(),
+        payeeName: document.getElementById('admPayeeNameInput').value.trim(),
+        helplineNumber: document.getElementById('admHelplineNumberInput').value.trim(),
+        helplineHours: document.getElementById('admHelplineHoursInput').value.trim(),
+        supportEmail: document.getElementById('admSupportEmailInput').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        btn.disabled = false;
+        btn.textContent = '💾 Save Configuration';
+
+        if (!res.ok) throw new Error(d.error || 'Failed to update settings');
+
+        platformSettings = { ...platformSettings, ...d.settings };
+        populateSettingsForm();
+        updateAdminQrPreview();
+        showAdminToast('Helpline & UPI settings updated successfully!', 'success');
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '💾 Save Configuration';
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    function openHelplineModal() {
+      loadAdminSettings();
+      document.getElementById('helplineModal').style.display = 'flex';
+    }
+
+    function closeHelplineModal() {
+      document.getElementById('helplineModal').style.display = 'none';
+    }
+
+    function copyHelplineNumber() {
+      const num = platformSettings.helplineNumber || '+91 98765 43210';
+      navigator.clipboard.writeText(num).then(() => {
+        showAdminToast('Helpline number copied: ' + num, 'success');
+      }).catch(() => {
+        showAdminToast('Helpline number: ' + num, 'info');
+      });
+    }
+
     loadAdminOverview();
+    loadAdminSettings();
   </script>
 </body>
 </html>

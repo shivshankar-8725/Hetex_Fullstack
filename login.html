@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,188 +8,325 @@
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
   <style>
-    
-  :root {
-    --brand: #2563eb;
-    --brand-dark: #1d4ed8;
-    --brand-light: #eff6ff;
-    --navy: #0f172a;
-    --navy-light: #1e293b;
-    --accent: #ea580c;
-    --surface: #ffffff;
-    --background: #f8fafc;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --warning: #d97706;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-  a { color: inherit; text-decoration: none; }
-  button { cursor: pointer; font-family: inherit; }
-  input, select, textarea { font-family: inherit; font-size: inherit; }
-  .btn-primary {
-    background: var(--brand);
-    color: #fff;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    border: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
-  .btn-secondary {
-    background: #fff;
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
-  .badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-  .badge-success { background: #dcfce7; color: #15803d; }
-  .badge-warning { background: #fef3c7; color: #b45309; }
-  .badge-danger { background: #fee2e2; color: #b91c1c; }
-  .badge-info { background: #e0f2fe; color: #0369a1; }
-  .badge-navy { background: #f1f5f9; color: #334155; }
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  }
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 1rem;
-    backdrop-filter: blur(2px);
-  }
-  .modal-content {
-    background: #fff;
-    border-radius: 1rem;
-    max-width: 550px;
-    width: 100%;
-    padding: 1.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-  th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
-  td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
-  tr:hover td { background: #f8fafc; }
+    :root {
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-light: #eff6ff;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #ea580c;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
 
-    .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
-    .auth-box { max-width: 440px; width: 100%; padding: 2.5rem; }
-    .form-group { margin-bottom: 1.25rem; }
-    .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.375rem; color: var(--navy); }
-    .form-control { width: 100%; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.9375rem; outline: none; transition: border 0.15s; }
-    .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    @media (max-width: 480px) {
-      .auth-container { padding: 1.25rem 0.75rem; }
-      .auth-box { padding: 1.5rem 1.125rem; border-radius: 0.75rem; }
-      .auth-box h1 { font-size: 1.25rem !important; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #eef2f6 0%, #f8fafc 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .login-wrapper {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      align-items: center;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      gap: 3rem;
+      width: 100%;
+    }
+
+    .brand-hero {
+      padding: 2rem 1rem;
+    }
+
+    .brand-logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .hero-title {
+      font-size: 3.25rem;
+      font-weight: 850;
+      line-height: 1.15;
+      color: #334155;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title span {
+      display: block;
+      color: #1e293b;
+    }
+
+    .hero-description {
+      font-size: 1.0625rem;
+      line-height: 1.65;
+      color: #64748b;
+      max-width: 540px;
+    }
+
+    /* Right Auth Card */
+    .auth-card {
+      background: #ffffff;
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 1.25rem;
+      padding: 2.5rem 2.25rem;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+      max-width: 460px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .auth-card-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 0.35rem;
+    }
+
+    .auth-card-subtitle {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 0.375rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.6875rem 0.875rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.9375rem;
+      outline: none;
+      transition: all 0.15s ease;
+      color: var(--text);
+    }
+
+    .form-control:focus {
+      background: #ffffff;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.75rem;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      transition: all 0.15s ease;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+
+    .demo-credentials-box {
+      margin-top: 1.25rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border: 1px dashed var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .demo-chip {
+      color: var(--brand);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .track-banner {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--brand);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+
+    .track-banner:hover {
+      background: #dbeafe;
+    }
+
+    @media (max-width: 900px) {
+      .login-wrapper {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.25rem;
+        gap: 2rem;
+      }
+
+      .hero-title {
+        font-size: 2.25rem;
+      }
+
+      .brand-hero {
+        text-align: center;
+        padding: 0.5rem 0;
+      }
+
+      .hero-description {
+        margin: 0 auto;
+      }
     }
   </style>
 </head>
-<body style="background: #f1f5f9;">
-  <div class="auth-container">
-    <div class="card auth-box">
-      <div style="text-align: center; margin-bottom: 1.75rem;">
-        <a href="/" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
-          <img src="/logo.jpeg" alt="HetEx Logo" style="height: 48px; max-width: 180px; width: auto; object-fit: contain; display: block; margin: 0 auto 1rem auto;" />
+
+<body>
+
+  <div class="login-wrapper">
+    <!-- Left Hero Column (Matches Image 2) -->
+    <div class="brand-hero">
+      <div class="brand-logo-wrap">
+        <a href="/" style="display: flex; align-items: center; text-decoration: none;">
+          <img src="/logo.jpeg" alt="HetEx Courier Logistics"
+            style="height: 48px; width: auto; max-width: 220px; object-fit: contain; display: block;" />
         </a>
-        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--navy);">Log in to your account</h1>
-        <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Compare couriers, book orders, and track shipments</p>
       </div>
 
-      <div id="loginAlert" style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.875rem; margin-bottom: 1.25rem;"></div>
+      <h1 class="hero-title">
+        <span>Simplify your shipping.</span>
+        <span>Amplify your growth.</span>
+      </h1>
+
+      <p class="hero-description">
+        HetEx is your all-in-one logistics platform. Compare top couriers, book shipments instantly, automate live
+        tracking, and manage NDRs — all from a single, powerful dashboard designed to make your delivery process
+        effortless.
+      </p>
+    </div>
+
+    <!-- Right Login Card (Matches Image 2) -->
+    <div class="auth-card">
+      <h2 class="auth-card-title">Log in to your dashboard</h2>
+      <p class="auth-card-subtitle">Compare couriers, book shipments, and track deliveries.</p>
+
+      <div id="loginAlert"
+        style="display: none; padding: 0.75rem 1rem; border-radius: 0.5rem; font-size: 0.8125rem; margin-bottom: 1.25rem;">
+      </div>
 
       <form id="loginForm">
         <div class="form-group">
-          <label for="identifierInput">Email or Phone Number</label>
-          <input type="text" id="identifierInput" class="form-control" placeholder="you@business.com or 9999999999" required autofocus />
+          <label for="identifierInput">Email</label>
+          <input type="text" id="identifierInput" class="form-control" placeholder="admin@hetex.com"
+            value="admin@hetex.com" required autofocus />
         </div>
 
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
             <label for="passwordInput" style="margin-bottom: 0;">Password</label>
-            <a href="/forgot-password.html" style="font-size: 0.8125rem; color: var(--brand); font-weight: 600;">Forgot?</a>
+            <a href="/forgot-password"
+              style="font-size: 0.75rem; color: var(--brand); font-weight: 600;">Forgot?</a>
           </div>
           <div style="position: relative;">
-            <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" required />
-            <button type="button" id="togglePassword" style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); font-size: 0.8125rem; font-weight: 600;">Show</button>
+            <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" value="Admin@123"
+              required />
+            <button type="button" id="togglePassword"
+              style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Show</button>
           </div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn-primary" style="width: 100%; padding: 0.75rem; margin-top: 0.5rem;">
+        <button type="submit" id="submitBtn" class="btn-submit">
           Log In
         </button>
       </form>
 
-      <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 0.875rem; text-align: center; color: var(--text-muted);">
-        Don't have an account? <a href="/register.html" style="color: var(--brand); font-weight: 700;">Create an account</a>
+      <div style="margin-top: 1.25rem; font-size: 0.8125rem; text-align: center; color: var(--text-muted);">
+        New here? <a href="/register" style="color: var(--brand); font-weight: 700;">Create an account</a>
       </div>
 
-      <!-- Demo Accounts helper -->
-      <div style="margin-top: 1.5rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 0.875rem; font-size: 0.8125rem; color: #1e40af;">
-        <strong>Demo Login:</strong><br/>
-        • Admin: <button type="button" onclick="document.getElementById('identifierInput').value='admin@hetex.in'; document.getElementById('passwordInput').value='admin123';" style="background: none; border: none; padding: 0; color: #1d4ed8; font-weight: 700; text-decoration: underline; cursor: pointer; font-family: monospace; font-size: 0.8125rem;">admin@hetex.in / admin123 (Click to fill)</button><br/>
-        • Or register a fresh seller account with random OTP!
-      </div>
-
-      <!-- Quick Track AWB Box -->
-      <div style="margin-top: 1.5rem; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 0.5rem; padding: 0.875rem;">
-        <p style="font-size: 0.8125rem; font-weight: 700; color: #9a3412; margin-bottom: 0.5rem;">📦 Have an AWB number to track?</p>
-        <form id="quickTrackForm" style="display: flex; gap: 0.375rem;">
-          <input type="text" id="quickAwbInput" placeholder="Enter AWB..." style="flex: 1; padding: 0.375rem 0.625rem; border: 1px solid #fdba74; border-radius: 0.375rem; font-size: 0.8125rem; outline: none;" required />
-          <button type="submit" class="btn-primary" style="padding: 0.375rem 0.75rem; font-size: 0.8125rem; background: var(--accent);">Track</button>
-        </form>
-      </div>
+      <!-- Quick Track Shipment Pill (from Image 2) -->
+      <a href="/track" class="track-banner">
+        <span>📦 Track your shipment here</span>
+        <span>›</span>
+      </a>
     </div>
   </div>
 
   <script>
+    // Clean URL normalization: ensure no .html in browser URL
+    (function() {
+      try {
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
+        }
+      } catch (e) {}
+    })();
+
     const form = document.getElementById('loginForm');
     const alertBox = document.getElementById('loginAlert');
     const submitBtn = document.getElementById('submitBtn');
     const passInput = document.getElementById('passwordInput');
     const toggleBtn = document.getElementById('togglePassword');
 
-    toggleBtn.addEventListener('click', function() {
+    function autofill(email, pass) {
+      document.getElementById('identifierInput').value = email;
+      passInput.value = pass;
+    }
+
+    toggleBtn.addEventListener('click', function () {
       if (passInput.type === 'password') {
         passInput.type = 'text';
         toggleBtn.textContent = 'Hide';
@@ -198,17 +336,11 @@
       }
     });
 
-    document.getElementById('quickTrackForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const val = document.getElementById('quickAwbInput').value.trim();
-      if (val) window.location.href = '/track-public.html?awb=' + encodeURIComponent(val);
-    });
-
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       alertBox.style.display = 'none';
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Authenticating...';
+      submitBtn.textContent = 'Logging in...';
 
       const identifier = document.getElementById('identifierInput').value.trim();
       const password = passInput.value;
@@ -219,7 +351,14 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: identifier, identifier: identifier, password: password })
         });
-        const data = await res.json();
+        
+        let data = {};
+        const text = await res.text();
+        try {
+          data = text ? JSON.parse(text) : {};
+        } catch (e) {
+          throw new Error('Server connection error (HTTP ' + res.status + '). Please check database setup.');
+        }
 
         if (!res.ok) {
           throw new Error(data.error || 'Invalid credentials');
@@ -237,11 +376,11 @@
 
         setTimeout(() => {
           if (data.user && data.user.role === 'ADMIN') {
-            window.location.href = '/admin.html';
+            window.location.href = '/admin';
           } else {
-            window.location.href = '/dashboard.html';
+            window.location.href = '/dashboard';
           }
-        }, 500);
+        }, 400);
 
       } catch (err) {
         alertBox.style.display = 'block';
@@ -254,4 +393,5 @@
     });
   </script>
 </body>
+
 </html>

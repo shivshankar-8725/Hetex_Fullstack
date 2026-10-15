@@ -1,231 +1,1020 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HetEx | Multi-Courier Shipping & Logistics Platform</title>
-  <meta name="description" content="Compare courier rates, book shipments instantly, automate live tracking, and manage NDRs across Delhivery, Shipmozo, BlueDart and DTDC." />
+  <title>HetEx Express | Multi-Courier Shipping & Logistics Platform India</title>
+  <meta name="description"
+    content="India's smart multi-courier shipping platform. Compare live rates across Delhivery, BlueDart & DTDC, automate live AWB tracking, dynamic UPI wallet recharges, and bulk thermal labels." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
   <style>
-    
-  :root {
-    --brand: #2563eb;
-    --brand-dark: #1d4ed8;
-    --brand-light: #eff6ff;
-    --navy: #0f172a;
-    --navy-light: #1e293b;
-    --accent: #ea580c;
-    --surface: #ffffff;
-    --background: #f8fafc;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --warning: #d97706;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-  a { color: inherit; text-decoration: none; }
-  button { cursor: pointer; font-family: inherit; }
-  input, select, textarea { font-family: inherit; font-size: inherit; }
-  .btn-primary {
-    background: var(--brand);
-    color: #fff;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    border: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
-  .btn-secondary {
-    background: #fff;
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
-  .badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-  .badge-success { background: #dcfce7; color: #15803d; }
-  .badge-warning { background: #fef3c7; color: #b45309; }
-  .badge-danger { background: #fee2e2; color: #b91c1c; }
-  .badge-info { background: #e0f2fe; color: #0369a1; }
-  .badge-navy { background: #f1f5f9; color: #334155; }
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  }
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 1rem;
-    backdrop-filter: blur(2px);
-  }
-  .modal-content {
-    background: #fff;
-    border-radius: 1rem;
-    max-width: 550px;
-    width: 100%;
-    padding: 1.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-  th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
-  td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
-  tr:hover td { background: #f8fafc; }
+    :root {
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-light: #eff6ff;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #ea580c;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
 
-    .hero-grad { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); color: #fff; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    @media (max-width: 768px) {
-      .header-container { padding: 0.625rem 1rem !important; }
-      .header-nav { gap: 0.375rem !important; }
-      .header-nav a { font-size: 0.8125rem !important; padding: 0.375rem 0.5rem !important; }
-      .hero-section { padding: 2.5rem 1rem 3rem !important; }
-      .hero-title { font-size: 1.75rem !important; line-height: 1.25 !important; }
-      .hero-desc { font-size: 0.9375rem !important; margin-bottom: 1.75rem !important; }
-      .carrier-logo-bar { gap: 1.25rem !important; font-size: 0.9375rem !important; }
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: var(--brand-light);
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .badge {
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
+    .badge-navy { background: #f1f5f9; color: #334155; }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    .hero-grad {
+      background: linear-gradient(135deg, #0b1329 0%, #172554 45%, #1e3a8a 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient Glow Circles */
+    .ambient-glow-1 {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.22) 0%, rgba(245, 158, 11, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+    }
+    .ambient-glow-2 {
+      position: absolute;
+      bottom: -120px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+    }
+
+    /* Floating mascot frame */
+    .mascot-frame {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .mascot-img-wrap {
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      background: #ffffff;
+      position: relative;
+    }
+    .mascot-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      transform: scale(1.01);
+      transition: transform 0.4s ease;
+    }
+    .mascot-img-wrap:hover .mascot-img {
+      transform: scale(1.03);
+    }
+
+    /* Floating badges on mascot */
+    .float-badge {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      color: #0f172a;
+      padding: 0.625rem 0.875rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      z-index: 10;
+      animation: floatBadge 4s ease-in-out infinite alternate;
+    }
+    .float-badge-top {
+      top: 1.5rem;
+      left: -1.25rem;
+    }
+    .float-badge-bottom {
+      bottom: 2rem;
+      right: -1.25rem;
+      animation-delay: 2s;
+    }
+    @keyframes floatBadge {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+
+    /* Pulse Dot */
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #16a34a;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      animation: pulseGreen 1.8s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulseGreen {
+      0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+    }
+
+    /* Demo Chips */
+    .demo-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: rgba(255, 255, 255, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .demo-chip:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    /* Quick rates container */
+    .rate-card {
+      border: 1px solid var(--border);
+      border-radius: 0.625rem;
+      padding: 1rem 1.15rem;
+      background: #fff;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .rate-card:hover {
+      border-color: var(--brand);
+      box-shadow: 0 6px 16px -2px rgba(37,99,235,0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+      backdrop-filter: blur(3px);
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 0.875rem;
+      max-width: 500px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    /* Mobile Responsive Optimizations */
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr !important;
+        text-align: center;
+        gap: 2.25rem !important;
+      }
+      .hero-content {
+        align-items: center;
+      }
+      .hero-title {
+        font-size: 2rem !important;
+      }
+      .hero-stats {
+        justify-content: center;
+      }
+      .float-badge {
+        padding: 0.45rem 0.65rem !important;
+      }
+      .float-badge-top {
+        left: 0.25rem !important;
+        top: 0.25rem !important;
+      }
+      .float-badge-bottom {
+        right: 0.25rem !important;
+        bottom: 0.5rem !important;
+      }
+      .hide-mobile {
+        display: none !important;
+      }
+      .carrier-ticker {
+        gap: 1.5rem !important;
+        font-size: 0.95rem !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .hero-section {
+        padding: 2.25rem 1rem 3rem !important;
+      }
+      .hero-title {
+        font-size: 1.65rem !important;
+      }
+      .hero-subtitle {
+        font-size: 0.875rem !important;
+      }
+      .hero-cta-btns {
+        flex-direction: column;
+        width: 100%;
+      }
+      .hero-cta-btns a {
+        width: 100%;
+        text-align: center;
+      }
+      .hero-stats {
+        grid-template-columns: 1fr !important;
+        gap: 0.625rem !important;
+      }
+      .hero-stats > div {
+        justify-content: center;
+      }
+      .hero-track-card {
+        padding: 1rem !important;
+      }
+      #heroTrackForm {
+        flex-direction: column;
+      }
+      #heroTrackForm input, #heroTrackForm button {
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+      .mascot-frame {
+        max-width: 320px !important;
+      }
+      .carrier-ticker {
+        gap: 1rem !important;
+        font-size: 0.8125rem !important;
+      }
+      .pillars-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+      .rate-calc-card {
+        padding: 1.15rem !important;
+      }
+      .rate-calc-grid {
+        grid-template-columns: 1fr !important;
+      }
+      .section-header h2 {
+        font-size: 1.5rem !important;
+      }
+      .modal-content {
+        padding: 1.15rem !important;
+      }
     }
   </style>
 </head>
+
 <body>
-  <header style="background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;">
-    <div class="header-container" style="max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+
+  <!-- Top Announcement Bar -->
+  <div style="background: #0f172a; color: #cbd5e1; font-size: 0.75rem; padding: 0.4rem 1rem; text-align: center; border-bottom: 1px solid #1e293b; display: flex; justify-content: center; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+    <span>⚡ <strong>New:</strong> Dynamic UPI QR Recharges & Smart Address Autofill are live!</span>
+    <span style="color: #64748b;">|</span>
+    <a href="javascript:void(0)" onclick="openHelplineModal()" style="color: #60a5fa; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+      <span>📞 Helpline: <span id="topBarHelplinePhone">+91 98765 43210</span></span>
+    </a>
+  </div>
+
+  <!-- Main Navigation Header -->
+  <header style="background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
       <a href="/" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
-        <img src="/logo.jpeg" alt="HetEx Logo" style="height: 38px; max-width: 165px; width: auto; object-fit: contain; display: block;" />
+        <img src="/logo.jpeg" alt="HetEx Courier Logistics" style="height: 38px; max-width: 165px; width: auto; object-fit: contain; display: block;" />
       </a>
-      <div class="header-nav" style="display: flex; align-items: center; gap: 0.75rem;">
-        <a href="/track-public.html" style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted); padding: 0.5rem 0.75rem;">Track AWB</a>
-        <div id="authNavButtons" style="display: flex; gap: 0.5rem;">
-          <a href="/login.html" class="btn-secondary" style="padding: 0.5rem 0.875rem;">Log In</a>
-          <a href="/register.html" class="btn-primary" style="padding: 0.5rem 0.875rem;">Register Free</a>
-        </div>
+
+      <!-- Desktop Nav Menu -->
+      <nav class="hide-mobile" style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.8125rem; font-weight: 650; color: #475569;">
+        <a href="#calculator" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Rates Calculator</a>
+        <a href="#features" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Core Features</a>
+        <a href="#carriers" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Courier Partners</a>
+        <a href="#tracking" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Live Tracking</a>
+        <a href="javascript:void(0)" onclick="openHelplineModal()" style="color: #16a34a; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
+          <span>📞</span>
+          <span>Helpline</span>
+        </a>
+      </nav>
+
+      <!-- Auth Action Buttons -->
+      <div id="authNavButtons" style="display: flex; align-items: center; gap: 0.625rem;">
+        <a href="/login" class="btn-secondary" style="padding: 0.45rem 0.875rem; font-size: 0.8125rem;">Log In</a>
+        <a href="/register" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8125rem;">Register Free →</a>
       </div>
     </div>
   </header>
 
-  <section class="hero-grad hero-section" style="padding: 4.5rem 1.5rem 5rem; text-align: center; position: relative;">
-    <div style="max-width: 860px; margin: 0 auto; position: relative; z-index: 10;">
-      <span class="badge" style="background: rgba(255,255,255,0.15); color: #93c5fd; margin-bottom: 1rem;">Next-Gen Indian Logistics</span>
-      <h1 class="hero-title" style="font-size: 2.75rem; font-weight: 800; line-height: 1.2; margin-bottom: 1.25rem;">Simplify Your Shipping.<br/>Amplify Your Growth.</h1>
-      <p class="hero-desc" style="font-size: 1.125rem; color: #cbd5e1; max-width: 680px; margin: 0 auto 2.5rem; line-height: 1.6;">
-        Compare Delhivery, Shipmozo, and BlueDart rates, book parcels with 1-click AWB generation, automated NDR verification, and live customer tracking.
+  <!-- ================= HERO SECTION (WITH HETEX COURIER MASCOT IMAGE) ================= -->
+  <section class="hero-grad hero-section" style="padding: 3.5rem 1.5rem 4rem; position: relative;">
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+
+    <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: center; position: relative; z-index: 10;" class="hero-grid">
+      
+      <!-- Left Column: Copy, CTAs & Live AWB Tracker -->
+      <div class="hero-content" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div>
+          <span class="badge" style="background: rgba(234, 88, 12, 0.2); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.3); margin-bottom: 0.75rem;">
+            ⚡ NEXT-GEN INDIAN LOGISTICS ENGINE
+          </span>
+          <h1 class="hero-title" style="font-size: 2.35rem; font-weight: 850; line-height: 1.2; color: #ffffff; letter-spacing: -0.02em;">
+            Deliver Smiles Across India with <span style="background: linear-gradient(90deg, #60a5fa 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">HetEx Express</span>
+          </h1>
+          <p class="hero-subtitle" style="font-size: 1rem; color: #cbd5e1; margin-top: 0.75rem; line-height: 1.6; max-width: 580px;">
+            The unified shipping OS for high-growth Indian e-commerce. Compare live rates across <strong>Delhivery, BlueDart & DTDC</strong>, generate thermal 4×6" labels in bulk, automate NDR buyer verification, and recharge via dynamic UPI QR.
+          </p>
+        </div>
+
+        <!-- Quick CTAs -->
+        <div class="hero-cta-btns" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <a href="/register" class="btn-primary" style="padding: 0.75rem 1.5rem; font-size: 0.9375rem;">
+            <span>🚀 Start Shipping Free</span>
+          </a>
+          <a href="#calculator" class="btn-secondary" style="background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.25); padding: 0.75rem 1.25rem; font-size: 0.9375rem;">
+            <span>📊 Calculate Rates</span>
+          </a>
+        </div>
+
+        <!-- Interactive AWB Tracking Card directly on Hero -->
+        <div id="tracking" class="card hero-track-card" style="padding: 1.25rem; background: rgba(255,255,255,0.98); color: var(--navy); box-shadow: 0 15px 30px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.8); margin-top: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
+            <span style="font-size: 0.75rem; font-weight: 750; color: var(--navy); text-transform: uppercase; letter-spacing: 0.04em;">
+              🔍 Track Any Shipment Instantly
+            </span>
+            <span class="demo-chip" onclick="fillDemoAwb('HTX982736192')" title="Click to fill test AWB" style="background: #eff6ff; color: #2563eb; border-color: #bfdbfe;">
+              ✨ Try Demo AWB: HTX982736192
+            </span>
+          </div>
+
+          <form id="heroTrackForm" onsubmit="handleHeroTrack(event)" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <input type="text" id="heroAwbInput" placeholder="Enter AWB or Order Number (e.g. HTX982736192)" required
+              style="flex: 1; min-width: 220px; padding: 0.625rem 0.875rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; outline: none;" />
+            <button type="submit" id="btnHeroTrack" class="btn-primary" style="padding: 0.625rem 1.25rem;">
+              <span>Track Now</span>
+            </button>
+          </form>
+
+          <!-- Inline Dynamic Live Tracking Results Container -->
+          <div id="heroTrackResult" style="display: none; margin-top: 1rem; padding-top: 0.875rem; border-top: 1px dashed var(--border);"></div>
+        </div>
+
+        <!-- 3 Proof Highlights -->
+        <div class="hero-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-top: 0.25rem; font-size: 0.8125rem; color: #cbd5e1;">
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span style="color: #f59e0b; font-size: 1rem;">📍</span>
+            <div><strong style="color: #fff; display: block;">29,000+</strong> Pincodes Reach</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span style="color: #10b981; font-size: 1rem;">⚡</span>
+            <div><strong style="color: #fff; display: block;">₹39 / kg</strong> Starting Rates</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span style="color: #60a5fa; font-size: 1rem;">🛡️</span>
+            <div><strong style="color: #fff; display: block;">98.6%</strong> SLA On-Time</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: HetEx Courier Delivery Boy Mascot Image -->
+      <div style="position: relative;">
+        <div class="mascot-frame">
+          <!-- Floating Status Badge 1 (Top Left) -->
+          <div class="float-badge float-badge-top">
+            <div class="pulse-dot"></div>
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 800; color: #0f172a;">Order #HTX-1001 Delivered</div>
+              <div style="font-size: 0.65rem; color: #16a34a; font-weight: 600;">Verified OTP Proof • On Time</div>
+            </div>
+          </div>
+
+          <!-- The Mascot Image -->
+          <div class="mascot-img-wrap">
+            <img src="/hero-delivery.jpg" alt="HetEx Express Courier Delivery Partner" class="mascot-img" />
+          </div>
+
+          <!-- Floating Status Badge 2 (Bottom Right) -->
+          <div class="float-badge float-badge-bottom">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+              ⭐
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 800; color: #0f172a;">4.6 Rating SLA</div>
+              <div style="font-size: 0.65rem; color: #64748b;">Delhivery Express Surface</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= CARRIER INTEGRATION TICKER ================= -->
+  <section id="carriers" style="background: #fff; border-bottom: 1px solid var(--border); padding: 1.75rem 1.5rem; text-align: center;">
+    <div style="max-width: 1100px; margin: 0 auto;">
+      <p style="font-size: 0.75rem; font-weight: 750; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 1.25rem;">
+        Integrated With India's Top Express Carriers & Cargo Networks
+      </p>
+      <div class="carrier-ticker" style="display: flex; justify-content: center; align-items: center; gap: 2.75rem; flex-wrap: wrap; font-size: 1.15rem; font-weight: 800; color: #475569;">
+        <span style="color: #000; display: inline-flex; align-items: center; gap: 0.4rem;">● DELHIVERY SURFACE</span>
+        <span style="color: #e11d48; display: inline-flex; align-items: center; gap: 0.4rem;">● DELHIVERY EXPRESS</span>
+        <span style="color: #0284c7; display: inline-flex; align-items: center; gap: 0.4rem;">● BLUEDART APEX</span>
+        <span style="color: #ea580c; display: inline-flex; align-items: center; gap: 0.4rem;">● DTDC EXPRESS</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DYNAMIC LIVE RATE ESTIMATOR TOOL ================= -->
+  <section id="calculator" style="max-width: 1140px; margin: 3.5rem auto; padding: 0 1.5rem;">
+    <div class="section-header" style="text-align: center; margin-bottom: 2rem;">
+      <span class="badge" style="background: #eff6ff; color: var(--brand); margin-bottom: 0.5rem;">LIVE PRICING ENGINE</span>
+      <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--navy);">Instant Freight Rate Calculator</h2>
+      <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem;">
+        Compare actual courier quotes across all connected carrier APIs with transparent pricing and no hidden surcharges.
+      </p>
+    </div>
+
+    <!-- Rate Calculator Card -->
+    <div class="card rate-calc-card" style="padding: 1.75rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.06);">
+      <form id="landingRateForm" onsubmit="calculateLandingRates(event)">
+        <div class="rate-calc-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: flex-end;">
+          <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Parcel Weight (kg)</label>
+            <input type="number" id="calcWeight" value="1.0" min="0.1" step="0.1" class="form-control" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-weight: 700;" required />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Pickup Pincode</label>
+            <input type="text" id="calcPickupPin" value="110001" maxlength="6" class="form-control" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-weight: 700;" required />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Delivery Pincode</label>
+            <input type="text" id="calcDeliveryPin" value="400001" maxlength="6" class="form-control" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-weight: 700;" required />
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Payment Mode</label>
+            <select id="calcMode" class="form-control" style="width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-weight: 600;">
+              <option value="PREPAID">Prepaid</option>
+              <option value="COD">Cash on Delivery (COD)</option>
+            </select>
+          </div>
+          <div>
+            <button type="submit" id="btnCalcRate" class="btn-primary" style="width: 100%; height: 38px;">
+              <span>⚡ Fetch Quotes</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Results Grid -->
+      <div id="landingRateResults" style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem;">
+        <!-- Initial preview cards populated via JS on load -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CLEAR PICTURE OF APPLICATION (6 CORE PILLARS) ================= -->
+  <section id="features" style="background: #f1f5f9; padding: 4.5rem 1.5rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div style="max-width: 1200px; margin: 0 auto;">
+      <div class="section-header" style="text-align: center; margin-bottom: 3.5rem;">
+        <span class="badge" style="background: #e0f2fe; color: #0369a1; margin-bottom: 0.5rem;">BUILT FOR INDIAN D2C & SELLERS</span>
+        <h2 style="font-size: 2rem; font-weight: 850; color: var(--navy);">The Clear Picture of HetEx Platform</h2>
+        <p style="color: var(--text-muted); font-size: 0.9375rem; max-width: 650px; margin: 0.25rem auto 0;">
+          A complete walkthrough of every core innovation powering our high-volume multi-courier ecosystem.
+        </p>
+      </div>
+
+      <div class="pillars-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+        
+        <!-- Pillar 1: Smart Customer Autofill -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid var(--brand);">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #eff6ff; color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            📱
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            1. Smart Customer Autofill
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            Place the recipient mobile number first in the booking form. When it matches any customer in your database, the buyer's full name, address, city, state, and pincode automatically populate, cutting booking time by 75%.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Instant customer phone lookup with zero repeated typing
+          </div>
+        </div>
+
+        <!-- Pillar 2: Multi-Item Packaging & Weight Calculation -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid #16a34a;">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #ecfdf5; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            📦
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            2. Multi-Item Packaging & Math
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            Add multiple items per order with custom categories, quantities, declared values, and individual box dimensions. The engine computes dead weight vs. volumetric weight (L×W×H/5000) to ensure accurate carrier billing.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Real-time billable weight calculation to prevent courier disputes
+          </div>
+        </div>
+
+        <!-- Pillar 3: Dynamic UPI QR Recharge Gateway -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid #ea580c;">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #fff7ed; color: #ea580c; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            💳
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            3. Dynamic UPI QR Gateway
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            Enter any recharge amount to instantly generate a compliant UPI QR code encoded with the platform VPA. After paying, click “I Have Paid”—the request stays “Under Review” until approved by Admin. Never credited before approval.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Admin-configured merchant UPI ID with zero gateway deduction fee
+          </div>
+        </div>
+
+        <!-- Pillar 4: Bulk Thermal Shipping Labels -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid #8b5cf6;">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #f5f3ff; color: #8b5cf6; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            🖨️
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            4. Thermal 4×6" Labels with Barcode
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            Generate ready-to-print thermal shipping labels for standard 100×150mm printers. Includes scannable AWB barcodes, consignee & warehouse addresses, order numbers, payment mode, and itemized box specifications.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Multi-item split package support (e.g. Package 1 of 3, 2 of 3)
+          </div>
+        </div>
+
+        <!-- Pillar 5: Automated NDR & RTO Shield -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid #dc2626;">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            🛡️
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            5. Automated NDR & RTO Shield
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            When a delivery attempt fails (customer unavailable, incorrect address), instant non-delivery alerts trigger. Action reattempts, update delivery address in real time, or initiate return to keep RTO losses under 4.5%.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Real-time delivery exception resolution via carrier APIs
+          </div>
+        </div>
+
+        <!-- Pillar 6: Dual Portal Architecture -->
+        <div class="card" style="padding: 1.75rem; border-left: 4px solid #0f172a;">
+          <div style="width: 42px; height: 42px; border-radius: 0.5rem; background: #f1f5f9; color: #0f172a; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 1rem;">
+            ⚖️
+          </div>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin-bottom: 0.5rem;">
+            6. Seller Portal & Super Admin HQ
+          </h3>
+          <p style="font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6;">
+            A unified experience with role separation: Seller Portal for order manifests, pickups, and tickets; Root Admin Panel for managing courier active statuses, commission margin rules, seller KYC, and helpline settings.
+          </p>
+          <div style="margin-top: 1rem; font-size: 0.75rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155; font-weight: 600;">
+            ✓ Granular access control with audit trails & zero-alert modal dialogs
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LIVE TRACKING MODAL POPUP (Triggered via Header / Hero) ================= -->
+  <div id="helplineModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.25rem;">📞</span>
+          <h3 style="font-size: 1.05rem; font-weight: 750; color: var(--navy); margin: 0;">HetEx Customer Helpline</h3>
+        </div>
+        <button onclick="closeHelplineModal()" style="background: none; border: none; font-size: 1.25rem; color: var(--text-muted); cursor: pointer;">✕</button>
+      </div>
+
+      <div style="text-align: center; padding: 1rem 0;">
+        <p style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.04em;">Official Support Desk</p>
+        <a id="modalHelplineLink" href="tel:+919876543210" style="font-size: 1.5rem; font-weight: 850; color: var(--brand); text-decoration: none; display: block; margin: 0.35rem 0;">
+          <span id="modalHelplinePhone">+91 98765 43210</span>
+        </a>
+        <p id="modalHelplineHours" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.25rem;">Mon - Sat: 9:00 AM - 8:00 PM IST</p>
+
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <a id="btnCallNow" href="tel:+919876543210" class="btn-primary" style="padding: 0.5rem 1.25rem; background: #16a34a;">
+            <span>📞 Call Support Now</span>
+          </a>
+          <button onclick="copyHelpline()" class="btn-secondary" style="padding: 0.5rem 1rem;">
+            <span>📋 Copy Number</span>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top: 1rem; padding: 0.75rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.75rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+        <span>Email: <strong id="modalSupportEmail" style="color: var(--navy);">support@hetex.in</strong></span>
+        <a id="modalMailtoLink" href="mailto:support@hetex.in" style="color: var(--brand); font-weight: 600;">Send Email →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer style="background: var(--navy); color: #94a3b8; padding: 3.5rem 1.5rem 2.5rem; border-top: 1px solid #1e293b; text-align: center; font-size: 0.8125rem;">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+      <a href="/">
+        <img src="/logo.jpeg" alt="HetEx Logistics" style="height: 40px; filter: brightness(0) invert(1);" />
+      </a>
+      <p style="max-width: 600px; color: #94a3b8; line-height: 1.6;">
+        HetEx Courier Logistics & Express Freight Cloud. Enabling Indian D2C brands and online sellers to ship faster, lower RTOs, and delight customers nationwide.
       </p>
 
-      <div class="card" style="max-width: 620px; margin: 0 auto; padding: 1.25rem; text-align: left; color: var(--text); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.25);">
-        <p style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.5rem;">Track Your Package</p>
-        <form id="heroTrackForm" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <input type="text" id="heroAwbInput" placeholder="Enter AWB Number or Order ID (e.g. AWB1234567890)" required
-                 style="flex: 1; min-width: 200px; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; outline: none;" />
-          <button type="submit" class="btn-primary" style="padding: 0.75rem 1.75rem;">Track Status</button>
-        </form>
+      <div style="display: flex; gap: 1.75rem; font-weight: 600; flex-wrap: wrap; justify-content: center;">
+        <a href="/login" style="color: #cbd5e1; transition: color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">Seller Login</a>
+        <a href="/register" style="color: #cbd5e1; transition: color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">Create Account</a>
+        <a href="/admin" style="color: #f87171; transition: color 0.15s;" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='#f87171'">Admin HQ</a>
+        <a href="/track" style="color: #cbd5e1; transition: color 0.15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">Public Tracking</a>
+        <a href="javascript:void(0)" onclick="openHelplineModal()" style="color: #4ade80;">Help & Contact: <span id="footerHelplinePhone">+91 98765 43210</span></a>
       </div>
-    </div>
-  </section>
 
-  <section style="background: #fff; border-bottom: 1px solid var(--border); padding: 2rem 1.5rem; text-align: center;">
-    <div style="max-width: 1100px; margin: 0 auto;">
-      <p style="font-size: 0.8125rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 1.25rem;">Integrated With India's Top Carriers</p>
-      <div class="carrier-logo-bar" style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; font-size: 1.25rem; font-weight: 800; color: #64748b;">
-        <span style="color: #000;">DELHIVERY</span>
-        <span style="color: #2563eb;">SHIPMOZO</span>
-        <span style="color: #0284c7;">BLUEDART</span>
-        <span style="color: #ea580c;">DTDC EXPRESS</span>
-        <span style="color: #dc2626;">XPRESSBEES</span>
-      </div>
-    </div>
-  </section>
-
-  <section style="max-width: 1200px; margin: 4rem auto; padding: 0 1.5rem;">
-    <div style="text-align: center; margin-bottom: 3rem;">
-      <h2 style="font-size: 2rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">Everything Your E-Commerce Business Needs</h2>
-      <p style="color: var(--text-muted); font-size: 1rem;">Built for high-volume D2C brands, online sellers, and logistics managers.</p>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
-      <div class="card" style="padding: 1.75rem;">
-        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">⚡</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Instant Multi-Courier Rates</h3>
-        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Compare real-time shipping costs and ETAs across carriers before booking. Choose lowest rate or fastest delivery.</p>
-      </div>
-      <div class="card" style="padding: 1.75rem;">
-        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">🛡️</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Automated NDR & RTO Reduction</h3>
-        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Instant non-delivery alerts with buyer outreach automation. Request reattempts or initiate RTO with one click.</p>
-      </div>
-      <div class="card" style="padding: 1.75rem;">
-        <div style="font-size: 1.75rem; margin-bottom: 0.75rem;">💳</div>
-        <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Prepaid Wallet & Early COD</h3>
-        <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.6;">Zero hidden fees. Recharge via UPI or cards with Razorpay and maintain crystal-clear transaction ledgers.</p>
-      </div>
-    </div>
-  </section>
-
-  <footer style="background: var(--navy); color: #94a3b8; padding: 3rem 1.5rem; border-top: 1px solid #334155; text-align: center; font-size: 0.875rem;">
-    <div style="max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
-      <img src="/logo.jpeg" alt="HetEx" style="height: 38px; filter: brightness(0) invert(1);" />
-      <p>© 2026 HetEx Logistics Corp. All rights reserved. Hostinger Production Deployment.</p>
-      <div style="display: flex; gap: 1.5rem; font-weight: 500;">
-        <a href="/login.html" style="color: #cbd5e1;">Seller Login</a>
-        <a href="/register.html" style="color: #cbd5e1;">Create Account</a>
-        <a href="/track-public.html" style="color: #cbd5e1;">Live Tracking</a>
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #1e293b; width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; color: #64748b; font-size: 0.75rem;">
+        <div>© 2026 HetEx Logistics Corp. All rights reserved. Hostinger Production Deployment.</div>
+        <div>Engineered with Multi-Carrier API Infrastructure</div>
       </div>
     </div>
   </footer>
 
+  <!-- ================= SCRIPTS ================= -->
   <script>
-    const token = localStorage.getItem('hetex_token');
-    const userJson = localStorage.getItem('hetex_user');
-    if (token && userJson) {
+    // 1. Clean URL Normalization: ensure no .html in browser URL
+    (function () {
       try {
-        const u = JSON.parse(userJson);
-        const container = document.getElementById('authNavButtons');
-        if (container) {
-          const dest = u.role === 'ADMIN' ? '/admin.html' : '/dashboard.html';
-          container.innerHTML = '<a href="' + dest + '" class="btn-primary">Go to Dashboard (' + (u.name || 'User').split(' ')[0] + ')</a>';
+        const p = window.location.pathname;
+        if (p.endsWith('.html')) {
+          let clean = p.replace(/\.html$/, '');
+          if (clean.endsWith('/index')) clean = clean.slice(0, -6) || '/';
+          if (clean.endsWith('/track-public')) clean = clean.slice(0, -13) + '/track';
+          window.history.replaceState(null, '', clean + window.location.search + window.location.hash);
         }
-      } catch (e) {}
+      } catch (e) { }
+    })();
+
+    // 2. Auth State Check: Show Dashboard link if logged in
+    (function () {
+      const token = localStorage.getItem('hetex_token');
+      const userJson = localStorage.getItem('hetex_user');
+      if (token && userJson) {
+        try {
+          const u = JSON.parse(userJson);
+          const container = document.getElementById('authNavButtons');
+          if (container) {
+            const dest = u.role === 'ADMIN' ? '/admin' : '/dashboard';
+            container.innerHTML = '<a href="' + dest + '" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8125rem;">Go to Dashboard (' + (u.name || 'User').split(' ')[0] + ') →</a>';
+          }
+        } catch (e) { }
+      }
+    })();
+
+    // 3. Platform Settings (Helpline & Support Info)
+    let platformSettings = {
+      helplineNumber: '+91 98765 43210',
+      helplineHours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
+      supportEmail: 'support@hetex.in'
+    };
+
+    async function fetchPlatformSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.settings) {
+            platformSettings = { ...platformSettings, ...data.settings };
+          }
+        }
+      } catch (e) { }
+      updateHelplineElements();
     }
-    document.getElementById('heroTrackForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const val = document.getElementById('heroAwbInput').value.trim();
-      if (val) window.location.href = '/track-public.html?awb=' + encodeURIComponent(val);
+
+    function updateHelplineElements() {
+      const num = platformSettings.helplineNumber || '+91 98765 43210';
+      const cleanNum = num.replace(/[^\d+]/g, '');
+      const hours = platformSettings.helplineHours || 'Mon - Sat: 9:00 AM - 8:00 PM IST';
+      const email = platformSettings.supportEmail || 'support@hetex.in';
+
+      const elP = document.getElementById('modalHelplinePhone');
+      if (elP) elP.textContent = num;
+      const elLink = document.getElementById('modalHelplineLink');
+      if (elLink) elLink.href = 'tel:' + cleanNum;
+      const elBtnCall = document.getElementById('btnCallNow');
+      if (elBtnCall) elBtnCall.href = 'tel:' + cleanNum;
+      const elH = document.getElementById('modalHelplineHours');
+      if (elH) elH.textContent = hours;
+      const elE = document.getElementById('modalSupportEmail');
+      if (elE) elE.textContent = email;
+      const elMailLink = document.getElementById('modalMailtoLink');
+      if (elMailLink) elMailLink.href = 'mailto:' + email;
+
+      const elTop = document.getElementById('topBarHelplinePhone');
+      if (elTop) elTop.textContent = num;
+      const elFoot = document.getElementById('footerHelplinePhone');
+      if (elFoot) elFoot.textContent = num;
+
+      document.querySelectorAll('.dynamic-helpline-phone').forEach(el => el.textContent = num);
+      document.querySelectorAll('.dynamic-support-email').forEach(el => el.textContent = email);
+    }
+
+    function openHelplineModal() {
+      fetchPlatformSettings();
+      document.getElementById('helplineModal').style.display = 'flex';
+    }
+
+    function closeHelplineModal() {
+      document.getElementById('helplineModal').style.display = 'none';
+    }
+
+    function copyHelpline() {
+      const num = platformSettings.helplineNumber || '+91 98765 43210';
+      navigator.clipboard.writeText(num).then(() => {
+        alert('Helpline number copied: ' + num);
+      }).catch(() => {
+        alert('Helpline number: ' + num);
+      });
+    }
+
+    // 4. Fill Demo AWB
+    function fillDemoAwb(awb) {
+      document.getElementById('heroAwbInput').value = awb;
+      handleHeroTrack(null);
+    }
+
+    // 5. Dynamic Hero AWB Track Handler
+    async function handleHeroTrack(e) {
+      if (e) e.preventDefault();
+      const val = (document.getElementById('heroAwbInput').value || '').trim();
+      if (!val) return;
+
+      const resBox = document.getElementById('heroTrackResult');
+      const btn = document.getElementById('btnHeroTrack');
+      btn.disabled = true;
+      btn.textContent = 'Tracking...';
+
+      resBox.style.display = 'block';
+      resBox.innerHTML = '<p style="color: var(--text-muted); font-size: 0.8125rem;">Connecting to courier tracking nodes for <strong>' + val + '</strong>...</p>';
+
+      try {
+        const res = await fetch('/api/track?awb=' + encodeURIComponent(val));
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Track Now';
+
+        if (!res.ok) throw new Error(data.error || 'Tracking details not found');
+
+        const status = data.status || 'IN_TRANSIT';
+        let badgeColor = '#0284c7';
+        let badgeBg = '#e0f2fe';
+        if (status === 'DELIVERED') { badgeColor = '#15803d'; badgeBg = '#dcfce7'; }
+        if (status === 'CANCELLED' || status === 'RTO_DELIVERED') { badgeColor = '#b91c1c'; badgeBg = '#fee2e2'; }
+
+        resBox.innerHTML = `
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.875rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <div>
+                <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Courier</span>
+                <div style="font-weight: 750; font-size: 0.875rem; color: var(--navy);">${data.courierName || 'Delhivery Express'}</div>
+              </div>
+              <span class="badge" style="background: ${badgeBg}; color: ${badgeColor}; font-size: 0.75rem;">${status.replace(/_/g, ' ')}</span>
+            </div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+              AWB: <strong>${data.awbNumber || val}</strong> · Destination: <strong>${data.destinationCity || 'India'}</strong>
+            </div>
+            <div style="font-size: 0.75rem; background: #fff; border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 0.375rem; color: #334155;">
+              📍 Latest Event: <strong>${data.events && data.events[0] ? data.events[0].status.replace(/_/g, ' ') + ' at ' + data.events[0].location : 'Shipment picked up and manifesting at sort hub.'}</strong>
+            </div>
+            <div style="margin-top: 0.5rem; text-align: right;">
+              <a href="/track?awb=${encodeURIComponent(val)}" style="font-size: 0.75rem; font-weight: 700; color: var(--brand);">View Full Milestone Timeline →</a>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Track Now';
+        resBox.innerHTML = `
+          <div style="background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 0.75rem; border-radius: 0.375rem; font-size: 0.8125rem;">
+            ⚠️ ${err.message || 'AWB not found'}. For testing, try demo AWB <strong>HTX982736192</strong>.
+          </div>
+        `;
+      }
+    }
+
+    // 6. Dynamic Rate Calculator Handler
+    async function calculateLandingRates(e) {
+      if (e) e.preventDefault();
+      const weight = parseFloat(document.getElementById('calcWeight').value) || 1.0;
+      const pickup = document.getElementById('calcPickupPin').value.trim();
+      const delivery = document.getElementById('calcDeliveryPin').value.trim();
+      const mode = document.getElementById('calcMode').value;
+      const container = document.getElementById('landingRateResults');
+      const btn = document.getElementById('btnCalcRate');
+
+      btn.disabled = true;
+      btn.textContent = 'Calculating...';
+
+      try {
+        const res = await fetch('/api/rates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ weight, pickupPincode: pickup, deliveryPincode: delivery, paymentMode: mode })
+        });
+        const data = await res.json();
+        btn.disabled = false;
+        btn.textContent = '⚡ Fetch Quotes';
+
+        const rawQuotes = data.quotes || [
+          { courierName: 'Delhivery Surface', etaDays: '3-5', rating: 4.3, totalRate: Math.round(42 * weight * 1.1), logoColor: '#000000' },
+          { courierName: 'DTDC Priority', etaDays: '2-4', rating: 4.5, totalRate: Math.round(52 * weight * 1.1), logoColor: '#ea580c' },
+          { courierName: 'Delhivery Express', etaDays: '1-3', rating: 4.6, totalRate: Math.round(65 * weight * 1.1), logoColor: '#e11d48' },
+          { courierName: 'BlueDart Express', etaDays: '1-2', rating: 4.7, totalRate: Math.round(78 * weight * 1.1), logoColor: '#0284c7' }
+        ];
+
+        const quotes = rawQuotes.filter(q => !((q.courierName || q.name || '').toLowerCase().includes('shipmozo')));
+        renderRateCards(quotes, weight, mode);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = '⚡ Fetch Quotes';
+        // Offline Fallback estimation
+        const fallbackQuotes = [
+          { courierName: 'Delhivery Surface', etaDays: '3-5', rating: 4.3, totalRate: Math.round(42 * weight * 1.1), logoColor: '#000000' },
+          { courierName: 'DTDC Priority', etaDays: '2-4', rating: 4.5, totalRate: Math.round(52 * weight * 1.1), logoColor: '#ea580c' },
+          { courierName: 'Delhivery Express', etaDays: '1-3', rating: 4.6, totalRate: Math.round(65 * weight * 1.1), logoColor: '#e11d48' },
+          { courierName: 'BlueDart Express', etaDays: '1-2', rating: 4.7, totalRate: Math.round(78 * weight * 1.1), logoColor: '#0284c7' }
+        ];
+        renderRateCards(fallbackQuotes, weight, mode);
+      }
+    }
+
+    function renderRateCards(quotes, weight, mode) {
+      const container = document.getElementById('landingRateResults');
+      container.innerHTML = quotes.map(q => {
+        const rate = (q.totalRate || q.sellerPrice || 50).toFixed(2);
+        return `
+          <div class="rate-card" style="border-top: 3px solid ${q.logoColor || 'var(--brand)'};">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                <h4 style="font-size: 0.875rem; font-weight: 750; color: var(--navy);">${q.courierName || q.name}</h4>
+                <span class="badge badge-success" style="font-size: 0.65rem;">⭐ ${q.rating || '4.5'}</span>
+              </div>
+              <p style="font-size: 0.6875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Estimated Delivery: <strong>${q.etaDays || '2-4'} Days</strong></p>
+              
+              <div style="font-size: 1.35rem; font-weight: 850; color: var(--brand); margin: 0.35rem 0;">
+                ₹${rate}
+              </div>
+              <p style="font-size: 0.6875rem; color: var(--text-muted);">
+                ${weight}kg · ${mode === 'COD' ? 'Includes COD' : 'Prepaid Surcharges Included'}
+              </p>
+            </div>
+
+            <div style="margin-top: 1rem;">
+              <a href="/register" class="btn-primary" style="width: 100%; padding: 0.45rem 0.75rem; font-size: 0.75rem; justify-content: center;">
+                Ship with ${q.courierName ? q.courierName.split(' ')[0] : 'Carrier'} →
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Populate initial default quotes on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      calculateLandingRates(null);
+      fetchPlatformSettings();
     });
   </script>
 </body>
+
 </html>

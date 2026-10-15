@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../utils/response.php';
 require_once __DIR__ . '/../utils/jwt.php';
+require_once __DIR__ . '/../utils/sender.php';
 
 class AuthController {
 
@@ -63,6 +64,9 @@ class AuthController {
                ->execute([Response::generateUuid(), $email, $devOtp, $expiresAt]);
 
             $db->commit();
+
+            // Real email dispatch if configured in credentials.php
+            Sender::sendEmail($email, "Your HetEx Verification Code", "<p>Hello <strong>{$name}</strong>,</p><p>Your HetEx account verification code is:</p><h2 style='color:#2563eb;'>{$devOtp}</h2><p>This code expires in 30 minutes.</p>");
 
             Response::json([
                 'email' => $email,
@@ -159,6 +163,8 @@ class AuthController {
         $db = Database::getConnection();
         $db->prepare("INSERT INTO otp_codes (id, identifier, code, expires_at, consumed, created_at) VALUES (?, ?, ?, ?, 0, NOW())")
            ->execute([Response::generateUuid(), $email, $devOtp, $expiresAt]);
+
+        Sender::sendEmail($email, "Your New HetEx Verification Code", "<p>Your new verification code is:</p><h2 style='color:#2563eb;'>{$devOtp}</h2>");
 
         Response::json([
             'email' => $email,
@@ -321,6 +327,9 @@ class AuthController {
         $db = Database::getConnection();
         $stmt = $db->prepare("INSERT INTO otp_codes (id, identifier, code, expires_at, consumed, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
         $stmt->execute([Response::generateUuid(), $phone, $code, $expiresAt]);
+
+        // Real SMS OTP dispatch if configured in credentials.php
+        Sender::sendOtpSms($phone, $code);
 
         Response::json([
             'success' => true,

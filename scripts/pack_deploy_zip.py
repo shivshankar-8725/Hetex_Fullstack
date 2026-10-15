@@ -15,6 +15,7 @@ includes = [
     'admin.html',
     'track-public.html',
     'logo.jpeg',
+    'hero-delivery.jpg',
     'favicon.ico',
     '.htaccess',
     'api',

@@ -280,6 +280,40 @@ CREATE TABLE IF NOT EXISTS `marketplace_connections` (
   INDEX `idx_market_user` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 18. WALLET RECHARGE REQUESTS TABLE (UPI Under Review & Admin Approval)
+CREATE TABLE IF NOT EXISTS `wallet_recharges` (
+  `id` VARCHAR(36) NOT NULL,
+  `user_id` VARCHAR(36) NOT NULL,
+  `amount` DECIMAL(12,2) NOT NULL,
+  `payment_method` VARCHAR(50) NOT NULL DEFAULT 'UPI',
+  `upi_id` VARCHAR(100) NOT NULL DEFAULT 'hetex@icici',
+  `utr_number` VARCHAR(100) NULL,
+  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
+  `admin_notes` VARCHAR(255) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `reviewed_at` DATETIME NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idx_recharge_user` (`user_id`),
+  INDEX `idx_recharge_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 19. ORDER ITEMS TABLE (Multiple Shipment Items & Categories)
+CREATE TABLE IF NOT EXISTS `order_items` (
+  `id` VARCHAR(36) NOT NULL,
+  `order_id` VARCHAR(36) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `category` VARCHAR(100) NOT NULL DEFAULT 'General',
+  `quantity` INT NOT NULL DEFAULT 1,
+  `declared_value` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `weight` DECIMAL(10,3) NOT NULL DEFAULT 0.500,
+  `length` DECIMAL(10,2) NOT NULL DEFAULT 10.00,
+  `width` DECIMAL(10,2) NOT NULL DEFAULT 10.00,
+  `height` DECIMAL(10,2) NOT NULL DEFAULT 10.00,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_items_order` (`order_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =====================================================================
 -- SEED INITIAL DATA (ADMIN, DEFAULT COURIERS, DEFAULT COMMISSION)
 -- =====================================================================
@@ -307,11 +341,33 @@ INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `ba
 VALUES 
   ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#000000', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
   ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#e11d48', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
-  ('c1000000-0000-0000-0000-000000000003', 'Shipmozo Standard', 'SHIPMOZO_STD', '#2563eb', 1, 39.00, 22.00, 1.40, 4.20, 3, 6, 7.00),
+  ('c1000000-0000-0000-0000-000000000003', 'DTDC Priority', 'DTDC_EXP', '#ea580c', 1, 52.00, 25.00, 1.50, 4.50, 2, 4, 5.50),
   ('c1000000-0000-0000-0000-000000000004', 'BlueDart Express', 'BLUEDART_EXP', '#0284c7', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50);
 
 -- Default Fallback Commission Rule (10% platform markup)
 INSERT IGNORE INTO `commission_rules` (`id`, `courier_id`, `min_weight`, `max_weight`, `margin_type`, `margin_value`)
 VALUES ('r1000000-0000-0000-0000-000000000001', NULL, 0.00, 1000.00, 'PERCENT', 10.00);
+
+-- Default Sample Addresses (Origin Warehouse and Customers for Instant Autofill)
+INSERT IGNORE INTO `addresses` (`id`, `user_id`, `type`, `label`, `contact_name`, `phone`, `address_line1`, `city`, `state`, `pincode`, `is_default`, `created_at`)
+VALUES
+  ('addr_wh1', '00000000-0000-0000-0000-000000000001', 'PICKUP', 'Primary Warehouse', 'Rajesh Kumar', '9876543210', 'Plot 42, Sector 18, Udyog Vihar', 'Gurugram', 'Haryana', '122015', 1, NOW()),
+  ('addr_cust_samarth', '00000000-0000-0000-0000-000000000001', 'DELIVERY', 'Customer', 'Samarth Gold', '9516474537', 'Shop 102, Gold Palace Market, Zaveri Bazaar', 'Mumbai', 'Maharashtra', '400002', 0, NOW()),
+  ('addr_cust1', '00000000-0000-0000-0000-000000000001', 'DELIVERY', 'Customer', 'Amit Sharma', '9876543210', 'Flat 402, Green Heights, Sector 12', 'Mumbai', 'Maharashtra', '400001', 0, NOW()),
+  ('addr_cust2', '00000000-0000-0000-0000-000000000001', 'DELIVERY', 'Customer', 'Priya Verma', '9811223344', 'Villa 15, Palm Meadows, Whitefield', 'Bengaluru', 'Karnataka', '560066', 0, NOW());
+
+-- Platform Settings (Dynamic Helpline & UPI Gateway Configuration)
+CREATE TABLE IF NOT EXISTS `platform_settings` (
+  `setting_key` VARCHAR(100) NOT NULL PRIMARY KEY,
+  `setting_value` TEXT NOT NULL,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `platform_settings` (`setting_key`, `setting_value`) VALUES
+  ('upi_id', 'hetex@icici'),
+  ('payee_name', 'HetEx Logistics'),
+  ('helpline_number', '+91 98765 43210'),
+  ('helpline_hours', 'Mon - Sat: 9:00 AM - 8:00 PM IST'),
+  ('support_email', 'support@hetex.in');
 
 SET FOREIGN_KEY_CHECKS = 1;
