@@ -1028,7 +1028,11 @@
           <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Courier Partner Integrations</h2>
           <p style="color: var(--text-muted); font-size: 0.775rem;">Active couriers appear in real-time on user Rate Calculators & Booking screens</p>
         </div>
-        <button onclick="loadAdminCouriers()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh Status</button>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button onclick="toggleAllCouriers(true)" class="btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; background: var(--success); border-color: var(--success); font-weight: 700;">⚡ Activate All</button>
+          <button onclick="toggleAllCouriers(false)" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; color: var(--danger); border-color: #fca5a5;">Deactivate All</button>
+          <button onclick="loadAdminCouriers()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh Status</button>
+        </div>
       </div>
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
@@ -2364,12 +2368,61 @@
       }
     }
 
+    const OFFICIAL_8_COURIERS = [
+      { id: 'c1000000-0000-0000-0000-000000000001', name: 'Delhivery Surface', code: 'DELHIVERY_SURFACE', baseRatePerKg: 42.00, codChargeFlat: 25.00, codChargePercent: 1.5, rating: 4.3, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000002', name: 'Delhivery Express', code: 'DELHIVERY_EXPRESS', baseRatePerKg: 65.00, codChargeFlat: 30.00, codChargePercent: 1.8, rating: 4.6, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000003', name: 'DTDC Express', code: 'DTDC_EXP', baseRatePerKg: 52.00, codChargeFlat: 25.00, codChargePercent: 1.5, rating: 4.5, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000004', name: 'Blue Dart Express', code: 'BLUEDART_EXP', baseRatePerKg: 78.00, codChargeFlat: 35.00, codChargePercent: 2.0, rating: 4.7, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000005', name: 'Ekart Logistics', code: 'EKART_EXP', baseRatePerKg: 46.00, codChargeFlat: 25.00, codChargePercent: 1.5, rating: 4.4, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000006', name: 'Shadowfax Technologies', code: 'SHADOWFAX_EXP', baseRatePerKg: 44.00, codChargeFlat: 25.00, codChargePercent: 1.5, rating: 4.2, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000007', name: 'Xpressbees Logistics', code: 'XPRESSBEES_EXP', baseRatePerKg: 45.00, codChargeFlat: 25.00, codChargePercent: 1.5, rating: 4.3, active: true },
+      { id: 'c1000000-0000-0000-0000-000000000008', name: 'Amazon Shipping', code: 'AMAZON_SHIPPING', baseRatePerKg: 58.00, codChargeFlat: 30.00, codChargePercent: 1.6, rating: 4.6, active: true }
+    ];
+
     adminCouriersList = [];
     async function loadAdminCouriers() {
       try {
         const res = await fetch('/api/admin/couriers', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        adminCouriersList = d.couriers || [];
+        const apiCouriers = (d.couriers || []).filter(c => c.code !== 'SHIPMOZO_STD');
+
+        // Merge API couriers with OFFICIAL_8_COURIERS so all 8 always show up
+        const merged = [];
+        const seenCodes = new Set();
+
+        // 1. Process all official 8 couriers
+        for (const official of OFFICIAL_8_COURIERS) {
+          const matched = apiCouriers.find(c => 
+            (c.code && c.code.toUpperCase() === official.code.toUpperCase()) ||
+            (c.name && c.name.toLowerCase() === official.name.toLowerCase()) ||
+            (c.name && official.name.toLowerCase().includes(c.name.toLowerCase().replace(' express', '')))
+          );
+          if (matched) {
+            merged.push({
+              ...official,
+              ...matched,
+              id: matched.id || official.id,
+              active: (matched.active !== false && matched.active !== 0 && matched.active !== '0')
+            });
+            seenCodes.add((matched.code || '').toUpperCase());
+          } else {
+            merged.push({ ...official, active: true });
+          }
+          seenCodes.add(official.code.toUpperCase());
+        }
+
+        // 2. Add any other extra couriers that might exist in API
+        for (const c of apiCouriers) {
+          if (c.code && !seenCodes.has(c.code.toUpperCase())) {
+            merged.push({
+              ...c,
+              active: (c.active !== false && c.active !== 0 && c.active !== '0')
+            });
+            seenCodes.add(c.code.toUpperCase());
+          }
+        }
+
+        adminCouriersList = merged;
         const tbody = document.getElementById('admCouriersTableBody');
         if (adminCouriersList.length === 0) {
           tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No couriers found.</td></tr>';
@@ -2381,8 +2434,8 @@
             ? '<span class="badge badge-success">ACTIVE</span>'
             : '<span class="badge badge-danger">INACTIVE</span>';
           const btn = isActive
-            ? '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, false, &quot;' + c.name + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; color: var(--danger); border-color: #fca5a5;">Deactivate</button>'
-            : '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, true, &quot;' + c.name + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; background: var(--success);">Activate</button>';
+            ? '<button onclick="toggleCourierStatus(&quot;' + (c.id || c.code) + '&quot;, false, &quot;' + c.name + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; color: var(--danger); border-color: #fca5a5;">Deactivate</button>'
+            : '<button onclick="toggleCourierStatus(&quot;' + (c.id || c.code) + '&quot;, true, &quot;' + c.name + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; background: var(--success);">Activate</button>';
 
           const brandInfo = window.getCourierBrand ? window.getCourierBrand(c.name) : null;
           const logoUrl = (brandInfo && brandInfo.logoUrl) ? ('/' + brandInfo.logoUrl.replace(/^\//, '')) : '';
@@ -2416,7 +2469,9 @@
             '<td>' + btn + '</td>' +
           '</tr>';
         }).join('');
-      } catch (e) {}
+      } catch (e) {
+        console.error('Error loading admin couriers:', e);
+      }
     }
 
     async function toggleCourierStatus(id, newStatus, name) {
@@ -2429,6 +2484,22 @@
         const d = await res.json();
         if (!res.ok) throw new Error(d.error || 'Failed to update courier');
         showAdminToast(name + ' is now ' + (newStatus ? 'ACTIVE' : 'INACTIVE') + ' across user portals', newStatus ? 'success' : 'info');
+        loadAdminCouriers();
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    async function toggleAllCouriers(activate) {
+      try {
+        const res = await fetch('/api/admin/couriers', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ id: 'ALL', active: activate ? 1 : 0 })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to update all couriers');
+        showAdminToast('All 8 couriers are now ' + (activate ? 'ACTIVE' : 'INACTIVE') + ' across user portals', activate ? 'success' : 'info');
         loadAdminCouriers();
       } catch (err) {
         showAdminToast(err.message, 'error');

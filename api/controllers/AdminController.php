@@ -249,8 +249,9 @@ class AdminController {
     public static function listCouriers(): void {
         AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
-        $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
-        if (empty($couriers)) {
+
+        // 1. Auto-seed / Auto-heal all 8 standard couriers
+        try {
             $db->exec("INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `base_rate_per_kg`, `cod_charge_flat`, `cod_charge_percent`, `rating`, `eta_min_days`, `eta_max_days`, `rto_risk_percent`) VALUES 
               ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#d90429', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
               ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#d90429', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
@@ -260,8 +261,12 @@ class AdminController {
               ('c1000000-0000-0000-0000-000000000006', 'Shadowfax Technologies', 'SHADOWFAX_EXP', '#008d96', 1, 44.00, 25.00, 1.50, 4.20, 2, 5, 6.00),
               ('c1000000-0000-0000-0000-000000000007', 'Xpressbees Logistics', 'XPRESSBEES_EXP', '#e65100', 1, 45.00, 25.00, 1.50, 4.30, 2, 4, 5.80),
               ('c1000000-0000-0000-0000-000000000008', 'Amazon Shipping', 'AMAZON_SHIPPING', '#ea580c', 1, 58.00, 30.00, 1.60, 4.60, 1, 3, 4.00)");
-            $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
-        }
+            
+            // Remove obsolete dummy SHIPMOZO_STD courier
+            $db->exec("DELETE FROM `couriers` WHERE `code` = 'SHIPMOZO_STD'");
+        } catch (\Throwable $e) {}
+
+        $couriers = $db->query("SELECT * FROM couriers WHERE code != 'SHIPMOZO_STD' ORDER BY rating DESC, base_rate_per_kg ASC")->fetchAll();
 
         Response::json(['couriers' => array_map(function($c) {
             return [
@@ -285,18 +290,28 @@ class AdminController {
         $data = Response::getJsonInput();
         $id = $data['id'] ?? '';
 
+        $db = Database::getConnection();
+
+        // Support bulk activate / deactivate all couriers
+        if ($id === 'ALL' || !empty($data['all'])) {
+            $activeVal = (!empty($data['active']) && $data['active'] !== '0' && $data['active'] !== false) ? 1 : 0;
+            $db->prepare("UPDATE couriers SET active = ? WHERE code != 'SHIPMOZO_STD'")->execute([$activeVal]);
+            Response::json(['success' => true, 'message' => 'All couriers updated', 'active' => $activeVal]);
+            return;
+        }
+
         if (empty($id)) Response::error('Courier ID required', 400);
 
-        $db = Database::getConnection();
         if (isset($data['active'])) {
-            $db->prepare("UPDATE couriers SET active = ? WHERE id = ?")->execute([$data['active'] ? 1 : 0, $id]);
+            $activeVal = (!empty($data['active']) && $data['active'] !== '0' && $data['active'] !== false) ? 1 : 0;
+            $db->prepare("UPDATE couriers SET active = ? WHERE id = ? OR code = ?")->execute([$activeVal, $id, $id]);
         }
         if (isset($data['baseRatePerKg'])) {
-            $db->prepare("UPDATE couriers SET base_rate_per_kg = ? WHERE id = ?")->execute([(float)$data['baseRatePerKg'], $id]);
+            $db->prepare("UPDATE couriers SET base_rate_per_kg = ? WHERE id = ? OR code = ?")->execute([(float)$data['baseRatePerKg'], $id, $id]);
         }
 
-        $courier = $db->prepare("SELECT * FROM couriers WHERE id = ?");
-        $courier->execute([$id]);
+        $courier = $db->prepare("SELECT * FROM couriers WHERE id = ? OR code = ?");
+        $courier->execute([$id, $id]);
         Response::json(['courier' => $courier->fetch()]);
     }
 
