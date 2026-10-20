@@ -807,36 +807,7 @@
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
               </svg>
             </button>
-            <div id="quickServicesDropdown" class="quick-services-dropdown-card" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 275px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 0.625rem !important; box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.1) !important; z-index: 99999 !important; padding: 0.5rem !important; animation: fadeIn 0.15s ease;">
-              <div style="font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 0.35rem 0.65rem 0.25rem;">HetEx Quick Services</div>
-
-              <!-- 1. Passbook & Transaction -->
-              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('wallet'); closeQuickServicesDropdown();">
-                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">📖</span>
-                <div>
-                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Passbook & Transactions</div>
-                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Wallet ledger, debits & credits</div>
-                </div>
-              </a>
-
-              <!-- 2. Track Order -->
-              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('track'); closeQuickServicesDropdown();">
-                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">🔍</span>
-                <div>
-                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Track Order</div>
-                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Live multi-carrier AWB tracker</div>
-                </div>
-              </a>
-
-              <!-- 3. Rate Calculator -->
-              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('rates'); closeQuickServicesDropdown();">
-                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">🧮</span>
-                <div>
-                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Rate Calculator</div>
-                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Compare small & large package tariffs</div>
-                </div>
-              </a>
-            </div>
+            
           </div>
           <button type="button" class="topbar-dark-btn desktop-only" onclick="switchTab('tickets')">Tickets</button>
 
@@ -866,7 +837,7 @@
       <!-- Row 3 (Mobile only): Quick Action Pills Strip -->
       <div class="mobile-quick-actions-bar">
         <button type="button" class="mobile-chip mobile-chip-primary" onclick="switchTab('create-order')">+ Create Shipment</button>
-        <button type="button" class="mobile-chip" onclick="toggleQuickServicesDropdown(event)">⚡ Quick Services ▾</button>
+        <button type="button" class="mobile-chip" id="mobileQuickServicesBtn" onclick="toggleQuickServicesDropdown(event)">⚡ Quick Services ▾</button>
         <button type="button" class="mobile-chip" onclick="openRechargeModal()">💳 Recharge</button>
         <button type="button" class="mobile-chip" onclick="switchTab('tickets')">🎫 Tickets</button>
         <span class="mobile-chip" style="color: #64748b;">Credits: <strong style="color: #0f172a;">0</strong></span>
@@ -2812,8 +2783,38 @@
       const chevron = document.getElementById('quickServicesChevron');
       if (!dd) return;
       const isHidden = (dd.style.display === 'none' || !dd.style.display);
-      dd.style.display = isHidden ? 'block' : 'none';
-      if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+
+      if (isHidden) {
+        // Position the fixed dropdown near the clicked button
+        const btn = event ? (event.currentTarget || event.target) : null;
+        if (btn) {
+          const rect = btn.getBoundingClientRect();
+          const isMobile = window.innerWidth < 768;
+          if (isMobile) {
+            // On mobile: show below the chip, aligned left with some margin
+            const topPos = rect.bottom + 8;
+            dd.style.top = Math.min(topPos, window.innerHeight - 250) + 'px';
+            dd.style.left = '8px';
+            dd.style.right = '8px';
+            dd.style.minWidth = '';
+            dd.style.maxWidth = (window.innerWidth - 16) + 'px';
+          } else {
+            // On desktop: right-aligned below button
+            const topPos = rect.bottom + 8;
+            const rightPos = window.innerWidth - rect.right;
+            dd.style.top = topPos + 'px';
+            dd.style.right = rightPos + 'px';
+            dd.style.left = '';
+            dd.style.minWidth = '275px';
+            dd.style.maxWidth = '';
+          }
+        }
+        dd.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      } else {
+        dd.style.display = 'none';
+        if (chevron) chevron.style.transform = 'rotate(0deg)';
+      }
 
       // Close profile dropdown if open
       const pMenu = document.getElementById('profileDropdownMenu');
@@ -6167,5 +6168,37 @@
     syncActiveCouriers();
     loadCarrierSla();
   </script>
+
+  <!-- Quick Services Dropdown Portal (works on mobile + desktop) -->
+  <div id="quickServicesDropdown" class="quick-services-dropdown-card" style="display: none; position: fixed; top: 60px; right: 16px; min-width: 275px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 0.625rem !important; box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.1) !important; z-index: 99999 !important; padding: 0.5rem !important; animation: fadeIn 0.15s ease;">
+              <div style="font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 0.35rem 0.65rem 0.25rem;">HetEx Quick Services</div>
+
+              <!-- 1. Passbook & Transaction -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('wallet'); closeQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">📖</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Passbook & Transactions</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Wallet ledger, debits & credits</div>
+                </div>
+              </a>
+
+              <!-- 2. Track Order -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('track'); closeQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">🔍</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Track Order</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Live multi-carrier AWB tracker</div>
+                </div>
+              </a>
+
+              <!-- 3. Rate Calculator -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchTab('rates'); closeQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">🧮</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Rate Calculator</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Compare small & large package tariffs</div>
+                </div>
+              </a>
+            </div>
 </body>
 </html>

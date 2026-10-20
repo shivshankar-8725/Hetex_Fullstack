@@ -1,0 +1,62 @@
+[
+  {
+    "id": "addr_cust1",
+    "label": "Customer",
+    "contactName": "Amit Sharma",
+    "phone": "9876543210",
+    "addressLine1": "Flat 402, Green Heights, Sector 12",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400001",
+    "isDefault": false,
+    "type": "BUYER"
+  },
+  {
+    "id": "addr_1792476591829",
+    "label": "Samarth Gold",
+    "contactName": "Samarth Gold",
+    "phone": "9516474537",
+    "addressLine1": "Shop 102, Gold Palace Market, Zaveri Bazaar",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400002",
+    "isDefault": false,
+    "type": "BUYER"
+  },
+  {
+    "id": "addr_cust1",
+    "label": "Customer",
+    "contactName": "Amit Sharma",
+    "phone": "9876543210",
+    "addressLine1": "Flat 402, Green Heights, Sector 12",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400001",
+    "isDefault": false,
+    "type": "BUYER"
+  },
+  {
+    "id": "addr_cust2",
+    "label": "Customer",
+    "contactName": "Priya Verma",
+    "phone": "9811223344",
+    "addressLine1": "Villa 15, Palm Meadows, Whitefield",
+    "city": "Bengaluru",
+    "state": "Karnataka",
+    "pincode": "560066",
+    "isDefault": false,
+    "type": "BUYER"
+  },
+  {
+    "id": "addr_cust3",
+    "label": "Customer",
+    "contactName": "Vikram Singh",
+    "phone": "9988776655",
+    "addressLine1": "Shop 12, Connaught Place, Block B",
+    "city": "New Delhi",
+    "state": "Delhi",
+    "pincode": "110001",
+    "isDefault": false,
+    "type": "BUYER"
+  }
+]
