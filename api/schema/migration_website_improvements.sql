@@ -124,7 +124,15 @@ CREATE TABLE IF NOT EXISTS `shipmozo_references` (
   INDEX `idx_sm_awb` (`shipmozo_awb`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Ensure all 8 courier partners exist in database
+-- 4. Ensure addresses has label column and shipments has tracking_url/label_generated
+ALTER TABLE `addresses`
+  ADD COLUMN IF NOT EXISTS `label` VARCHAR(100) NOT NULL DEFAULT 'Warehouse' AFTER `type`;
+
+ALTER TABLE `shipments`
+  ADD COLUMN IF NOT EXISTS `tracking_url` VARCHAR(255) NULL AFTER `awb_number`,
+  ADD COLUMN IF NOT EXISTS `label_generated` TINYINT(1) NOT NULL DEFAULT 0 AFTER `current_location`;
+
+-- 5. Ensure all 8 courier partners exist in database
 INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `base_rate_per_kg`, `cod_charge_flat`, `cod_charge_percent`, `rating`, `eta_min_days`, `eta_max_days`, `rto_risk_percent`)
 VALUES 
   ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#d90429', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
@@ -135,5 +143,7 @@ VALUES
   ('c1000000-0000-0000-0000-000000000006', 'Shadowfax Technologies', 'SHADOWFAX_EXP', '#008d96', 1, 44.00, 25.00, 1.50, 4.20, 2, 5, 6.00),
   ('c1000000-0000-0000-0000-000000000007', 'Xpressbees Logistics', 'XPRESSBEES_EXP', '#e65100', 1, 45.00, 25.00, 1.50, 4.30, 2, 4, 5.80),
   ('c1000000-0000-0000-0000-000000000008', 'Amazon Shipping', 'AMAZON_SHIPPING', '#ea580c', 1, 58.00, 30.00, 1.60, 4.60, 1, 3, 4.00);
+
+DELETE FROM `couriers` WHERE `code` = 'SHIPMOZO_STD';
 
 SET FOREIGN_KEY_CHECKS = 1;

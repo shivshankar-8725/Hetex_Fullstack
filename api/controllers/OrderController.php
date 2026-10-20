@@ -50,6 +50,30 @@ class OrderController {
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ");
         } catch (Throwable $e) {}
+
+        // Auto-heal missing columns across orders, shipments, addresses
+        $patches = [
+            "ALTER TABLE `addresses` ADD COLUMN `label` VARCHAR(100) NOT NULL DEFAULT 'Warehouse'",
+            "ALTER TABLE `shipments` ADD COLUMN `tracking_url` VARCHAR(255) NULL",
+            "ALTER TABLE `shipments` ADD COLUMN `label_generated` TINYINT(1) NOT NULL DEFAULT 0",
+            "ALTER TABLE `orders` ADD COLUMN `shipping_charges` DECIMAL(12,2) NOT NULL DEFAULT 0.00",
+            "ALTER TABLE `orders` ADD COLUMN `shipping_payment_status` ENUM('PAID', 'PENDING', 'UNPAID') NOT NULL DEFAULT 'PENDING'",
+            "ALTER TABLE `orders` ADD COLUMN `package_type` ENUM('SMALL', 'LARGE') NOT NULL DEFAULT 'SMALL'",
+            "ALTER TABLE `orders` ADD COLUMN `eway_bill_number` VARCHAR(32) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `gst_number` VARCHAR(32) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `user_code` VARCHAR(16) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `courier_weight` DECIMAL(10,3) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `courier_length` DECIMAL(10,2) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `courier_width` DECIMAL(10,2) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `courier_height` DECIMAL(10,2) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `courier_billable_weight` DECIMAL(10,3) NULL",
+            "ALTER TABLE `orders` ADD COLUMN `weight_dispute_status` ENUM('NO_DISPUTE', 'OPEN', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'NO_DISPUTE'",
+            "ALTER TABLE `orders` ADD COLUMN `weight_dispute_note` TEXT NULL",
+            "ALTER TABLE `orders` ADD COLUMN `discrepancy_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00"
+        ];
+        foreach ($patches as $sql) {
+            try { $db->exec($sql); } catch (Throwable $t) {}
+        }
     }
 
     public static function createOrder(): void {
@@ -1575,6 +1599,7 @@ HTML;
 
     public static function getBulkLabelsPdf(): void {
         $db = Database::getConnection();
+        self::ensureAuxiliaryTables($db);
         $rawIds = trim($_GET['ids'] ?? '');
         $requestedLayout = strtolower(trim($_GET['layout'] ?? '4perpage'));
 
@@ -1589,22 +1614,54 @@ HTML;
         // Fetch data for all requested order IDs
         $ordersData = [];
         foreach ($orderIds as $id) {
-            $stmt = $db->prepare("
-                SELECT s.awb_number, s.tracking_url,
-                       o.id as raw_order_id, o.order_number, o.payment_mode, o.cod_amount, o.declared_value, o.billable_weight, o.weight, o.length, o.width, o.height, o.item_description,
-                       c.name as courier_name,
-                       b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
-                       p.label as pickup_label, p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
-                FROM orders o
-                LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
-                LEFT JOIN couriers c ON s.courier_id = c.id
-                LEFT JOIN addresses b ON o.buyer_address_id = b.id
-                LEFT JOIN addresses p ON o.pickup_address_id = p.id
-                WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
-                LIMIT 1
-            ");
-            $stmt->execute([$id, $id, $id, $id]);
-            $row = $stmt->fetch();
+            $row = false;
+            try {
+                $stmt = $db->prepare("
+                    SELECT s.awb_number,
+                           o.id as raw_order_id, o.order_number, o.payment_mode, o.cod_amount, o.declared_value, o.billable_weight, o.weight, o.length, o.width, o.height, o.item_description,
+                           c.name as courier_name,
+                           b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
+                           p.label as pickup_label, p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
+                    FROM orders o
+                    LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
+                    LEFT JOIN couriers c ON s.courier_id = c.id
+                    LEFT JOIN addresses b ON o.buyer_address_id = b.id
+                    LEFT JOIN addresses p ON o.pickup_address_id = p.id
+                    WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
+                    LIMIT 1
+                ");
+                $stmt->execute([$id, $id, $id, $id]);
+                $row = $stmt->fetch();
+            } catch (Throwable $e1) {
+                // Resilient fallback query if p.label or other optional column is missing in older DB schema
+                try {
+                    $stmt2 = $db->prepare("
+                        SELECT s.awb_number,
+                               o.id as raw_order_id, o.order_number, o.payment_mode, o.cod_amount, o.declared_value, o.billable_weight, o.weight, o.item_description,
+                               c.name as courier_name,
+                               b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
+                               p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
+                        FROM orders o
+                        LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
+                        LEFT JOIN couriers c ON s.courier_id = c.id
+                        LEFT JOIN addresses b ON o.buyer_address_id = b.id
+                        LEFT JOIN addresses p ON o.pickup_address_id = p.id
+                        WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
+                        LIMIT 1
+                    ");
+                    $stmt2->execute([$id, $id, $id, $id]);
+                    $row = $stmt2->fetch();
+                    if ($row) {
+                        $row['pickup_label'] = 'Warehouse';
+                        $row['length'] = 10;
+                        $row['width'] = 10;
+                        $row['height'] = 10;
+                    }
+                } catch (Throwable $e2) {
+                    error_log("[BulkLabels] Query error: " . $e2->getMessage());
+                }
+            }
+
             if ($row) {
                 // Fetch items for this order
                 try {
@@ -1833,6 +1890,7 @@ HTML;
 
     public static function getBulkInvoicesPdf(): void {
         $db = Database::getConnection();
+        self::ensureAuxiliaryTables($db);
         $rawIds = trim($_GET['ids'] ?? '');
         $orderIds = array_filter(array_map('trim', explode(',', $rawIds)));
 
@@ -1843,21 +1901,51 @@ HTML;
 
         $ordersData = [];
         foreach ($orderIds as $id) {
-            $stmt = $db->prepare("
-                SELECT o.*, s.awb_number, s.status as shipment_status, s.rate_charged as ship_rate,
-                       c.name as courier_name,
-                       b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
-                       p.label as pickup_label, p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
-                FROM orders o
-                LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
-                LEFT JOIN couriers c ON s.courier_id = c.id
-                LEFT JOIN addresses b ON o.buyer_address_id = b.id
-                LEFT JOIN addresses p ON o.pickup_address_id = p.id
-                WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
-                LIMIT 1
-            ");
-            $stmt->execute([$id, $id, $id, $id]);
-            $row = $stmt->fetch();
+            $row = false;
+            try {
+                $stmt = $db->prepare("
+                    SELECT o.*, s.awb_number, s.status as shipment_status, s.rate_charged as ship_rate,
+                           c.name as courier_name,
+                           b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
+                           p.label as pickup_label, p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
+                    FROM orders o
+                    LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
+                    LEFT JOIN couriers c ON s.courier_id = c.id
+                    LEFT JOIN addresses b ON o.buyer_address_id = b.id
+                    LEFT JOIN addresses p ON o.pickup_address_id = p.id
+                    WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
+                    LIMIT 1
+                ");
+                $stmt->execute([$id, $id, $id, $id]);
+                $row = $stmt->fetch();
+            } catch (Throwable $invErr1) {
+                // Resilient fallback query if p.label or other column is missing in legacy table
+                try {
+                    $stmt2 = $db->prepare("
+                        SELECT o.id, o.order_number, o.created_at, o.item_description, o.declared_value, o.weight, o.payment_mode, o.cod_amount,
+                               s.awb_number, s.status as shipment_status, s.rate_charged as ship_rate,
+                               c.name as courier_name,
+                               b.contact_name as buyer_name, b.address_line1 as buyer_addr, b.city as buyer_city, b.state as buyer_state, b.pincode as buyer_pincode, b.phone as buyer_phone,
+                               p.contact_name as pickup_name, p.address_line1 as pickup_addr, p.city as pickup_city, p.state as pickup_state, p.pincode as pickup_pincode, p.phone as pickup_phone
+                        FROM orders o
+                        LEFT JOIN shipments s ON (s.order_id = o.id OR s.id = o.id)
+                        LEFT JOIN couriers c ON s.courier_id = c.id
+                        LEFT JOIN addresses b ON o.buyer_address_id = b.id
+                        LEFT JOIN addresses p ON o.pickup_address_id = p.id
+                        WHERE o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?
+                        LIMIT 1
+                    ");
+                    $stmt2->execute([$id, $id, $id, $id]);
+                    $row = $stmt2->fetch();
+                    if ($row) {
+                        $row['pickup_label'] = 'Warehouse';
+                        $row['shipping_charges'] = (float)($row['ship_rate'] ?? 65.0);
+                    }
+                } catch (Throwable $invErr2) {
+                    error_log("[BulkInvoices] Query error: " . $invErr2->getMessage());
+                }
+            }
+
             if ($row) {
                 try {
                     $iStmt = $db->prepare("SELECT * FROM order_items WHERE order_id = ?");
