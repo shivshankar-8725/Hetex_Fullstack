@@ -9,10 +9,13 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- 1. USERS TABLE
 CREATE TABLE IF NOT EXISTS `users` (
   `id` VARCHAR(36) NOT NULL,
+  `user_code` VARCHAR(16) NOT NULL UNIQUE DEFAULT 'HET000001',
   `name` VARCHAR(191) NOT NULL,
   `email` VARCHAR(191) NULL UNIQUE,
   `phone` VARCHAR(32) NOT NULL UNIQUE,
   `role` ENUM('SELLER', 'ADMIN') NOT NULL DEFAULT 'SELLER',
+  `rate_margin_percent` DECIMAL(5,2) NULL DEFAULT NULL,
+  `rate_margin_type` ENUM('PERCENT', 'FLAT') NOT NULL DEFAULT 'PERCENT',
   `business_name` VARCHAR(191) NULL,
   `kyc_status` ENUM('PENDING', 'VERIFIED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
   `pan_number` VARCHAR(32) NULL,
@@ -20,7 +23,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `password_hash` VARCHAR(255) NULL,
   `email_verified` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `idx_users_user_code` (`user_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. WALLETS TABLE
@@ -112,10 +116,14 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `id` VARCHAR(36) NOT NULL,
   `order_number` VARCHAR(64) NOT NULL UNIQUE,
   `user_id` VARCHAR(36) NOT NULL,
+  `user_code` VARCHAR(16) NULL,
+  `package_type` ENUM('SMALL', 'LARGE') NOT NULL DEFAULT 'SMALL',
   `pickup_address_id` VARCHAR(36) NOT NULL,
   `buyer_address_id` VARCHAR(36) NOT NULL,
   `item_description` VARCHAR(255) NOT NULL,
   `declared_value` DECIMAL(12,2) NOT NULL,
+  `eway_bill_number` VARCHAR(32) NULL,
+  `gst_number` VARCHAR(32) NULL,
   `weight` DECIMAL(10,3) NOT NULL,
   `length` DECIMAL(10,2) NOT NULL,
   `width` DECIMAL(10,2) NOT NULL,
@@ -124,11 +132,22 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `billable_weight` DECIMAL(10,3) NOT NULL,
   `payment_mode` ENUM('PREPAID', 'COD') NOT NULL,
   `cod_amount` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `shipping_charges` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  `shipping_payment_status` ENUM('PAID', 'PENDING', 'UNPAID') NOT NULL DEFAULT 'PENDING',
+  `courier_weight` DECIMAL(10,3) NULL,
+  `courier_length` DECIMAL(10,2) NULL,
+  `courier_width` DECIMAL(10,2) NULL,
+  `courier_height` DECIMAL(10,2) NULL,
+  `courier_billable_weight` DECIMAL(10,3) NULL,
+  `weight_dispute_status` ENUM('NO_DISPUTE', 'OPEN', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'NO_DISPUTE',
+  `weight_dispute_note` TEXT NULL,
+  `discrepancy_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `status` ENUM('DRAFT', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED', 'RTO') NOT NULL DEFAULT 'DRAFT',
   `source` VARCHAR(50) NOT NULL DEFAULT 'MANUAL',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX `idx_order_user` (`user_id`),
+  INDEX `idx_order_user_code` (`user_code`),
   INDEX `idx_order_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -314,14 +333,30 @@ CREATE TABLE IF NOT EXISTS `order_items` (
   INDEX `idx_items_order` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 20. SHIPMOZO REFERENCES TABLE
+CREATE TABLE IF NOT EXISTS `shipmozo_references` (
+  `id` VARCHAR(36) NOT NULL,
+  `order_id` VARCHAR(36) NOT NULL,
+  `shipment_id` VARCHAR(36) NOT NULL,
+  `shipmozo_order_id` VARCHAR(100) NULL,
+  `shipmozo_reference_id` VARCHAR(100) NULL,
+  `shipmozo_awb` VARCHAR(100) NULL,
+  `shipmozo_courier` VARCHAR(200) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_sm_order` (`order_id`),
+  INDEX `idx_sm_awb` (`shipmozo_awb`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =====================================================================
 -- SEED INITIAL DATA (ADMIN, DEFAULT COURIERS, DEFAULT COMMISSION)
 -- =====================================================================
 
 -- Default Admin User (Password: admin123, BCRYPT hash)
-INSERT IGNORE INTO `users` (`id`, `name`, `email`, `phone`, `role`, `business_name`, `kyc_status`, `password_hash`, `email_verified`)
+INSERT IGNORE INTO `users` (`id`, `user_code`, `name`, `email`, `phone`, `role`, `business_name`, `kyc_status`, `password_hash`, `email_verified`)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
+  'HET000001',
   'Hetex Administrator',
   'admin@hetex.in',
   '+919999999999',
@@ -339,10 +374,14 @@ VALUES ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-0000000
 -- Default Active Couriers
 INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `base_rate_per_kg`, `cod_charge_flat`, `cod_charge_percent`, `rating`, `eta_min_days`, `eta_max_days`, `rto_risk_percent`)
 VALUES 
-  ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#000000', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
-  ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#e11d48', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
-  ('c1000000-0000-0000-0000-000000000003', 'DTDC Priority', 'DTDC_EXP', '#ea580c', 1, 52.00, 25.00, 1.50, 4.50, 2, 4, 5.50),
-  ('c1000000-0000-0000-0000-000000000004', 'BlueDart Express', 'BLUEDART_EXP', '#0284c7', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50);
+  ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#d90429', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
+  ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#d90429', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
+  ('c1000000-0000-0000-0000-000000000003', 'DTDC Express', 'DTDC_EXP', '#0f2d59', 1, 52.00, 25.00, 1.50, 4.50, 2, 4, 5.50),
+  ('c1000000-0000-0000-0000-000000000004', 'Blue Dart Express', 'BLUEDART_EXP', '#065dac', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50),
+  ('c1000000-0000-0000-0000-000000000005', 'Ekart Logistics', 'EKART_EXP', '#0062a9', 1, 46.00, 25.00, 1.50, 4.40, 2, 4, 5.00),
+  ('c1000000-0000-0000-0000-000000000006', 'Shadowfax Technologies', 'SHADOWFAX_EXP', '#008d96', 1, 44.00, 25.00, 1.50, 4.20, 2, 5, 6.00),
+  ('c1000000-0000-0000-0000-000000000007', 'Xpressbees Logistics', 'XPRESSBEES_EXP', '#e65100', 1, 45.00, 25.00, 1.50, 4.30, 2, 4, 5.80),
+  ('c1000000-0000-0000-0000-000000000008', 'Amazon Shipping', 'AMAZON_SHIPPING', '#ea580c', 1, 58.00, 30.00, 1.60, 4.60, 1, 3, 4.00);
 
 -- Default Fallback Commission Rule (10% platform markup)
 INSERT IGNORE INTO `commission_rules` (`id`, `courier_id`, `min_weight`, `max_weight`, `margin_type`, `margin_value`)

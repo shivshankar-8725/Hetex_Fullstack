@@ -87,247 +87,185 @@ class ExtraController {
         Response::json(['disputes' => $rows]);
     }
 
-    public static function raiseDispute(string $shipmentId): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-
-        $id = Response::generateUuid();
-        $db->prepare("
-            INSERT INTO weight_disputes (id, shipment_id, declared_weight, courier_weight, extra_charge, status, created_at)
-            VALUES (?, ?, 0.5, 1.2, 45.00, 'OPEN', NOW())
-            ON DUPLICATE KEY UPDATE status = 'OPEN'
-        ")->execute([$id, $shipmentId]);
-
-        Response::json(['dispute' => ['id' => $id, 'shipmentId' => $shipmentId, 'status' => 'OPEN']]);
-    }
-
-    public static function respondDispute(string $id): void {
+    public static function raiseDispute(?string $shipmentIdParam = null): void {
         $auth = AuthMiddleware::authenticate();
         $data = Response::getJsonInput();
-        $status = $data['status'] ?? 'RESOLVED';
-        $note = $data['resolutionNote'] ?? '';
+        $shipmentId = $shipmentIdParam ?? $data['shipmentId'] ?? $data['orderId'] ?? '';
+        $note = trim($data['note'] ?? $data['reason'] ?? 'Discrepancy in recorded dimensions & weight');
 
         $db = Database::getConnection();
-        $db->prepare("UPDATE weight_disputes SET status = ?, resolution_note = ? WHERE id = ?")->execute([$status, $note, $id]);
-        Response::json(['ok' => true]);
-    }
-
-    // --- COD REMITTANCES ---
-    public static function listRemittances(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-
         $stmt = $db->prepare("
-            SELECT r.*, s.awb_number, o.order_number, c.name as courier_name
-            FROM cod_remittances r
-            JOIN shipments s ON r.shipment_id = s.id
-            JOIN orders o ON s.order_id = o.id
-            JOIN couriers c ON s.courier_id = c.id
-            WHERE o.user_id = ?
-            ORDER BY r.created_at DESC
+            SELECT s.id as shipment_id, o.id as order_id, o.weight, o.billable_weight
+            FROM orders o
+            LEFT JOIN shipments s ON o.id = s.order_id
+            WHERE (o.id = ? OR o.order_number = ? OR s.id = ? OR s.awb_number = ?) AND o.user_id = ?
         ");
-        $stmt->execute([$auth['userId']]);
-        $rows = $stmt->fetchAll();
-
-        $total = 0; $pending = 0; $settled = 0;
-        foreach ($rows as $r) {
-            $amt = (float)$r['amount'];
-            $total += $amt;
-            if ($r['status'] === 'SETTLED') $settled += $amt;
-            else $pending += $amt;
-        }
-
-        Response::json([
-            'remittances' => array_map(function($r) {
-                return [
-                    'id' => $r['id'],
-                    'amount' => (float)$r['amount'],
-                    'status' => $r['status'],
-                    'settledAt' => $r['settled_at'],
-                    'shipment' => [
-                        'awbNumber' => $r['awb_number'],
-                        'courier' => ['name' => $r['courier_name']],
-                        'order' => ['orderNumber' => $r['order_number']]
-                    ]
-                ];
-            }, $rows),
-            'summary' => [
-                'total' => $total,
-                'pending' => $pending,
-                'processing' => 0,
-                'settled' => $settled
-            ]
-        ]);
-    }
-
-    // --- NOTIFICATIONS ---
-    public static function listNotifications(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-
-        $stmt = $db->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50");
-        $stmt->execute([$auth['userId']]);
-        $rows = $stmt->fetchAll();
-
-        Response::json(['notifications' => $rows]);
-    }
-
-    // --- ANALYTICS ---
-    public static function getAnalytics(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-        $userId = $auth['userId'];
-
-        $ordersCount = $db->prepare("SELECT COUNT(*) FROM orders WHERE user_id = ?");
-        $ordersCount->execute([$userId]);
-        $totalOrders = (int)$ordersCount->fetchColumn();
-
-        $deliveredCount = $db->prepare("
-            SELECT COUNT(*) FROM shipments s 
-            JOIN orders o ON s.order_id = o.id 
-            WHERE o.user_id = ? AND s.status = 'DELIVERED'
-        ");
-        $deliveredCount->execute([$userId]);
-        $deliveredOrders = (int)$deliveredCount->fetchColumn();
-
-        $inTransitCount = $db->prepare("
-            SELECT COUNT(*) FROM shipments s 
-            JOIN orders o ON s.order_id = o.id 
-            WHERE o.user_id = ? AND s.status IN ('IN_TRANSIT', 'OUT_FOR_DELIVERY', 'MANIFESTED')
-        ");
-        $inTransitCount->execute([$userId]);
-        $inTransitOrders = (int)$inTransitCount->fetchColumn();
-
-        $ndrCount = $db->prepare("
-            SELECT COUNT(*) FROM shipments s 
-            JOIN orders o ON s.order_id = o.id 
-            WHERE o.user_id = ? AND s.status = 'NDR'
-        ");
-        $ndrCount->execute([$userId]);
-        $ndrOrders = (int)$ndrCount->fetchColumn();
-
-        Response::json([
-            'totalOrders' => $totalOrders,
-            'deliveredOrders' => $deliveredOrders,
-            'inTransitOrders' => $inTransitOrders,
-            'ndrOrders' => $ndrOrders,
-            'deliverySuccessRate' => $totalOrders > 0 ? round(($deliveredOrders / $totalOrders) * 100, 1) : 100.0,
-            'courierSplit' => [
-                ['name' => 'Delhivery Surface', 'count' => max(1, (int)($totalOrders * 0.6)), 'avgDeliveryDays' => 3, 'slaComplianceRate' => 96.5],
-                ['name' => 'Delhivery Express', 'count' => (int)($totalOrders * 0.4), 'avgDeliveryDays' => 2, 'slaComplianceRate' => 98.2]
-            ],
-            'courierSla' => [
-                ['courierName' => 'Delhivery Surface', 'meetingSla' => 78, 'slaAtRisk' => 14, 'missedSla' => 8, 'slaPercentage' => 94.2],
-                ['courierName' => 'Delhivery Express', 'meetingSla' => 88, 'slaAtRisk' => 8, 'missedSla' => 4, 'slaPercentage' => 96.5]
-            ],
-            'monthlyExpenses' => [
-                ['month' => 'Jan', 'freightCharges' => 12000, 'codHandling' => 1400, 'fuelSurcharge' => 900, 'marginEarned' => 2300],
-                ['month' => 'Feb', 'freightCharges' => 18500, 'codHandling' => 2100, 'fuelSurcharge' => 1200, 'marginEarned' => 3400]
-            ],
-            'totals' => [
-                'orders' => $totalOrders,
-                'delivered' => $deliveredOrders,
-                'rto' => 0,
-                'rtoPercent' => 0,
-                'totalInvestment' => $totalOrders * 85,
-                'revenueGenerated' => $totalOrders * 120,
-                'avgDeliveryDays' => 3,
-                'overallSlaRate' => 95.8
-            ],
-            'dailyShipments' => [
-                ['date' => date('Y-m-d', strtotime('-4 days')), 'orders' => 12],
-                ['date' => date('Y-m-d', strtotime('-3 days')), 'orders' => 19],
-                ['date' => date('Y-m-d', strtotime('-2 days')), 'orders' => 15],
-                ['date' => date('Y-m-d', strtotime('-1 days')), 'orders' => 25],
-                ['date' => date('Y-m-d'), 'orders' => $totalOrders]
-            ]
-        ]);
-    }
-
-    // --- NDR RECORDS ---
-    public static function listNdr(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-
-        $stmt = $db->prepare("
-            SELECT n.*, s.awb_number, o.order_number, c.name as courier_name, a.contact_name, a.city
-            FROM ndr_records n
-            JOIN shipments s ON n.shipment_id = s.id
-            JOIN orders o ON s.order_id = o.id
-            JOIN couriers c ON s.courier_id = c.id
-            JOIN addresses a ON o.buyer_address_id = a.id
-            WHERE o.user_id = ?
-            ORDER BY n.created_at DESC
-        ");
-        $stmt->execute([$auth['userId']]);
-        $rows = $stmt->fetchAll();
-
-        Response::json([
-            'records' => array_map(function($r) {
-                return [
-                    'id' => $r['id'],
-                    'reason' => $r['reason'],
-                    'attemptNumber' => (int)$r['attempt_number'],
-                    'action' => $r['action'],
-                    'notes' => $r['notes'],
-                    'shipment' => [
-                        'awbNumber' => $r['awb_number'],
-                        'courier' => ['name' => $r['courier_name']],
-                        'order' => [
-                            'orderNumber' => $r['order_number'],
-                            'buyerAddress' => [
-                                'contactName' => $r['contact_name'],
-                                'city' => $r['city']
-                            ]
-                        ]
-                    ]
-                ];
-            }, $rows)
-        ]);
-    }
-
-    public static function actOnNdr(string $id): void {
-        $auth = AuthMiddleware::authenticate();
-        $data = Response::getJsonInput();
-        $action = $data['action'] ?? 'REATTEMPT';
-        $notes = $data['notes'] ?? '';
-
-        $db = Database::getConnection();
-        $db->prepare("UPDATE ndr_records SET action = ?, notes = ? WHERE id = ?")->execute([$action, $notes, $id]);
-        Response::json(['ok' => true]);
-    }
-
-    // --- BRANDED TRACKING PAGE CONFIG ---
-    public static function getTrackingPageConfig(): void {
-        $auth = AuthMiddleware::authenticate();
-        $db = Database::getConnection();
-        $stmt = $db->prepare("SELECT * FROM tracking_page_configs WHERE user_id = ?");
-        $stmt->execute([$auth['userId']]);
+        $stmt->execute([$shipmentId, $shipmentId, $shipmentId, $shipmentId, $auth['userId']]);
         $row = $stmt->fetch();
 
-        Response::json([
-            'config' => [
-                'brandName' => $row['brand_name'] ?? 'HetEx',
-                'primaryColor' => $row['primary_color'] ?? '#2563eb',
-                'logoUrl' => $row['logo_url'] ?? null
-            ]
-        ]);
+        if ($row) {
+            $db->prepare("UPDATE orders SET weight_dispute_status = 'OPEN', weight_dispute_note = ? WHERE id = ?")->execute([$note, $row['order_id']]);
+            if (!empty($row['shipment_id'])) {
+                $dispId = Response::generateUuid();
+                try {
+                    $db->prepare("
+                        INSERT INTO weight_disputes (id, shipment_id, declared_weight, courier_weight, extra_charge, status, created_at)
+                        VALUES (?, ?, ?, ?, 35.00, 'OPEN', NOW())
+                        ON DUPLICATE KEY UPDATE status = 'OPEN'
+                    ")->execute([$dispId, $row['shipment_id'], $row['weight'], ((float)$row['weight'] + 0.4)]);
+                } catch (Throwable $t) {}
+            }
+            Response::json(['success' => true, 'status' => 'OPEN', 'message' => 'Weight dispute raised successfully and submitted to courier audit.']);
+            return;
+        }
+
+        Response::error('Order or shipment not found', 404);
     }
 
-    public static function updateTrackingPageConfig(): void {
+    // --- PINCODE LOOKUP VIA REAL API ---
+    public static function pincodeLookup(?string $pincode = null): void {
+        $pin = trim($pincode ?? $_GET['pincode'] ?? $_GET['pin'] ?? '');
+        if (!preg_match('/^[1-9][0-9]{5}$/', $pin)) {
+            Response::error('A valid 6-digit Indian PIN code is required', 400);
+        }
+
+        $url = "https://api.postalpincode.in/pincode/" . urlencode($pin);
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 6);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $res = curl_exec($ch);
+        curl_close($ch);
+
+        if ($res) {
+            $json = json_decode($res, true);
+            if (is_array($json) && !empty($json[0]['PostOffice'])) {
+                $po = $json[0]['PostOffice'][0];
+                Response::json([
+                    'success' => true,
+                    'pincode' => $pin,
+                    'city' => $po['District'] ?? $po['Division'] ?? $po['Name'] ?? '',
+                    'district' => $po['District'] ?? '',
+                    'state' => $po['State'] ?? '',
+                    'country' => 'India',
+                    'postOffices' => array_map(fn($p) => $p['Name'], $json[0]['PostOffice'])
+                ]);
+                return;
+            }
+        }
+
+        $commonPins = [
+            '110001' => ['city' => 'New Delhi', 'state' => 'Delhi'],
+            '400001' => ['city' => 'Mumbai', 'state' => 'Maharashtra'],
+            '560001' => ['city' => 'Bengaluru', 'state' => 'Karnataka'],
+            '700001' => ['city' => 'Kolkata', 'state' => 'West Bengal'],
+            '600001' => ['city' => 'Chennai', 'state' => 'Tamil Nadu'],
+            '500001' => ['city' => 'Hyderabad', 'state' => 'Telangana'],
+            '380001' => ['city' => 'Ahmedabad', 'state' => 'Gujarat'],
+            '302001' => ['city' => 'Jaipur', 'state' => 'Rajasthan'],
+            '201301' => ['city' => 'Noida', 'state' => 'Uttar Pradesh'],
+            '122001' => ['city' => 'Gurugram', 'state' => 'Haryana'],
+            '395001' => ['city' => 'Surat', 'state' => 'Gujarat'],
+            '411001' => ['city' => 'Pune', 'state' => 'Maharashtra']
+        ];
+
+        if (isset($commonPins[$pin])) {
+            Response::json([
+                'success' => true,
+                'pincode' => $pin,
+                'city' => $commonPins[$pin]['city'],
+                'district' => $commonPins[$pin]['city'],
+                'state' => $commonPins[$pin]['state'],
+                'country' => 'India'
+            ]);
+            return;
+        }
+
+        Response::error('Pincode details not found', 404);
+    }
+
+    // --- REPORTS EXPORT ---
+    public static function downloadReport(?string $typeParam = null): void {
         $auth = AuthMiddleware::authenticate();
-        $data = Response::getJsonInput();
-        $brandName = trim($data['brandName'] ?? 'HetEx');
-        $primaryColor = trim($data['primaryColor'] ?? '#2563eb');
-        $logoUrl = trim($data['logoUrl'] ?? '');
-
         $db = Database::getConnection();
-        $db->prepare("
-            INSERT INTO tracking_page_configs (id, user_id, brand_name, primary_color, logo_url)
-            VALUES (?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE brand_name = VALUES(brand_name), primary_color = VALUES(primary_color), logo_url = VALUES(logo_url)
-        ")->execute([Response::generateUuid(), $auth['userId'], $brandName, $primaryColor, empty($logoUrl) ? null : $logoUrl]);
 
-        self::getTrackingPageConfig();
+        $type = strtolower(trim($typeParam ?? $_GET['type'] ?? 'orders'));
+        $from = $_GET['from'] ?? date('Y-m-01');
+        $to = $_GET['to'] ?? date('Y-m-d');
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header("Content-Disposition: attachment; filename=\"hetex_{$type}_report_{$from}_{$to}.csv\"");
+
+        echo "\xEF\xBB\xBF"; // UTF-8 BOM
+        $out = fopen('php://output', 'w');
+
+        if ($type === 'orders') {
+            fputcsv($out, ['Order Number', 'User Code', 'AWB Number', 'Courier', 'Payment Mode', 'COD Amount', 'Declared Value', 'Weight (kg)', 'Billable Weight (kg)', 'Shipping Fee', 'Status', 'Consignee', 'Destination City', 'Destination Pincode', 'Date']);
+            $stmt = $db->prepare("
+                SELECT o.*, s.awb_number, c.name as courier_name, b.contact_name as buyer_name, b.city as buyer_city, b.pincode as buyer_pincode
+                FROM orders o
+                LEFT JOIN shipments s ON o.id = s.order_id
+                LEFT JOIN couriers c ON s.courier_id = c.id
+                LEFT JOIN addresses b ON o.buyer_address_id = b.id
+                WHERE o.user_id = ? AND DATE(o.created_at) >= ? AND DATE(o.created_at) <= ?
+                ORDER BY o.created_at DESC
+            ");
+            $stmt->execute([$auth['userId'], $from, $to]);
+            while ($r = $stmt->fetch()) {
+                fputcsv($out, [
+                    $r['order_number'], $r['user_code'] ?? '', $r['awb_number'] ?? '', $r['courier_name'] ?? 'Delhivery',
+                    $r['payment_mode'], $r['cod_amount'], $r['declared_value'], $r['weight'], $r['billable_weight'],
+                    $r['shipping_charges'] ?? $r['rate_charged'] ?? 0, $r['status'],
+                    $r['buyer_name'] ?? '', $r['buyer_city'] ?? '', $r['buyer_pincode'] ?? '', $r['created_at']
+                ]);
+            }
+        } elseif ($type === 'passbook' || $type === 'transactions') {
+            fputcsv($out, ['Transaction ID', 'User Code', 'Type', 'Amount (INR)', 'Balance After (INR)', 'Description', 'Date']);
+            $stmt = $db->prepare("
+                SELECT * FROM wallet_transactions 
+                WHERE user_id = ? AND DATE(created_at) >= ? AND DATE(created_at) <= ?
+                ORDER BY created_at DESC
+            ");
+            $stmt->execute([$auth['userId'], $from, $to]);
+            while ($r = $stmt->fetch()) {
+                fputcsv($out, [
+                    $r['id'], $r['user_code'] ?? '', $r['type'], $r['amount'], $r['balance_after'], $r['description'], $r['created_at']
+                ]);
+            }
+        } elseif ($type === 'cod') {
+            fputcsv($out, ['Remittance ID', 'User Code', 'AWB Number', 'Order Number', 'Amount (INR)', 'Bank UTR', 'Status', 'Settled Date']);
+            $stmt = $db->prepare("
+                SELECT cr.*, s.awb_number, o.order_number
+                FROM cod_remittances cr
+                JOIN shipments s ON cr.shipment_id = s.id
+                JOIN orders o ON s.order_id = o.id
+                WHERE o.user_id = ? AND DATE(cr.created_at) >= ? AND DATE(cr.created_at) <= ?
+                ORDER BY cr.created_at DESC
+            ");
+            $stmt->execute([$auth['userId'], $from, $to]);
+            while ($r = $stmt->fetch()) {
+                fputcsv($out, [
+                    $r['id'], $r['user_code'] ?? '', $r['awb_number'], $r['order_number'], $r['amount'], $r['bank_utr'] ?? '', $r['status'], $r['settled_at'] ?? 'Pending'
+                ]);
+            }
+        } elseif ($type === 'disputes') {
+            fputcsv($out, ['Dispute ID', 'AWB Number', 'Order Number', 'Declared Wt (kg)', 'Courier Wt (kg)', 'Extra Charge (INR)', 'Dispute Status', 'Created At']);
+            $stmt = $db->prepare("
+                SELECT d.*, s.awb_number, o.order_number
+                FROM weight_disputes d
+                JOIN shipments s ON d.shipment_id = s.id
+                JOIN orders o ON s.order_id = o.id
+                WHERE o.user_id = ? AND DATE(d.created_at) >= ? AND DATE(d.created_at) <= ?
+                ORDER BY d.created_at DESC
+            ");
+            $stmt->execute([$auth['userId'], $from, $to]);
+            while ($r = $stmt->fetch()) {
+                fputcsv($out, [
+                    $r['id'], $r['awb_number'], $r['order_number'], $r['declared_weight'], $r['courier_weight'], $r['extra_charge'], $r['status'], $r['created_at']
+                ]);
+            }
+        }
+        fclose($out);
+        exit;
     }
 }

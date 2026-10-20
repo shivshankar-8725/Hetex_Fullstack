@@ -3,185 +3,673 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Shipment Live Tracking | HetEx</title>
+  <title>Live Shipment Tracking | HetEx Logistics</title>
+  <meta name="description" content="Track your package live across Delhivery, BlueDart, DTDC, and more with real-time milestone telemetry." />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
+  <script src="courier_brand.js"></script>
   <style>
-    
-  :root {
-    --brand: #2563eb;
-    --brand-dark: #1d4ed8;
-    --brand-light: #eff6ff;
-    --navy: #0f172a;
-    --navy-light: #1e293b;
-    --accent: #ea580c;
-    --surface: #ffffff;
-    --background: #f8fafc;
-    --border: #e2e8f0;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --warning: #d97706;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--background);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-  a { color: inherit; text-decoration: none; }
-  button { cursor: pointer; font-family: inherit; }
-  input, select, textarea { font-family: inherit; font-size: inherit; }
-  .btn-primary {
-    background: var(--brand);
-    color: #fff;
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    border: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-primary:hover { background: var(--brand-dark); transform: translateY(-1px); }
-  .btn-secondary {
-    background: #fff;
-    color: var(--text);
-    border: 1px solid var(--border);
-    padding: 0.625rem 1.25rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    justify-content: center;
-  }
-  .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
-  .badge {
-    padding: 0.25rem 0.625rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-  }
-  .badge-success { background: #dcfce7; color: #15803d; }
-  .badge-warning { background: #fef3c7; color: #b45309; }
-  .badge-danger { background: #fee2e2; color: #b91c1c; }
-  .badge-info { background: #e0f2fe; color: #0369a1; }
-  .badge-navy { background: #f1f5f9; color: #334155; }
-  .card {
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 0.75rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  }
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    padding: 1rem;
-    backdrop-filter: blur(2px);
-  }
-  .modal-content {
-    background: #fff;
-    border-radius: 1rem;
-    max-width: 550px;
-    width: 100%;
-    padding: 1.75rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-  th { text-align: left; padding: 0.75rem 1rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; }
-  td { padding: 0.875rem 1rem; border-bottom: 1px solid var(--border); }
-  tr:hover td { background: #f8fafc; }
+    :root {
+      --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-light: #eff6ff;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #ea580c;
+      --surface: #ffffff;
+      --background: #f8fafc;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --success-dark: #15803d;
+      --success-light: #dcfce7;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
 
-    .timeline-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--brand); border: 3px solid #fff; box-shadow: 0 0 0 2px var(--brand); position: absolute; left: -8px; top: 0.25rem; }
-    .timeline-dot.inactive { background: #cbd5e1; box-shadow: 0 0 0 2px #cbd5e1; }
-    .timeline-item { position: relative; padding-left: 1.5rem; margin-bottom: 1.75rem; border-left: 2px solid #e2e8f0; }
-    .timeline-item:last-child { border-left: 2px solid transparent; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
+    html {
+      font-size: 14px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.625rem 1.25rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .btn-secondary:hover {
+      background: var(--brand-light);
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .badge {
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.725rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+      letter-spacing: 0.04em;
+    }
+
+    .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
+    .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
+    .badge-navy { background: #f1f5f9; color: #334155; }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    }
+
+    /* Hero Search Header */
+    .track-hero {
+      background: linear-gradient(135deg, #0b1329 0%, #172554 45%, #1e3a8a 100%);
+      color: #fff;
+      padding: 3rem 1.5rem 3.5rem;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .ambient-glow-1 {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 450px;
+      height: 450px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(234, 88, 12, 0.22) 0%, rgba(245, 158, 11, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .ambient-glow-2 {
+      position: absolute;
+      bottom: -120px;
+      left: -100px;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.28) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 75%);
+      pointer-events: none;
+    }
+
+    .track-search-box {
+      max-width: 620px;
+      margin: 1.5rem auto 0;
+      background: #ffffff;
+      border-radius: 0.75rem;
+      padding: 0.4rem 0.4rem 0.4rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .track-search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--navy);
+      background: transparent;
+    }
+
+    .track-search-input::placeholder {
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    /* Main Container */
+    .track-wrapper {
+      max-width: 1120px;
+      width: 100%;
+      margin: -1.75rem auto 3.5rem auto;
+      padding: 0 1.25rem;
+      position: relative;
+      z-index: 10;
+      flex: 1;
+    }
+
+    /* Result Card */
+    .track-main-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Metadata Bar */
+    .track-meta-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      padding-bottom: 1.25rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .track-meta-item {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .track-meta-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+    }
+
+    .track-meta-value {
+      font-weight: 750;
+      font-size: 0.9375rem;
+      color: var(--navy);
+    }
+
+    /* 6-Stage Progress Stepper */
+    .stepper-container {
+      position: relative;
+      margin: 2.25rem 0 3.25rem 0;
+      padding: 0 1rem;
+    }
+
+    .stepper-track-line {
+      position: absolute;
+      top: 18px;
+      left: 3.5rem;
+      right: 3.5rem;
+      height: 4px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+
+    .stepper-progress-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: var(--brand);
+      transition: width 0.4s ease;
+      z-index: 1;
+    }
+
+    .stepper-steps-row {
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      z-index: 2;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 90px;
+    }
+
+    .step-node {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 0 5px #fff;
+    }
+
+    .step-item.completed .step-node {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    .step-item.active .step-node {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+      box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.2);
+    }
+
+    .step-label {
+      margin-top: 0.85rem;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.25;
+      max-width: 120px;
+    }
+
+    .step-date {
+      margin-top: 0.35rem;
+      font-size: 0.725rem;
+      color: var(--text-muted);
+      line-height: 1.2;
+    }
+
+    .step-time {
+      font-size: 0.6875rem;
+      color: #94a3b8;
+    }
+
+    /* Scan Events Table */
+    .events-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .events-card-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .events-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+
+    .events-table th {
+      background: #f8fafc;
+      padding: 0.85rem 1.25rem;
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .events-table td {
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      color: #1e293b;
+    }
+
+    .events-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .events-table tr:hover td {
+      background: #f8fafc;
+    }
+
+    .event-datetime {
+      font-weight: 600;
+      color: #475569;
+      white-space: nowrap;
+    }
+
+    .event-location {
+      font-weight: 500;
+      color: var(--navy);
+    }
+
+    .event-status {
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    /* Empty Prompt State */
+    .empty-state-card {
+      background: #fff;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 3.5rem 2rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--navy);
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      z-index: 99999;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .track-hero { padding: 2.5rem 1rem 3rem; }
+      .track-wrapper { padding: 0 0.75rem; margin-top: -1rem; }
+      .track-main-card { padding: 1.25rem 1rem; }
+      .stepper-track-line { left: 1rem; right: 1rem; }
+      .stepper-steps-row { overflow-x: auto; padding-bottom: 0.75rem; justify-content: flex-start; gap: 1.5rem; }
+      .step-item { flex-shrink: 0; min-width: 85px; }
+      .events-table th, .events-table td { padding: 0.65rem 0.75rem; font-size: 0.75rem; }
+      .hide-mobile { display: none !important; }
+    }
   </style>
 </head>
-<body style="background: #f8fafc;">
-  <header style="background: #fff; border-bottom: 1px solid var(--border); padding: 0.875rem 1.5rem;">
-    <div style="max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
-      <a href="/">
-        <img src="/logo.jpeg" alt="HetEx Logo" style="height: 44px; width: auto; object-fit: contain;" />
+<body>
+  <div id="toast" class="toast-msg"></div>
+
+  <!-- Header Uniform with index.html -->
+  <header style="background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;">
+    <div style="max-width: 1280px; margin: 0 auto; padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+      <a href="/" style="display: flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+        <img src="/logo.jpeg" alt="HetEx Courier Logistics" style="height: 38px; max-width: 165px; width: auto; object-fit: contain; display: block;" />
       </a>
-      <a href="/login" class="btn-secondary" style="font-size: 0.875rem;">Log In to HetEx</a>
+
+      <!-- Desktop Nav Menu -->
+      <nav class="hide-mobile" style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.8125rem; font-weight: 650; color: #475569;">
+        <a href="/#carriers" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Courier Partners</a>
+        <a href="/track" style="color: var(--brand); font-weight: 750;">Live Tracking</a>
+        <a href="/#pricing" style="transition: color 0.15s ease;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Rates</a>
+        <a href="javascript:void(0)" onclick="openHelplineModal()" style="color: #16a34a; font-weight: 700; display: flex; align-items: center; gap: 0.3rem;">
+          <span>📞</span>
+          <span>Helpline</span>
+        </a>
+      </nav>
+
+      <!-- Auth Action Buttons -->
+      <div id="authNavButtons" style="display: flex; align-items: center; gap: 0.625rem;">
+        <a href="/login" class="btn-secondary" style="padding: 0.45rem 0.875rem; font-size: 0.8125rem;">Log In</a>
+        <a href="/register" class="btn-primary" style="padding: 0.45rem 1rem; font-size: 0.8125rem;">Register Free →</a>
+      </div>
     </div>
   </header>
 
-  <main style="max-width: 860px; margin: 2.5rem auto; padding: 0 1rem;">
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <h1 style="font-size: 2rem; font-weight: 800; color: var(--navy);">Live Shipment Tracking</h1>
-      <p style="color: var(--text-muted); font-size: 0.9375rem; margin-top: 0.25rem;">Enter your AWB or order number to get live milestone updates.</p>
-    </div>
+  <!-- Hero Header Section with Search -->
+  <div class="track-hero">
+    <div class="ambient-glow-1"></div>
+    <div class="ambient-glow-2"></div>
+    <div style="position: relative; z-index: 5; max-width: 800px; margin: 0 auto;">
+      <span class="badge" style="background: rgba(234, 88, 12, 0.2); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.35); padding: 0.35rem 0.9rem; font-size: 0.75rem; font-weight: 750; margin-bottom: 0.75rem; letter-spacing: 0.04em;">
+        ⚡ REAL-TIME MULTI-COURIER TELEMETRY
+      </span>
+      <h1 style="font-size: 2.4rem; font-weight: 900; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
+        Track Your Shipment
+      </h1>
+      <p style="font-size: 0.95rem; color: #cbd5e1; max-width: 580px; margin: 0 auto;">
+        Real-time tracking and delivery updates across Delhivery, BlueDart, DTDC, and premium Indian carriers.
+      </p>
 
-    <div class="card" style="padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-      <form id="trackForm" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-        <input type="text" id="awbInput" placeholder="Enter AWB or Tracking ID (e.g. AWB1234567890)" class="form-control"
-               style="flex: 1; min-width: 260px; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 1rem; outline: none;" required />
-        <button type="submit" id="trackBtn" class="btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem;">
+      <!-- Search Input Box -->
+      <form id="trackSearchForm" onsubmit="handleTrackSubmit(event)" class="track-search-box">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.25rem;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </svg>
+        <input type="text" id="awbSearchInput" class="track-search-input" placeholder="Enter AWB or Tracking ID..." required autofocus />
+        <button type="submit" class="btn-primary" id="trackSubmitBtn" style="padding: 0.65rem 1.4rem; border-radius: 0.5rem; font-size: 0.875rem;">
           Track Package
         </button>
       </form>
     </div>
+  </div>
 
-    <!-- Error state -->
-    <div id="trackError" style="display: none; padding: 1rem 1.25rem; background: #fee2e2; border: 1px solid #fecaca; border-radius: 0.5rem; color: #b91c1c; font-size: 0.9375rem; margin-bottom: 2rem;"></div>
-
-    <!-- Loading state -->
-    <div id="trackLoading" style="display: none; text-align: center; padding: 3rem 1rem;">
-      <div style="display: inline-block; width: 36px; height: 36px; border: 4px solid var(--border); border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
-      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.875rem;">Connecting to courier tracking nodes...</p>
+  <!-- Content Container -->
+  <div class="track-wrapper">
+    <!-- Loading State -->
+    <div id="trackingLoading" style="display: none; text-align: center; padding: 4rem 1rem;">
+      <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: var(--brand); border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+      <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 600;">Contacting live carrier tracking gateway...</p>
     </div>
 
-    <!-- Result state -->
-    <div id="trackResult" style="display: none;">
-      <!-- Summary Card -->
-      <div class="card" style="padding: 1.75rem; margin-bottom: 2rem; background: #fff; border-left: 5px solid var(--brand);">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem;">
-          <div>
-            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">AWB Number</p>
-            <p id="resAwb" style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-top: 0.25rem;">-</p>
+    <!-- Error State -->
+    <div id="trackingError" style="display: none; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; padding: 1.25rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center;"></div>
+
+    <!-- Empty Prompt State (Shown when no AWB has been queried yet) -->
+    <div id="emptyTrackingState" class="empty-state-card" style="display: block;">
+      <div style="width: 64px; height: 64px; background: var(--brand-light); color: var(--brand); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.85rem; margin: 0 auto 1.25rem auto;">
+        📦
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.4rem;">Ready to track your shipment?</h3>
+      <p style="color: var(--text-muted); font-size: 0.875rem; max-width: 520px; margin: 0 auto 1.75rem auto;">
+        Enter your 10 to 14 digit AWB or tracking number above to see real-time transit milestones, carrier scans, and live status.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 1.5rem; max-width: 650px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 650; color: #334155;">
+          <span style="color: var(--success); font-size: 1.1rem;">✓</span> Live Milestone Telemetry
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 650; color: #334155;">
+          <span style="color: var(--success); font-size: 1.1rem;">✓</span> Multi-Carrier Hub Sync
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 650; color: #334155;">
+          <span style="color: var(--success); font-size: 1.1rem;">✓</span> Instant Proof of Delivery
+        </div>
+      </div>
+    </div>
+
+    <!-- Result View -->
+    <div id="trackingResultView" style="display: none;">
+      <!-- Top Action Strip -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.15rem; font-weight: 800; color: var(--navy);">Shipment Status</span>
+          <span id="metaAwbBadge" class="badge badge-navy"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" class="btn-secondary" style="padding: 0.4rem 0.85rem; font-size: 0.8125rem;" onclick="refreshTracking()" title="Refresh status">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <span>Refresh</span>
+          </button>
+          <button type="button" class="btn-primary" style="padding: 0.4rem 0.85rem; font-size: 0.8125rem;" onclick="copyTrackingUrl()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Copy Link</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Stepper Card -->
+      <div class="track-main-card">
+        <!-- Metadata Strip -->
+        <div class="track-meta-strip">
+          <div class="track-meta-item">
+            <span class="track-meta-label">Courier Partner</span>
+            <span class="track-meta-value" id="metaCourier">-</span>
           </div>
-          <div>
-            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Carrier</p>
-            <p id="resCourier" style="font-size: 1.125rem; font-weight: 700; color: var(--navy); margin-top: 0.25rem;">-</p>
+          <div class="track-meta-item">
+            <span class="track-meta-label">AWB Tracking Number</span>
+            <span class="track-meta-value" id="metaAwb">-</span>
           </div>
-          <div>
-            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Destination</p>
-            <p id="resDest" style="font-size: 1.125rem; font-weight: 700; color: var(--navy); margin-top: 0.25rem;">-</p>
+          <div class="track-meta-item">
+            <span class="track-meta-label">Order Reference</span>
+            <span class="track-meta-value" id="metaOrderId">-</span>
           </div>
-          <div>
-            <p style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Current Status</p>
-            <div id="resStatusBadge" style="margin-top: 0.25rem;">-</div>
+          <div class="track-meta-item">
+            <span class="track-meta-label">Current Status</span>
+            <span class="track-meta-value" id="metaStatus">-</span>
+          </div>
+          <div class="track-meta-item">
+            <span class="track-meta-label">Destination</span>
+            <span class="track-meta-value" id="metaDestination">India</span>
+          </div>
+        </div>
+
+        <!-- 6-Stage Progress Stepper -->
+        <div class="stepper-container">
+          <div class="stepper-track-line">
+            <div class="stepper-progress-fill" id="stepperFill" style="width: 0%;"></div>
+          </div>
+          <div class="stepper-steps-row" id="stepperStepsRow">
+            <!-- 6 stages dynamically rendered -->
           </div>
         </div>
       </div>
 
-      <!-- Timeline Card -->
-      <div class="card" style="padding: 2rem;">
-        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-bottom: 1.75rem;">Milestone Timeline</h3>
-        <div id="timelineContainer"></div>
+      <!-- Scan Events Table Card -->
+      <div class="events-card">
+        <div class="events-card-header">
+          <h3 style="font-size: 0.9375rem; font-weight: 750; color: var(--navy); display: flex; align-items: center; gap: 0.5rem;">
+            <span>📍</span> Milestone Scans & Audit Timeline
+          </h3>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Verified carrier node records</span>
+        </div>
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th style="width: 28%;">Date & Time</th>
+              <th style="width: 36%;">Location / Hub</th>
+              <th style="width: 36%;">Activity / Milestone</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody">
+            <!-- Scan events dynamically rendered -->
+          </tbody>
+        </table>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- Helpline Modal Uniform with index.html -->
+  <div id="helplineModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px);">
+    <div style="background: #ffffff; border-radius: 1rem; max-width: 420px; width: 100%; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; border: 1px solid var(--border);">
+      <div style="width: 56px; height: 56px; background: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; margin: 0 auto 1.25rem auto;">
+        📞
+      </div>
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">HetEx Merchant Helpline</h3>
+      <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
+        Need urgent assistance with shipment transit or priority escalations? Contact our direct support desk.
+      </p>
+      <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+        <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; display: block; margin-bottom: 0.25rem;">Dedicated Support Line</span>
+        <div style="font-size: 1.35rem; font-weight: 850; color: var(--navy); letter-spacing: 0.02em;">+91 98765 43210</div>
+      </div>
+      <button type="button" class="btn-primary" onclick="closeHelplineModal()" style="width: 100%;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- Uniform Footer Matching index.html -->
+  <footer style="background: #ffffff; border-top: 1px solid var(--border); margin-top: auto; padding: 2.5rem 1.5rem 2rem;">
+    <div style="max-width: 1280px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="/">
+            <img src="/logo.jpeg" alt="HetEx Courier Logistics" style="height: 36px; width: auto; object-fit: contain; display: block;" />
+          </a>
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">India's Smart Multi-Courier Logistics Platform</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.5rem; font-size: 0.8125rem; font-weight: 600; color: #475569;">
+          <a href="/" style="transition: color 0.15s;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Home</a>
+          <a href="/#carriers" style="transition: color 0.15s;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Couriers</a>
+          <a href="/track" style="color: var(--brand);">Tracking</a>
+          <a href="/login" style="transition: color 0.15s;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Login</a>
+          <a href="/register" style="transition: color 0.15s;" onmouseover="this.style.color='var(--brand)'" onmouseout="this.style.color='#475569'">Register</a>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-top: 1.5rem; font-size: 0.75rem; color: #94a3b8;">
+        <div>© 2026 HetEx Logistics Technologies Pvt Ltd. All rights reserved.</div>
+        <div style="display: flex; gap: 1rem;">
+          <span>ISO 27001 Certified</span>
+          <span>•</span>
+          <span>Bank-Grade 256-Bit SSL</span>
+          <span>•</span>
+          <span>100% Data Residency in India</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -201,72 +689,229 @@
       } catch (e) {}
     })();
 
-    const form = document.getElementById('trackForm');
-    const awbInput = document.getElementById('awbInput');
-    const loading = document.getElementById('trackLoading');
-    const errorBox = document.getElementById('trackError');
-    const resultBox = document.getElementById('trackResult');
+    let currentAwb = '';
 
-    async function executeTrack(awb) {
-      if (!awb) return;
-      awbInput.value = awb;
-      errorBox.style.display = 'none';
-      resultBox.style.display = 'none';
-      loading.style.display = 'block';
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
 
-      try {
-        const res = await fetch('/api/track?awb=' + encodeURIComponent(awb));
-        const data = await res.json();
+    function openHelplineModal() {
+      document.getElementById('helplineModal').style.display = 'flex';
+    }
 
-        loading.style.display = 'none';
+    function closeHelplineModal() {
+      document.getElementById('helplineModal').style.display = 'none';
+    }
 
-        if (!res.ok) {
-          throw new Error(data.error || 'Tracking details not found');
-        }
-
-        document.getElementById('resAwb').textContent = data.awbNumber || awb;
-        document.getElementById('resCourier').textContent = data.courierName || 'Delhivery Express';
-        document.getElementById('resDest').textContent = data.destinationCity || 'India';
-
-        const status = data.status || 'IN_TRANSIT';
-        let badgeClass = 'badge-info';
-        if (status === 'DELIVERED') badgeClass = 'badge-success';
-        if (status === 'CANCELLED' || status === 'RTO_DELIVERED') badgeClass = 'badge-danger';
-        if (status === 'NDR') badgeClass = 'badge-warning';
-
-        document.getElementById('resStatusBadge').innerHTML = '<span class="badge ' + badgeClass + '">' + status.replace(/_/g, ' ') + '</span>';
-
-        const events = data.events || [];
-        const timelineHtml = events.map((ev, i) => {
-          return '<div class="timeline-item">' +
-            '<div class="timeline-dot ' + (i === 0 ? '' : 'inactive') + '"></div>' +
-            '<p style="font-weight: 700; font-size: 0.9375rem; color: ' + (i === 0 ? 'var(--brand)' : 'var(--navy)') + ';">' + (ev.status || '').replace(/_/g, ' ') + '</p>' +
-            '<p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0.125rem 0 0.375rem;">' + (ev.location || 'Hub') + ' • ' + (ev.timestamp ? new Date(ev.timestamp).toLocaleString() : 'Recent') + '</p>' +
-            (ev.description ? '<p style="font-size: 0.875rem; color: var(--text); background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); display: inline-block;">' + ev.description + '</p>' : '') +
-          '</div>';
-        }).join('');
-
-        document.getElementById('timelineContainer').innerHTML = timelineHtml || '<p style="color: var(--text-muted);">Package is manifested and scheduled for pickup.</p>';
-        resultBox.style.display = 'block';
-
-      } catch (err) {
-        loading.style.display = 'none';
-        errorBox.style.display = 'block';
-        errorBox.textContent = err.message || 'Could not retrieve tracking details. Please verify the AWB number.';
+    function copyTrackingUrl() {
+      const awb = currentAwb || document.getElementById('awbSearchInput').value.trim();
+      const url = window.location.origin + '/track?awb=' + encodeURIComponent(awb);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => showToast('Tracking link copied to clipboard!'));
+      } else {
+        showToast('Tracking link: ' + url);
       }
     }
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      executeTrack(awbInput.value.trim());
-    });
+    function handleTrackSubmit(e) {
+      if (e) e.preventDefault();
+      const awb = document.getElementById('awbSearchInput').value.trim();
+      if (awb) fetchTracking(awb);
+    }
+
+    function refreshTracking() {
+      const awb = document.getElementById('awbSearchInput').value.trim() || currentAwb;
+      if (awb) fetchTracking(awb);
+    }
+
+    const STAGES_CONFIG = [
+      { id: 'PICKUP_PENDING', label: 'Pickup Pending' },
+      { id: 'PICKUP_COMPLETED', label: 'Pickup Completed' },
+      { id: 'IN_TRANSIT', label: 'In Transit' },
+      { id: 'AT_DELIVERY_CENTER', label: 'At Delivery Center' },
+      { id: 'OUT_FOR_DELIVERY', label: 'Out For Delivery' },
+      { id: 'DELIVERED', label: 'Delivered' }
+    ];
+
+    function mapStatusToStageIndex(status) {
+      const s = (status || '').toUpperCase().replace(/[\s-]/g, '_');
+      if (s.includes('DELIVER') && !s.includes('OUT')) return 5;
+      if (s.includes('OUT_FOR_DELIVERY')) return 4;
+      if (s.includes('AT_DELIVERY') || s.includes('DESTINATION_HUB') || s.includes('ARRIVED_AT_HUB')) return 3;
+      if (s.includes('IN_TRANSIT') || s.includes('DISPATCHED') || s.includes('TRANSIT')) return 2;
+      if (s.includes('PICKED_UP') || s.includes('PICKUP_COMPLETED')) return 1;
+      return 0; // Pickup Pending
+    }
+
+    function formatDateFormatted(dt) {
+      if (!dt) return { date: '--', time: '--' };
+      const d = new Date(dt);
+      if (isNaN(d.getTime())) {
+        const parts = String(dt).split('|');
+        return {
+          date: parts[0] ? parts[0].trim() : String(dt),
+          time: parts[1] ? parts[1].trim() : ''
+        };
+      }
+      const day = d.getDate();
+      const month = d.toLocaleString('en-US', { month: 'short' });
+      const year = d.getFullYear();
+      let hours = d.getHours();
+      const mins = d.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const hoursStr = hours.toString().padStart(2, '0');
+      return {
+        date: `${day} ${month} ${year}`,
+        time: `${hoursStr}:${mins} ${ampm}`
+      };
+    }
+
+    async function fetchTracking(query) {
+      if (!query || !query.trim()) return;
+      query = query.trim();
+      currentAwb = query;
+      document.getElementById('awbSearchInput').value = query;
+      document.getElementById('emptyTrackingState').style.display = 'none';
+      document.getElementById('trackingError').style.display = 'none';
+      document.getElementById('trackingResultView').style.display = 'none';
+      document.getElementById('trackingLoading').style.display = 'block';
+
+      // Update URL clean without full page reload
+      const cleanUrl = '/track?awb=' + encodeURIComponent(query);
+      window.history.replaceState(null, '', cleanUrl);
+
+      try {
+        const res = await fetch('/api/track?query=' + encodeURIComponent(query) + '&awb=' + encodeURIComponent(query));
+        const data = await res.json();
+        document.getElementById('trackingLoading').style.display = 'none';
+
+        if (!res.ok && !data.awbNumber && !data.orderNumber) {
+          throw new Error(data.message || data.error || 'Tracking details not found for this identifier');
+        }
+
+        renderTrackingView(data, query);
+      } catch (err) {
+        document.getElementById('trackingLoading').style.display = 'none';
+        document.getElementById('trackingError').style.display = 'block';
+        document.getElementById('trackingError').textContent = '⚠️ ' + (err.message || 'Unable to retrieve tracking information for this AWB. Please verify the number and try again.');
+      }
+    }
+
+    function renderTrackingView(data, queryParam) {
+      const courier = data.courier || data.courierName || 'Delhivery Express';
+      const awb = data.awbNumber || queryParam;
+      const orderId = data.orderNumber || data.orderId || data.referenceId || ('HTX' + String(awb).slice(-8));
+      const status = data.status || 'IN_TRANSIT';
+      const destination = data.destinationCity || data.city || data.buyerCity || 'India';
+
+      // 1. Header Badges & Metadata
+      document.getElementById('metaAwbBadge').textContent = awb;
+
+      const brandInfo = window.getCourierBrand ? window.getCourierBrand(courier) : null;
+      if (brandInfo && brandInfo.logoSvg) {
+        document.getElementById('metaCourier').innerHTML = '<div style="display:inline-flex; align-items:center; gap:0.4rem;"><span style="max-width:90px; display:inline-block;">' + brandInfo.logoSvg + '</span> <span>' + (brandInfo.fullName || courier) + '</span></div>';
+      } else {
+        document.getElementById('metaCourier').textContent = courier;
+      }
+
+      document.getElementById('metaAwb').textContent = awb;
+      document.getElementById('metaOrderId').textContent = orderId;
+      document.getElementById('metaDestination').textContent = destination;
+
+      const isDelivered = status.toUpperCase().includes('DELIVER') && !status.toUpperCase().includes('OUT');
+      const isRto = status.toUpperCase().includes('RTO') || status.toUpperCase().includes('CANCEL');
+      
+      let badgeClass = 'badge badge-info';
+      if (isDelivered) badgeClass = 'badge badge-success';
+      else if (isRto) badgeClass = 'badge badge-danger';
+
+      document.getElementById('metaStatus').innerHTML = `<span class="${badgeClass}">${status.replace(/_/g, ' ')}</span>`;
+
+      // 2. Scan Events
+      let events = Array.isArray(data.events) && data.events.length > 0 ? data.events : [];
+      if (events.length === 0) {
+        events = [
+          { timestamp: new Date().toISOString(), location: destination, activity: status.replace(/_/g, ' ') }
+        ];
+      }
+
+      // 3. Render 6-Stage Stepper
+      const completedStageIdx = isDelivered ? 5 : mapStatusToStageIndex(status);
+      const fillPercentage = (completedStageIdx / 5) * 100;
+      document.getElementById('stepperFill').style.width = fillPercentage + '%';
+
+      const stepsHtml = STAGES_CONFIG.map((stage, idx) => {
+        const isCompleted = idx <= completedStageIdx;
+        const isActive = idx === completedStageIdx && !isDelivered;
+        
+        let nodeClass = 'step-item';
+        if (isCompleted) nodeClass += ' completed';
+        if (isActive) nodeClass += ' active';
+
+        let dateStr = '--';
+        let timeStr = '--';
+        if (idx === 5 && isDelivered) {
+          const dt = formatDateFormatted(events[0]?.timestamp || new Date());
+          dateStr = dt.date;
+          timeStr = dt.time;
+        } else if (idx <= completedStageIdx) {
+          const revIdx = (completedStageIdx - idx);
+          const ev = events[Math.min(revIdx, events.length - 1)];
+          const dt = formatDateFormatted(ev?.timestamp || new Date(Date.now() - (5 - idx) * 86400000));
+          dateStr = dt.date;
+          timeStr = dt.time;
+        }
+
+        return `
+          <div class="${nodeClass}">
+            <div class="step-node">
+              ${isCompleted ? `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              ` : (idx + 1)}
+            </div>
+            <div class="step-label">${stage.label}</div>
+            <div class="step-date">${dateStr}</div>
+            <div class="step-time">${timeStr}</div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('stepperStepsRow').innerHTML = stepsHtml;
+
+      // 4. Render Scan Events Table
+      const eventsHtml = events.map(ev => {
+        const dt = formatDateFormatted(ev.timestamp || ev.date_time || new Date());
+        const loc = ev.location || ev.scan_location || destination;
+        const act = ev.activity || ev.status || ev.description || 'Milestone event recorded';
+        return `
+          <tr>
+            <td class="event-datetime">${dt.date} | ${dt.time}</td>
+            <td class="event-location">${loc}</td>
+            <td class="event-status">${act}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('eventsTableBody').innerHTML = eventsHtml;
+      document.getElementById('emptyTrackingState').style.display = 'none';
+      document.getElementById('trackingResultView').style.display = 'block';
+    }
 
     // Check query params on page load
-    const params = new URLSearchParams(window.location.search);
-    const initialAwb = params.get('awb');
-    if (initialAwb) {
-      executeTrack(initialAwb.trim());
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialAwb = urlParams.get('awb') || urlParams.get('query') || '';
+      if (initialAwb && initialAwb.trim()) {
+        fetchTracking(initialAwb.trim());
+      }
+    });
   </script>
 </body>
 </html>

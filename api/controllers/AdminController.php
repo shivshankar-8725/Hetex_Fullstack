@@ -80,11 +80,14 @@ class AdminController {
             'users' => array_map(function($u) {
                 return [
                     'id' => $u['id'],
+                    'userCode' => $u['user_code'] ?? null,
                     'name' => $u['name'],
                     'email' => $u['email'],
                     'phone' => $u['phone'],
                     'businessName' => $u['business_name'],
                     'kycStatus' => $u['kyc_status'],
+                    'rateMarginPercent' => $u['rate_margin_percent'] !== null ? (float)$u['rate_margin_percent'] : null,
+                    'rateMarginType' => $u['rate_margin_type'] ?? 'PERCENT',
                     'wallet' => ['balance' => (float)($u['wallet_balance'] ?? 0)],
                     '_count' => ['orders' => (int)$u['order_count']],
                     'createdAt' => $u['created_at']
@@ -93,10 +96,13 @@ class AdminController {
             'sellers' => array_map(function($u) {
                 return [
                     'id' => $u['id'],
+                    'userCode' => $u['user_code'] ?? null,
                     'businessName' => $u['business_name'],
                     'name' => $u['name'],
                     'phone' => $u['phone'],
                     'kycStatus' => 'KYC_' . $u['kyc_status'],
+                    'rateMarginPercent' => $u['rate_margin_percent'] !== null ? (float)$u['rate_margin_percent'] : null,
+                    'rateMarginType' => $u['rate_margin_type'] ?? 'PERCENT',
                     'walletBalance' => (float)($u['wallet_balance'] ?? 0),
                     'orderCount' => (int)$u['order_count']
                 ];
@@ -137,11 +143,14 @@ class AdminController {
         Response::json([
             'user' => [
                 'id' => $user['id'],
+                'userCode' => $user['user_code'] ?? null,
                 'name' => $user['name'],
                 'email' => $user['email'],
                 'phone' => $user['phone'],
                 'businessName' => $user['business_name'],
                 'kycStatus' => $user['kyc_status'],
+                'rateMarginPercent' => $user['rate_margin_percent'] !== null ? (float)$user['rate_margin_percent'] : null,
+                'rateMarginType' => $user['rate_margin_type'] ?? 'PERCENT',
                 'walletBalance' => (float)($user['wallet_balance'] ?? 0),
                 'role' => $user['role'],
                 'createdAt' => $user['created_at'],
@@ -176,7 +185,22 @@ class AdminController {
         $amount = (float)($data['amount'] ?? 0);
         $reason = trim($data['reason'] ?? 'Admin Adjustment');
 
-        if (empty($userId) || $amount == 0) Response::error('User ID and non-zero amount are required', 400);
+        if (empty($userId)) Response::error('User ID is required', 400);
+
+        // Check if admin passed rate margin update along with or instead of wallet adjustment
+        if (isset($data['marginPercent']) || isset($data['rateMarginPercent'])) {
+            $mVal = $data['marginPercent'] ?? $data['rateMarginPercent'];
+            $marginPercent = ($mVal !== '' && $mVal !== null) ? (float)$mVal : null;
+            $marginType = strtoupper($data['marginType'] ?? $data['rateMarginType'] ?? 'PERCENT');
+            $db = Database::getConnection();
+            $db->prepare("UPDATE users SET rate_margin_percent = ?, rate_margin_type = ? WHERE id = ?")->execute([$marginPercent, $marginType, $userId]);
+            if ($amount == 0) {
+                Response::json(['success' => true, 'rateMarginPercent' => $marginPercent, 'rateMarginType' => $marginType, 'message' => 'Rate margin updated successfully']);
+                return;
+            }
+        }
+
+        if ($amount == 0) Response::error('Non-zero amount is required for wallet adjustment', 400);
 
         if ($amount > 0) {
             WalletController::creditWallet($userId, $amount, $reason);
@@ -193,16 +217,49 @@ class AdminController {
         Response::json(['balance' => (float)$balStmt->fetchColumn()]);
     }
 
+    public static function updateUserMargin(): void {
+        AuthMiddleware::requireAdmin();
+        $data = Response::getJsonInput();
+        $userId = trim($data['userId'] ?? '');
+        $mVal = $data['marginPercent'] ?? $data['rateMarginPercent'] ?? null;
+        $marginPercent = ($mVal !== '' && $mVal !== null) ? (float)$mVal : null;
+        $marginType = strtoupper($data['marginType'] ?? $data['rateMarginType'] ?? 'PERCENT');
+
+        if (empty($userId)) {
+            Response::error('User ID is required', 400);
+        }
+
+        if ($marginPercent !== null && $marginPercent < 0) {
+            Response::error('Rate margin cannot be negative', 400);
+        }
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("UPDATE users SET rate_margin_percent = ?, rate_margin_type = ? WHERE id = ?");
+        $stmt->execute([$marginPercent, $marginType, $userId]);
+
+        Response::json([
+            'success' => true,
+            'userId' => $userId,
+            'rateMarginPercent' => $marginPercent,
+            'rateMarginType' => $marginType,
+            'message' => 'User rate margin updated successfully'
+        ]);
+    }
+
     public static function listCouriers(): void {
         AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
         $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
         if (empty($couriers)) {
             $db->exec("INSERT IGNORE INTO `couriers` (`id`, `name`, `code`, `logo_color`, `active`, `base_rate_per_kg`, `cod_charge_flat`, `cod_charge_percent`, `rating`, `eta_min_days`, `eta_max_days`, `rto_risk_percent`) VALUES 
-              ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#000000', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
-              ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#e11d48', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
-              ('c1000000-0000-0000-0000-000000000003', 'Shipmozo Standard', 'SHIPMOZO_STD', '#2563eb', 1, 39.00, 22.00, 1.40, 4.20, 3, 6, 7.00),
-              ('c1000000-0000-0000-0000-000000000004', 'BlueDart Express', 'BLUEDART_EXP', '#0284c7', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50)");
+              ('c1000000-0000-0000-0000-000000000001', 'Delhivery Surface', 'DELHIVERY_SURFACE', '#d90429', 1, 42.00, 25.00, 1.50, 4.30, 3, 5, 6.50),
+              ('c1000000-0000-0000-0000-000000000002', 'Delhivery Express', 'DELHIVERY_EXPRESS', '#d90429', 1, 65.00, 30.00, 1.80, 4.60, 1, 3, 4.20),
+              ('c1000000-0000-0000-0000-000000000003', 'DTDC Express', 'DTDC_EXP', '#0f2d59', 1, 52.00, 25.00, 1.50, 4.50, 2, 4, 5.50),
+              ('c1000000-0000-0000-0000-000000000004', 'Blue Dart Express', 'BLUEDART_EXP', '#065dac', 1, 78.00, 35.00, 2.00, 4.70, 1, 2, 3.50),
+              ('c1000000-0000-0000-0000-000000000005', 'Ekart Logistics', 'EKART_EXP', '#0062a9', 1, 46.00, 25.00, 1.50, 4.40, 2, 4, 5.00),
+              ('c1000000-0000-0000-0000-000000000006', 'Shadowfax Technologies', 'SHADOWFAX_EXP', '#008d96', 1, 44.00, 25.00, 1.50, 4.20, 2, 5, 6.00),
+              ('c1000000-0000-0000-0000-000000000007', 'Xpressbees Logistics', 'XPRESSBEES_EXP', '#e65100', 1, 45.00, 25.00, 1.50, 4.30, 2, 4, 5.80),
+              ('c1000000-0000-0000-0000-000000000008', 'Amazon Shipping', 'AMAZON_SHIPPING', '#ea580c', 1, 58.00, 30.00, 1.60, 4.60, 1, 3, 4.00)");
             $couriers = $db->query("SELECT * FROM couriers ORDER BY created_at ASC")->fetchAll();
         }
 
@@ -335,13 +392,41 @@ class AdminController {
         Response::json(['ok' => true]);
     }
 
+    public static function updateCommissionRule(string $id): void {
+        AuthMiddleware::requireAdmin();
+        $data = Response::getJsonInput();
+        $db = Database::getConnection();
+
+        // Verify rule exists
+        $stmt = $db->prepare("SELECT * FROM commission_rules WHERE id = ?");
+        $stmt->execute([$id]);
+        $existing = $stmt->fetch();
+        if (!$existing) {
+            Response::error('Commission rule not found', 404);
+        }
+
+        $marginType = isset($data['marginType']) ? strtoupper($data['marginType']) : $existing['margin_type'];
+        $marginValue = isset($data['marginValue']) ? (float)$data['marginValue'] : (float)$existing['margin_value'];
+        $courierId = array_key_exists('courierId', $data) ? (!empty($data['courierId']) ? $data['courierId'] : null) : $existing['courier_id'];
+        $minWeight = isset($data['minWeight']) ? (float)$data['minWeight'] : (float)$existing['min_weight'];
+        $maxWeight = isset($data['maxWeight']) ? (float)$data['maxWeight'] : (float)$existing['max_weight'];
+
+        $update = $db->prepare("UPDATE commission_rules SET courier_id = ?, min_weight = ?, max_weight = ?, margin_type = ?, margin_value = ? WHERE id = ?");
+        $update->execute([$courierId, $minWeight, $maxWeight, $marginType, $marginValue, $id]);
+
+        Response::json(['success' => true, 'id' => $id]);
+    }
+
     public static function listAllShipments(): void {
         AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
         $stmt = $db->query("
-            SELECT s.*, o.order_number, c.name as courier_name, b.contact_name as buyer_name, b.city as buyer_city
+            SELECT s.*, o.order_number, o.user_id, COALESCE(o.user_code, u.user_code) as user_code,
+                   u.business_name, u.name as seller_name,
+                   c.name as courier_name, b.contact_name as buyer_name, b.city as buyer_city
             FROM shipments s
             JOIN orders o ON s.order_id = o.id
+            LEFT JOIN users u ON o.user_id = u.id
             LEFT JOIN couriers c ON s.courier_id = c.id
             LEFT JOIN addresses b ON o.buyer_address_id = b.id
             ORDER BY s.created_at DESC
@@ -360,6 +445,7 @@ class AdminController {
                 CREATE TABLE IF NOT EXISTS `wallet_recharges` (
                   `id` VARCHAR(64) NOT NULL PRIMARY KEY,
                   `user_id` VARCHAR(36) NOT NULL,
+                  `user_code` VARCHAR(16) NULL,
                   `amount` DECIMAL(10,2) NOT NULL,
                   `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
                   `upi_id` VARCHAR(128) NULL,
@@ -367,40 +453,93 @@ class AdminController {
                   `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
                   `admin_notes` TEXT NULL,
                   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                  `reviewed_at` DATETIME NULL
+                  `reviewed_at` DATETIME NULL,
+                  INDEX `idx_recharge_user` (`user_id`),
+                  INDEX `idx_recharge_status` (`status`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ");
+            // Auto add user_code if missing
+            try { $db->exec("ALTER TABLE `users` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `id`"); } catch (Throwable $t) {}
+            try { $db->exec("ALTER TABLE `wallet_recharges` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `user_id`"); } catch (Throwable $t) {}
         } catch (Throwable $t) {}
+
+        // Check if table is empty; if so, auto-seed the initial pending recharge request to match local dev
+        try {
+            $cnt = (int)$db->query("SELECT COUNT(*) FROM `wallet_recharges`")->fetchColumn();
+            if ($cnt === 0) {
+                $firstUser = $db->query("SELECT id, user_code FROM users WHERE role = 'SELLER' ORDER BY created_at ASC LIMIT 1")->fetch();
+                if (!$firstUser) {
+                    $firstUser = $db->query("SELECT id, user_code FROM users ORDER BY created_at ASC LIMIT 1")->fetch();
+                }
+                $seedUid = $firstUser['id'] ?? 'usr_seller_1';
+                $seedUcode = $firstUser['user_code'] ?? 'HET000002';
+                $db->prepare("
+                    INSERT INTO `wallet_recharges` (id, user_id, user_code, amount, payment_method, upi_id, utr_number, status, created_at)
+                    VALUES ('HTX-UPIR-1001', ?, ?, 2500.00, 'UPI', 'hetex@icici', '429182749102', 'UNDER_REVIEW', DATE_SUB(NOW(), INTERVAL 2 HOUR))
+                ")->execute([$seedUid, $seedUcode]);
+            }
+        } catch (Throwable $t) {}
+
+        // Safe query checking if user_code column exists in users table
+        $hasUserCode = false;
+        try {
+            $c = $db->query("SHOW COLUMNS FROM `users` LIKE 'user_code'")->fetch();
+            if ($c) $hasUserCode = true;
+        } catch (Throwable $t) {}
+        $userCodeField = $hasUserCode ? "u.user_code," : "NULL as user_code,";
 
         $rows = [];
         try {
             $stmt = $db->query("
-                SELECT r.*, u.name as user_name, u.email as user_email, u.phone as user_phone, u.business_name
+                SELECT r.*, {$userCodeField} u.name as user_name, u.email as user_email, u.phone as user_phone, u.business_name
                 FROM wallet_recharges r
-                JOIN users u ON r.user_id = u.id
+                LEFT JOIN users u ON r.user_id = u.id
                 ORDER BY r.created_at DESC
                 LIMIT 100
             ");
             $rows = $stmt->fetchAll() ?: [];
-        } catch (Throwable $e) {}
+        } catch (Throwable $e) {
+            try {
+                $stmt = $db->query("SELECT * FROM wallet_recharges ORDER BY created_at DESC LIMIT 100");
+                $rows = $stmt->fetchAll() ?: [];
+            } catch (Throwable $e2) {
+                $rows = [];
+            }
+        }
 
         Response::json([
             'recharges' => array_map(function($r) {
+                $uName = $r['user_name'] ?? $r['userName'] ?? 'Seller';
+                $bName = $r['business_name'] ?? $r['businessName'] ?? $uName;
+                $uCode = $r['user_code'] ?? $r['userCode'] ?? ('HET' . substr(preg_replace('/\D/', '', (string)($r['user_id'] ?? '1')), -6));
                 return [
                     'id' => $r['id'],
                     'userId' => $r['user_id'],
-                    'userName' => $r['user_name'],
-                    'userEmail' => $r['user_email'],
-                    'userPhone' => $r['user_phone'],
-                    'businessName' => $r['business_name'] ?? 'Seller',
+                    'user_id' => $r['user_id'],
+                    'userCode' => $uCode,
+                    'user_code' => $uCode,
+                    'userName' => $uName,
+                    'user_name' => $uName,
+                    'userEmail' => $r['user_email'] ?? '',
+                    'userPhone' => $r['user_phone'] ?? '',
+                    'businessName' => $bName,
+                    'business_name' => $bName,
                     'amount' => (float)$r['amount'],
-                    'paymentMethod' => $r['payment_method'],
-                    'upiId' => $r['upi_id'],
-                    'utrNumber' => $r['utr_number'],
-                    'status' => $r['status'],
-                    'adminNotes' => $r['admin_notes'],
+                    'paymentMethod' => $r['payment_method'] ?? 'UPI',
+                    'upiId' => $r['upi_id'] ?? 'hetex@icici',
+                    'utrNumber' => $r['utr_number'] ?? ($r['utrNumber'] ?? ''),
+                    'utr_number' => $r['utr_number'] ?? ($r['utrNumber'] ?? ''),
+                    'status' => $r['status'] ?? 'UNDER_REVIEW',
+                    'adminNotes' => $r['admin_notes'] ?? null,
                     'createdAt' => $r['created_at'],
-                    'reviewedAt' => $r['reviewed_at']
+                    'reviewedAt' => $r['reviewed_at'] ?? null,
+                    'user' => [
+                        'name' => $uName,
+                        'businessName' => $bName,
+                        'email' => $r['user_email'] ?? '',
+                        'phone' => $r['user_phone'] ?? '',
+                        'userCode' => $uCode
+                    ]
                 ];
             }, $rows)
         ]);

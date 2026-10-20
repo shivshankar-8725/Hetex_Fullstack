@@ -54,15 +54,22 @@ try {
             Response::json(['status' => 'online', 'service' => 'Hetex Courier Fullstack API', 'version' => '3.0-Production']);
             break;
 
-        // --- Auth ---
+        // --- Auth (Registration temporarily closed) ---
+        // case ($endpoint === '/auth/register' && $method === 'POST'):
+        //     AuthController::register();
+        //     break;
         case ($endpoint === '/auth/register' && $method === 'POST'):
-            AuthController::register();
+            Response::error('New seller registrations are temporarily closed. Please contact sales or support.', 403);
             break;
         case ($endpoint === '/auth/verify-email' && $method === 'POST'):
             AuthController::verifyEmail();
             break;
         case ($endpoint === '/auth/resend-email-otp' && $method === 'POST'):
+        case ($endpoint === '/auth/forgot-password' && $method === 'POST'):
             AuthController::resendEmailOtp();
+            break;
+        case ($endpoint === '/auth/reset-password' && $method === 'POST'):
+            AuthController::resetPassword();
             break;
         case ($endpoint === '/auth/login' && $method === 'POST'):
             AuthController::login();
@@ -113,8 +120,17 @@ try {
         case ($endpoint === '/orders' && $method === 'POST'):
             OrderController::createOrder();
             break;
+        case ($endpoint === '/orders-cancel-bulk' && $method === 'POST'):
+            OrderController::cancelBulkOrders();
+            break;
+        case (preg_match('#^/orders/([^/]+)/ship$#', $endpoint, $m) && $method === 'POST'):
+            OrderController::shipSavedOrder($m[1]);
+            break;
         case (preg_match('#^/orders/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
             OrderController::getOrder($m[1]);
+            break;
+        case (preg_match('#^/orders/([^/]+)$#', $endpoint, $m) && ($method === 'PUT' || $method === 'POST')):
+            OrderController::updateOrder($m[1]);
             break;
         case (preg_match('#^/order-cancel/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
             OrderController::cancelOrder($m[1]);
@@ -133,6 +149,12 @@ try {
             break;
 
         // --- Invoices & Labels ---
+        case ($endpoint === '/shipment-labels-bulk' && $method === 'GET'):
+            OrderController::getBulkLabelsPdf();
+            break;
+        case ($endpoint === '/shipment-invoices-bulk' && $method === 'GET'):
+            OrderController::getBulkInvoicesPdf();
+            break;
         case (preg_match('#^/shipment-label/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
             OrderController::getLabelPdf($m[1]);
             break;
@@ -146,7 +168,13 @@ try {
             Response::json(['shipment' => ['status' => 'IN_TRANSIT']]);
             break;
 
-        // --- Addresses ---
+        // --- Addresses & Pincode ---
+        case (preg_match('#^/pincode-lookup/([0-9]{6})$#', $endpoint, $m) && $method === 'GET'):
+            ExtraController::pincodeLookup($m[1]);
+            break;
+        case ($endpoint === '/pincode-lookup' && $method === 'GET'):
+            ExtraController::pincodeLookup($_GET['pincode'] ?? $_GET['pin'] ?? '');
+            break;
         case ($endpoint === '/addresses/lookup' && $method === 'GET'):
             AddressController::lookupByPhone();
             break;
@@ -198,11 +226,14 @@ try {
             break;
 
         // --- Tickets ---
-        case ($endpoint === '/tickets' && $method === 'GET'):
+        case (($endpoint === '/tickets' || $endpoint === '/admin/tickets') && $method === 'GET'):
             TicketController::listTickets();
             break;
         case ($endpoint === '/tickets' && $method === 'POST'):
             TicketController::createTicket();
+            break;
+        case (preg_match('#^/tickets/([^/]+)/status$#', $endpoint, $m) && in_array($method, ['POST', 'PATCH', 'PUT'])):
+            TicketController::updateTicketStatus($m[1]);
             break;
         case (preg_match('#^/tickets/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
             TicketController::getTicket($m[1]);
@@ -210,7 +241,7 @@ try {
         case (preg_match('#^/ticket-messages/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
             TicketController::addTicketMessage($m[1]);
             break;
-        case (preg_match('#^/ticket-simulate-reply/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
+        case ((preg_match('#^/ticket-simulate-reply/([^/]+)$#', $endpoint, $m) || preg_match('#^/ticket-bot-reply/([^/]+)$#', $endpoint, $m)) && $method === 'POST'):
             TicketController::simulateReply($m[1]);
             break;
 
@@ -228,17 +259,31 @@ try {
             ExtraController::syncChannel($m[1]);
             break;
 
-        // --- Disputes ---
-        case ($endpoint === '/disputes' && $method === 'GET'):
+        // --- Disputes & Courier Measurement Reconciliation ---
+        case (($endpoint === '/disputes' || $endpoint === '/weight-disputes') && $method === 'GET'):
             ExtraController::listDisputes();
+            break;
+        case (($endpoint === '/weight-disputes/raise' || $endpoint === '/weight-disputes') && $method === 'POST'):
+            ExtraController::raiseDispute();
             break;
         case (preg_match('#^/dispute-respond/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
             ExtraController::respondDispute($m[1]);
             break;
 
-        // --- COD ---
-        case ($endpoint === '/cod' && $method === 'GET'):
+        // --- COD Remittances ---
+        case (($endpoint === '/cod' || $endpoint === '/cod-remittances') && $method === 'GET'):
             ExtraController::listRemittances();
+            break;
+
+        // --- Reports & Exports ---
+        case (preg_match('#^/reports/download/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
+            ExtraController::downloadReport($m[1]);
+            break;
+        case ($endpoint === '/reports/download' && $method === 'GET'):
+            ExtraController::downloadReport($_GET['type'] ?? 'orders');
+            break;
+        case (preg_match('#^/reports/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
+            ExtraController::downloadReport($m[1]);
             break;
 
         // --- NDR ---
@@ -291,6 +336,9 @@ try {
         case ($endpoint === '/admin/users' && ($method === 'PATCH' || $method === 'POST')):
             AdminController::adjustWallet();
             break;
+        case (($endpoint === '/admin/users/margin' || $endpoint === '/admin/user-margin') && ($method === 'POST' || $method === 'PATCH' || $method === 'PUT')):
+            AdminController::updateUserMargin();
+            break;
         case ($endpoint === '/admin/couriers' && $method === 'GET'):
             AdminController::listCouriers();
             break;
@@ -311,6 +359,9 @@ try {
             break;
         case (preg_match('#^/admin-commission/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
             AdminController::deleteCommissionRule($m[1]);
+            break;
+        case (preg_match('#^/admin-commission/([^/]+)$#', $endpoint, $m) && $method === 'PATCH'):
+            AdminController::updateCommissionRule($m[1]);
             break;
         case ($endpoint === '/admin/recharges' && $method === 'GET'):
             AdminController::listRechargeRequests();

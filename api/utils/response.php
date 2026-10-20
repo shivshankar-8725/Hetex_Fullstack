@@ -59,6 +59,14 @@ class AuthMiddleware {
             $token = $matches[1];
         } elseif (!empty($_COOKIE['hetex_session'])) {
             $token = $_COOKIE['hetex_session'];
+        } elseif (!empty($_GET['token'])) {
+            $token = trim($_GET['token']);
+        } elseif (!empty($_REQUEST['token'])) {
+            $token = trim($_REQUEST['token']);
+        } elseif (!empty($_SERVER['HTTP_X_TOKEN'])) {
+            $token = trim($_SERVER['HTTP_X_TOKEN']);
+        } elseif (!empty($_SERVER['HTTP_X_AUTHORIZATION'])) {
+            $token = trim(preg_replace('/Bearer\s+/i', '', $_SERVER['HTTP_X_AUTHORIZATION']));
         }
 
         if (empty($token)) {

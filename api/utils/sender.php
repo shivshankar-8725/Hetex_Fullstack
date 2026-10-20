@@ -94,4 +94,62 @@ class Sender {
             return false;
         }
     }
+
+    /**
+     * Send OTP via EmailJS
+     */
+    public static function sendOtpViaEmailJs(string $toEmail, string $toName, string $otp): bool {
+        $serviceId = Credentials::get('EMAILJS_SERVICE_ID');
+        $templateId = Credentials::get('EMAILJS_TEMPLATE_ID');
+        $publicKey = Credentials::get('EMAILJS_PUBLIC_KEY');
+        $privateKey = Credentials::get('EMAILJS_PRIVATE_KEY');
+
+        if (empty($serviceId) || empty($templateId) || empty($publicKey)) {
+            error_log("[EmailJS] Missing credentials. Simulating OTP {$otp} to {$toEmail}");
+            return true;
+        }
+
+        $payload = [
+            'service_id' => $serviceId,
+            'template_id' => $templateId,
+            'user_id' => $publicKey,
+            'accessToken' => $privateKey,
+            'template_params' => [
+                'to_name' => $toName,
+                'to_email' => $toEmail,
+                'recipient' => $toEmail,
+                'email' => $toEmail,
+                'otp_code' => $otp,
+                'otp' => $otp,
+                'code' => $otp,
+                'message' => "Your HetEx verification code is: {$otp}. It will expire in 10 minutes."
+            ]
+        ];
+
+        try {
+            $ch = curl_init('https://api.emailjs.com/api/v1.0/email/send');
+            curl_setopt_array($ch, [
+                CURLOPT_HTTPHEADER => [
+                    'Content-Type: application/json',
+                    'Origin: https://hetex.in',
+                    'Referer: https://hetex.in/register'
+                ],
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => json_encode($payload),
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 10
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            error_log("[EmailJS] Dispatch to {$toEmail}: HTTP {$httpCode} - {$response}");
+            return ($httpCode === 200);
+        } catch (Throwable $e) {
+            error_log("[EmailJS Error] " . $e->getMessage());
+            return false;
+        }
+    }
 }
+

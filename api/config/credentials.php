@@ -39,8 +39,8 @@ class Credentials {
     // Found in: https://app.shipmozo.com/ -> Settings -> API Credentials
     // =========================================================================
     public const SHIPMOZO_BASE_URL = 'https://shipping-api.com/app/api/v1';
-    public const SHIPMOZO_PUBLIC_KEY = 'YOUR_SHIPMOZO_PUBLIC_KEY_HERE';
-    public const SHIPMOZO_PRIVATE_KEY = 'YOUR_SHIPMOZO_PRIVATE_KEY_HERE';
+    public const SHIPMOZO_PUBLIC_KEY = 'flGJQHjkPTpIZq7AwL2h';
+    public const SHIPMOZO_PRIVATE_KEY = 'sZ4u1x2ESph5DUfT8L7l';
 
     // =========================================================================
     // 4. RAZORPAY PAYMENT GATEWAY & WEBHOOK
@@ -71,6 +71,14 @@ class Credentials {
     public const SMTP_FROM_NAME = 'HetEx Express Support';
 
     // =========================================================================
+    // 7. EMAILJS CONFIGURATION (Real OTP Verification)
+    // Found in: https://dashboard.emailjs.com/
+    // =========================================================================
+    public const EMAILJS_PUBLIC_KEY = 'tPp2P8788nOc1d6UT';
+    public const EMAILJS_PRIVATE_KEY = 'qZZrt4o-94wYzB2LI956M';
+    public const EMAILJS_SERVICE_ID = 'service_dlndjrd';
+    public const EMAILJS_TEMPLATE_ID = 'template_7gomg2f';
+
     // HELPER METHOD: Reads environment variable if set, otherwise uses constant
     // =========================================================================
     public static function get(string $key, $default = '') {

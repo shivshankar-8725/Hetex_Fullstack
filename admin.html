@@ -6,10 +6,16 @@
   <title>Admin Operations Panel | HetEx</title>
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/_next/static/chunks/2en53chun-o_5.css" />
+  <script src="/courier_brand.js"></script>
+  <script src="/notification_manager.js"></script>
   <style>
     :root {
       --brand: #2563eb;
+      --brand-dark: #1d4ed8;
+      --brand-light: #eff6ff;
       --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent: #ea580c;
       --surface: #ffffff;
       --background: #f8fafc;
       --border: #e2e8f0;
@@ -24,16 +30,22 @@
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 0.8125rem; background: var(--background); color: var(--text); min-height: 100vh; display: flex; }
     a { color: inherit; text-decoration: none; }
     button { cursor: pointer; font-family: inherit; }
-    .btn-primary { background: var(--brand); color: #fff; padding: 0.45rem 0.9rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.775rem; }
-    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.45rem 0.9rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.775rem; }
-    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 1.125rem; }
+    input, select, textarea { font-family: inherit; font-size: inherit; }
+    .btn-primary { background: var(--brand); color: #fff; padding: 0.5rem 1rem; border-radius: 0.375rem; border: none; font-weight: 600; font-size: 0.8125rem; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.375rem; justify-content: center; }
+    .btn-primary:hover { background: var(--brand-dark); }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.8125rem; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.375rem; justify-content: center; }
+    .btn-secondary:hover { background: var(--brand-light); border-color: var(--brand); color: var(--brand); }
+    .card { background: #fff; border: 1px solid var(--border); border-radius: 0.625rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); padding: 1.125rem; }
     .badge { padding: 0.2rem 0.5rem; border-radius: 9999px; font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; display: inline-block; }
     .badge-success { background: #dcfce7; color: #15803d; }
+    .badge-warning { background: #fef3c7; color: #b45309; }
     .badge-danger { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #e0f2fe; color: #0369a1; }
     .badge-navy { background: #f1f5f9; color: #334155; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
-    th { text-align: left; padding: 0.75rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; white-space: nowrap; }
-    td { padding: 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { text-align: left; padding: 0.75rem 0.875rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #f8fafc; white-space: nowrap; font-size: 0.75rem; }
+    td { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 0.8125rem; }
+    tr:hover td { background: #f8fafc; }
 
     /* Layout Matching dashboard.html */
     .sidebar { width: 250px; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; max-height: 100vh; position: sticky; top: 0; z-index: 100; overflow: hidden; }
@@ -165,6 +177,43 @@
       border-radius: 50%;
       background: #ef4444;
     }
+
+    /* Interactive Notification Center Styles (Admin) */
+    .notification-bell-wrapper { position: relative; }
+    .notif-count-badge {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 0.625rem;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      border: 2px solid #ffffff;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .notification-dropdown-panel {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: -10px;
+      width: 360px;
+      max-width: 90vw;
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 0.75rem !important;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 10px 10px -5px rgba(15, 23, 42, 0.08) !important;
+      z-index: 99999 !important;
+      overflow: hidden;
+      animation: fadeIn 0.15s ease;
+    }
+    .notif-item:hover { background: #f8fafc !important; }
     .user-avatar-btn {
       width: 32px;
       height: 32px;
@@ -239,11 +288,57 @@
     .form-control { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 0.375rem; font-size: 0.875rem; outline: none; }
     .form-control:focus { border-color: var(--brand); }
     
+    /* Mobile Responsive Architecture Matching dashboard.html */
     .mobile-menu-btn { display: none; }
     .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); z-index: 990; backdrop-filter: blur(2px); }
+    .mobile-brand-link { display: none; align-items: center; }
+    .mobile-search-row { display: none; }
+    .mobile-quick-actions-bar { display: none; }
+    .topbar-header-row { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.75rem; }
+    .topbar-left { display: flex; align-items: center; gap: 0.75rem; }
+    .topbar-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap; flex-shrink: 0; }
+
+    .dashboard-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .dashboard-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.875rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Quick Services Topbar Dropdown Style */
+    .quick-service-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      color: #0f172a;
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .quick-service-item:hover {
+      background: #f1f5f9;
+      color: var(--brand);
+      transform: translateX(2px);
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.75rem !important;
+      }
+    }
 
     @media (max-width: 768px) {
-      body { flex-direction: column !important; }
+      body { flex-direction: column !important; overflow-x: hidden !important; }
+      .main-wrapper { width: 100% !important; max-width: 100vw !important; overflow-x: hidden !important; }
       .sidebar {
         position: fixed !important;
         top: 0 !important;
@@ -272,12 +367,89 @@
       .topbar {
         height: auto !important;
         padding: 0.75rem 1rem !important;
-        flex-wrap: wrap !important;
-        gap: 0.5rem !important;
+        flex-direction: column !important;
+        gap: 0.625rem !important;
+        position: sticky !important;
+        top: 0 !important;
+        background: #fff !important;
+        z-index: 500 !important;
+      }
+      .mobile-brand-link {
+        display: inline-flex !important;
+        align-items: center;
+      }
+      .mobile-brand-logo {
+        height: 28px !important;
+        width: auto !important;
+        max-width: 125px !important;
+        object-fit: contain !important;
+      }
+      .desktop-search-box {
+        display: none !important;
+      }
+      .desktop-only {
+        display: none !important;
+      }
+      .mobile-search-row {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+      .mobile-search-row input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      .mobile-quick-actions-bar {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.45rem !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        padding-bottom: 2px !important;
+        scrollbar-width: none !important;
+      }
+      .mobile-quick-actions-bar::-webkit-scrollbar {
+        display: none;
+      }
+      .mobile-chip {
+        white-space: nowrap !important;
+        padding: 0.35rem 0.65rem !important;
+        border-radius: 9999px !important;
+        font-size: 0.75rem !important;
+        font-weight: 650 !important;
+        background: #f1f5f9 !important;
+        color: var(--navy) !important;
+        border: 1px solid var(--border) !important;
+        cursor: pointer !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.3rem !important;
+        flex-shrink: 0 !important;
+      }
+      .mobile-chip-primary {
+        background: var(--brand) !important;
+        color: #fff !important;
+        border-color: var(--brand) !important;
+      }
+      .topbar-actions {
+        gap: 0.4rem !important;
       }
       .content-area {
-        padding: 1rem 0.75rem !important;
+        padding: 0.875rem 0.625rem !important;
         max-width: 100% !important;
+      }
+      .profile-dropdown-card {
+        right: 0.5rem !important;
+        width: calc(100vw - 1rem) !important;
+        max-width: 310px !important;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .dashboard-kpi-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
       }
     }
   </style>
@@ -355,6 +527,13 @@
         </button>
       </li>
       <li>
+        <button class="subnav-btn" id="admTicketsNavTab" onclick="switchAdminTab('tickets', this)">
+          <span class="subnav-bullet"></span>
+          <span>Support Tickets</span>
+          <span id="admOpenTicketsBadge" class="badge" style="background: #ef4444; color: #fff; margin-left: auto; display: none; font-size: 0.625rem; font-weight: 800; border-radius: 999px; padding: 0.15rem 0.45rem;">0</span>
+        </button>
+      </li>
+      <li>
         <button class="subnav-btn" id="admSettingsNavTab" onclick="switchAdminTab('settings', this)">
           <span class="subnav-bullet"></span>
           <span>Helpline & UPI Gateway</span>
@@ -395,32 +574,114 @@
 
   <!-- Main Area -->
   <div class="main-wrapper">
-    <!-- Topbar (Matching Top Bar Format) -->
-    <header class="topbar">
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <button type="button" class="mobile-menu-btn" onclick="toggleAdminMobileSidebar()" aria-label="Toggle Menu">☰</button>
-        <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 800; font-size: 0.75rem; padding: 0.3rem 0.65rem;">🛡️ ADMIN PANEL</span>
-      </div>
-
-      <!-- Search Bar -->
-      <div class="topbar-search-box">
-        <span class="topbar-search-icon">🔍</span>
-        <input type="search" id="admTopbarSearchInput" placeholder="Search sellers, orders, AWBs, or recharges..." onkeydown="handleAdminSearch(event)" />
-      </div>
-
-      <!-- Right Actions (No Email, No Exit Icon Button) -->
-      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap;">
-        <a href="/dashboard" class="topbar-dark-btn" style="text-decoration: none;">Seller Portal →</a>
-
-        <button type="button" class="topbar-icon-btn" onclick="showAdminToast('No unread system alerts', 'info')" title="Notifications">
-          <span>🔔</span>
-          <span class="topbar-bell-dot"></span>
-        </button>
-
-        <!-- Admin Avatar Button -->
-        <div class="user-avatar-btn" id="topbarAdminAvatar" onclick="toggleAdminProfileDropdown()" title="Click to open admin menu">
-          A
+    <!-- Topbar (Responsive Desktop & Mobile matching dashboard.html) -->
+    <header class="topbar" style="position: relative;">
+      <!-- Row 1: Brand & Top Controls -->
+      <div class="topbar-header-row">
+        <!-- Left: Hamburger button + Logo on mobile + Admin Badge -->
+        <div class="topbar-left">
+          <button type="button" class="mobile-menu-btn" onclick="toggleAdminMobileSidebar()" aria-label="Toggle Menu">☰</button>
+          <a href="/admin" class="mobile-brand-link">
+            <img src="/logo.jpeg" alt="HetEx Admin" class="mobile-brand-logo" />
+          </a>
+          <span class="badge" style="background: #fee2e2; color: #b91c1c; font-weight: 800; font-size: 0.75rem; padding: 0.3rem 0.65rem; white-space: nowrap;">🛡️ ADMIN PANEL</span>
         </div>
+
+        <!-- Center: Rounded Search Bar (Desktop) -->
+        <div class="topbar-search-box desktop-search-box">
+          <span class="topbar-search-icon">🔍</span>
+          <input type="search" id="admTopbarSearchInput" placeholder="Search sellers, orders, AWBs, or recharges..." onkeydown="handleAdminSearch(event)" />
+        </div>
+
+        <!-- Right: Action Items -->
+        <div class="topbar-actions">
+          <!-- Platform Status Indicator Pill (Desktop only) -->
+          <span class="desktop-only" style="font-size: 0.8125rem; color: #475569; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.25rem;">
+            System: <strong style="color: #16a34a;">● Live & Ready</strong>
+          </span>
+
+          <!-- Desktop Quick Services Dropdown -->
+          <div class="quick-services-wrapper desktop-only" style="position: relative;">
+            <button type="button" class="topbar-dark-btn" id="admQuickServicesBtn" onclick="toggleAdminQuickServicesDropdown(event)" aria-haspopup="true" aria-expanded="false" title="HetEx Admin Quick Services">
+              <span>⚡ Quick Services</span>
+              <svg id="admQuickServicesChevron" style="width: 12px; height: 12px; transition: transform 0.2s ease; margin-left: 2px;" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div id="admQuickServicesDropdown" class="quick-services-dropdown-card" style="display: none; position: absolute; top: calc(100% + 8px); right: 0; min-width: 275px; background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-radius: 0.625rem !important; box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.22), 0 8px 16px -4px rgba(15, 23, 42, 0.1) !important; z-index: 99999 !important; padding: 0.5rem !important; animation: fadeIn 0.15s ease;">
+              <div style="font-size: 0.6875rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; padding: 0.35rem 0.65rem 0.25rem;">Admin Quick Services</div>
+
+              <!-- 1. UPI Recharges Review -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchAdminTab('recharges', this); closeAdminQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">💳</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">UPI Recharges Review</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Verify payments & approve wallet balance</div>
+                </div>
+              </a>
+
+              <!-- 2. Courier Partners & Rates -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchAdminTab('couriers', this); closeAdminQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">🚚</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Courier Partners & Rates</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Enable/disable partners & base rates</div>
+                </div>
+              </a>
+
+              <!-- 3. Sellers & Rate Margins -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchAdminTab('sellers', this); closeAdminQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">👥</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Sellers & Rate Margins</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Manage accounts & user-specific margins</div>
+                </div>
+              </a>
+
+              <!-- 4. All Shipments -->
+              <a href="javascript:void(0)" class="quick-service-item" onclick="switchAdminTab('shipments', this); closeAdminQuickServicesDropdown();">
+                <span style="font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0;">📦</span>
+                <div>
+                  <div style="font-weight: 700; color: #0f172a; font-size: 0.8125rem;">Platform Shipments</div>
+                  <div style="font-size: 0.6875rem; color: #64748b; font-weight: 400;">Live cross-carrier tracking & AWBs</div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <a href="/dashboard" class="topbar-dark-btn desktop-only" style="text-decoration: none;">Seller Portal →</a>
+
+          <!-- Interactive Notification Bell & Dropdown Panel -->
+          <div class="notification-bell-wrapper">
+            <button type="button" class="topbar-icon-btn" id="notifBellBtn" onclick="window.HetExNotifications.toggleDropdown()" title="Notifications & Alerts">
+              <span>🔔</span>
+              <span class="topbar-bell-dot" id="notifBellDot" style="display: none;"></span>
+              <span class="notif-count-badge" id="notifCountBadge" style="display: none;">0</span>
+            </button>
+            <div id="notificationDropdownMenu" class="notification-dropdown-panel" style="display: none;"></div>
+          </div>
+
+          <!-- Admin Avatar Button -->
+          <div class="user-avatar-btn" id="topbarAdminAvatar" onclick="toggleAdminProfileDropdown()" title="Click to open admin menu">
+            A
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2 (Mobile only): Full Width Search Input -->
+      <div class="topbar-search-box mobile-search-row">
+        <span class="topbar-search-icon">🔍</span>
+        <input type="search" id="admTopbarSearchInputMobile" placeholder="Search sellers, orders, AWBs, or recharges..." onkeydown="if(event.key==='Enter'){document.getElementById('admTopbarSearchInput').value=this.value;handleAdminSearch(event);}" />
+      </div>
+
+      <!-- Row 3 (Mobile only): Quick Action Pills Strip -->
+      <div class="mobile-quick-actions-bar">
+        <button type="button" class="mobile-chip mobile-chip-primary" onclick="switchAdminTab('recharges', this)">💳 Recharges</button>
+        <button type="button" class="mobile-chip" onclick="toggleAdminQuickServicesDropdown(event)">⚡ Quick Services ▾</button>
+        <button type="button" class="mobile-chip" onclick="switchAdminTab('sellers', this)">👥 Sellers</button>
+        <button type="button" class="mobile-chip" onclick="switchAdminTab('couriers', this)">🚚 Couriers</button>
+        <button type="button" class="mobile-chip" onclick="switchAdminTab('tickets', this)">🎫 Tickets</button>
+        <a href="/dashboard" class="mobile-chip" style="color: var(--brand); font-weight: 700;">Seller Portal →</a>
       </div>
 
       <!-- Admin Profile Dropdown Menu Card (Solid Opaque White) -->
@@ -483,6 +744,7 @@
           <thead>
             <tr>
               <th>Request ID</th>
+              <th>User ID</th>
               <th>Seller / Business</th>
               <th>Amount</th>
               <th>Status</th>
@@ -492,7 +754,7 @@
             </tr>
           </thead>
           <tbody id="admRechargesTableBody">
-            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading recharge requests...</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading recharge requests...</td></tr>
           </tbody>
         </table>
       </div>
@@ -500,23 +762,76 @@
 
     <!-- TAB 1: OVERVIEW -->
     <div id="admin-tab-overview" class="admin-tab" style="display: block;">
-      <h2 style="font-size: 1.15rem; font-weight: 750; margin-bottom: 1rem; color: var(--navy);">Platform Metrics</h2>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.875rem; margin-bottom: 1.25rem;">
-        <div class="card" style="padding: 0.875rem 1rem;">
-          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Active Sellers</p>
-          <p id="admSellersCount" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.25rem; line-height: 1.2;">-</p>
+      <!-- Hero Banner with Live Date (Matching dashboard.html) -->
+      <div class="dashboard-hero-banner" style="background: linear-gradient(100deg, #0f172a 0%, #1e293b 50%, #312e81 85%, #431407 100%); color: #fff; border-radius: 0.625rem; padding: 1.15rem 1.5rem; position: relative; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; position: relative; z-index: 2;">
+          <div>
+            <div id="admHeroDateBadge" style="font-size: 0.625rem; font-weight: 700; letter-spacing: 1px; color: #f59e0b; text-transform: uppercase; margin-bottom: 0.25rem;">TUESDAY, OCTOBER 20</div>
+            <h1 style="font-size: 1.15rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #ffffff; letter-spacing: -0.01em;">Admin Operations & Platform Orchestration</h1>
+            <p style="font-size: 0.8125rem; color: #cbd5e1; margin: 0;">Welcome back, <span style="color: #ffffff; font-weight: 700;">Super Admin</span>. Monitor courier SLA, approve wallet recharges, and manage seller rate margins.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" onclick="switchAdminTab('recharges', this)" style="background: #f59e0b; color: #0f172a; border: none; font-weight: 700; font-size: 0.775rem; padding: 0.45rem 0.9rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+              💳 Review Recharges
+            </button>
+            <button type="button" onclick="switchAdminTab('couriers', this)" style="background: #ffffff; color: #0f172a; border: none; font-weight: 700; font-size: 0.775rem; padding: 0.45rem 0.9rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s ease; white-space: nowrap;">
+              🚚 Manage Couriers
+            </button>
+          </div>
         </div>
-        <div class="card" style="padding: 0.875rem 1rem;">
-          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Total Orders</p>
-          <p id="admOrdersCount" style="font-size: 1.25rem; font-weight: 750; color: var(--brand); margin-top: 0.25rem; line-height: 1.2;">-</p>
+        <div style="position: absolute; right: -50px; bottom: -50px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(234, 88, 12, 0.25) 0%, rgba(245, 158, 11, 0.08) 50%, transparent 80%); pointer-events: none;"></div>
+      </div>
+
+      <!-- KPI Metrics Grid (Matching dashboard.html) -->
+      <div class="dashboard-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.25rem;">
+        <!-- Tile 1: Active Sellers -->
+        <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden; border-top: 3.5px solid var(--brand);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">ACTIVE SELLERS</span>
+            <span style="width: 24px; height: 24px; border-radius: 4px; background: #eff6ff; color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">👥</span>
+          </div>
+          <p id="admSellersCount" style="font-size: 1.35rem; font-weight: 850; color: var(--navy); margin-top: 0.35rem; line-height: 1.2;">-</p>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Registered business accounts</p>
         </div>
-        <div class="card" style="padding: 0.875rem 1rem;">
-          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Total Margin Earned</p>
-          <p id="admMarginCount" style="font-size: 1.25rem; font-weight: 750; color: var(--success); margin-top: 0.25rem; line-height: 1.2;">-</p>
+
+        <!-- Tile 2: Total Shipments -->
+        <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden; border-top: 3.5px solid #0284c7;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">TOTAL SHIPMENTS</span>
+            <span style="width: 24px; height: 24px; border-radius: 4px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">📦</span>
+          </div>
+          <p id="admOrdersCount" style="font-size: 1.35rem; font-weight: 850; color: #0284c7; margin-top: 0.35rem; line-height: 1.2;">-</p>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Processed across all carriers</p>
         </div>
-        <div class="card" style="padding: 0.875rem 1rem;">
-          <p style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">Wallet Reserves</p>
-          <p id="admWalletCount" style="font-size: 1.25rem; font-weight: 750; color: var(--navy); margin-top: 0.25rem; line-height: 1.2;">-</p>
+
+        <!-- Tile 3: Total Margin Earned (Visible to Admin Only) -->
+        <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden; border-top: 3.5px solid var(--success);">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">PLATFORM MARGIN</span>
+            <span style="width: 24px; height: 24px; border-radius: 4px; background: #dcfce7; color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">💰</span>
+          </div>
+          <p id="admMarginCount" style="font-size: 1.35rem; font-weight: 850; color: var(--success); margin-top: 0.35rem; line-height: 1.2;">-</p>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Net commission profit</p>
+        </div>
+
+        <!-- Tile 4: Wallet Reserves -->
+        <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden; border-top: 3.5px solid #6366f1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">WALLET RESERVES</span>
+            <span style="width: 24px; height: 24px; border-radius: 4px; background: #eef2ff; color: #6366f1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">💳</span>
+          </div>
+          <p id="admWalletCount" style="font-size: 1.35rem; font-weight: 850; color: var(--navy); margin-top: 0.35rem; line-height: 1.2;">-</p>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Total seller prepaid funds</p>
+        </div>
+
+        <!-- Tile 5: Active Courier Partners -->
+        <div class="card" style="padding: 0.875rem 1rem; position: relative; overflow: hidden; border-top: 3.5px solid #d90429;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">ACTIVE COURIERS</span>
+            <span style="width: 24px; height: 24px; border-radius: 4px; background: #fff1f2; color: #d90429; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">🚚</span>
+          </div>
+          <p id="admActiveCouriersCount" style="font-size: 1.35rem; font-weight: 850; color: #d90429; margin-top: 0.35rem; line-height: 1.2;">8 Partners</p>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.2rem;">Delhivery, DTDC, Blue Dart & more</p>
         </div>
       </div>
 
@@ -527,6 +842,7 @@
             <thead>
               <tr>
                 <th>Order #</th>
+                <th>User ID</th>
                 <th>AWB</th>
                 <th>Courier</th>
                 <th>Buyer</th>
@@ -536,7 +852,7 @@
               </tr>
             </thead>
             <tbody id="admRecentOrdersBody">
-              <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading platform orders...</td></tr>
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading platform orders...</td></tr>
             </tbody>
           </table>
         </div>
@@ -558,10 +874,12 @@
           <table>
             <thead>
               <tr>
+                <th>User ID</th>
                 <th>Seller Name</th>
                 <th>Business Name</th>
                 <th>Email</th>
                 <th>Phone</th>
+                <th>Rate Margin</th>
                 <th>KYC Status</th>
                 <th>Wallet Balance</th>
                 <th>Orders</th>
@@ -569,7 +887,7 @@
               </tr>
             </thead>
             <tbody id="admSellersTableBody">
-              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sellers...</td></tr>
+              <tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading sellers...</td></tr>
             </tbody>
           </table>
         </div>
@@ -581,7 +899,7 @@
           <span>←</span> Back to Sellers
         </button>
 
-        <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;" class="mobile-grid-1">
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;" class="mobile-grid-1">
           <!-- Card 1: SELLER DETAILS (Image 1) -->
           <div class="card" style="padding: 1.25rem;">
             <p style="font-size: 0.6875rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem;">
@@ -640,7 +958,33 @@
               </p>
             </div>
             <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.625rem; margin-top: 1rem; font-size: 0.75rem; color: #475569;">
-              <span>💡 Use <strong>Adjust</strong> to manually credit or debit this seller's account with an audit note.</span>
+              <span>💡 Use <strong>Adjust</strong> to manually credit or debit this seller's account.</span>
+            </div>
+          </div>
+
+          <!-- Card 3: RATE MARGIN -->
+          <div class="card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <p style="font-size: 0.6875rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                  RATE MARGIN
+                </p>
+                <button type="button" class="btn-primary" onclick="openUserMarginModal(currentSelectedSeller ? currentSelectedSeller.id : null)" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; background: var(--navy);">
+                  ⚙️ Configure
+                </button>
+              </div>
+              <div style="display: flex; align-items: baseline; gap: 0.5rem; margin: 0.75rem 0 0.25rem 0;">
+                <p id="sdMarginValue" style="font-size: 2.25rem; font-weight: 900; color: var(--brand);">
+                  10.0%
+                </p>
+                <span id="sdMarginTypeBadge" class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">DEFAULT</span>
+              </div>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">
+                Tariff markup dynamically applied on top of carrier rates for this seller's calculations & bookings.
+              </p>
+            </div>
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.625rem; margin-top: 1rem; font-size: 0.75rem; color: #475569;">
+              <span>💡 Configured specifically per user in Admin panel.</span>
             </div>
           </div>
         </div>
@@ -658,6 +1002,7 @@
               <thead>
                 <tr>
                   <th>Order #</th>
+                  <th>User ID</th>
                   <th>AWB</th>
                   <th>Courier</th>
                   <th>Buyer</th>
@@ -668,7 +1013,7 @@
                 </tr>
               </thead>
               <tbody id="sdOrdersTableBody">
-                <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading seller orders...</td></tr>
+                <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading seller orders...</td></tr>
               </tbody>
             </table>
           </div>
@@ -737,27 +1082,65 @@
 
     <!-- TAB 5: ALL SHIPMENTS -->
     <div id="admin-tab-shipments" class="admin-tab" style="display: none;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
         <div>
           <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">All System Shipments</h2>
           <p style="color: var(--text-muted); font-size: 0.775rem;">Comprehensive ledger of orders manifested across all platform sellers</p>
         </div>
-        <button onclick="loadAdminShipments()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <button onclick="triggerAdminBulkPrint()" class="btn-primary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; background: #2563eb; color: #fff; border: none; border-radius: 4px; font-weight: 700; cursor: pointer;">
+            <span>🖨️</span> Bulk Print Labels
+          </button>
+          <button onclick="loadAdminShipments()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.375rem 0.75rem;">🔄 Refresh</button>
+        </div>
       </div>
+
+      <!-- Bulk Print Action Toolbar (Admin) -->
+      <div id="admShipmentsBulkBar" style="display: none; background: #0f172a; color: #ffffff; padding: 0.75rem 1.25rem; border-radius: 0.5rem; margin-bottom: 1rem; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span id="admBulkSelectedBadge" style="background: #2563eb; color: #ffffff; font-size: 0.75rem; font-weight: 800; padding: 0.2rem 0.65rem; border-radius: 9999px;">0</span>
+          <span style="font-size: 0.875rem; font-weight: 700;">Orders Selected</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" onclick="cancelAdminBulkShipments()" class="btn-secondary" style="background: #ef4444; color: #ffffff; border: 1px solid #dc2626; padding: 0.45rem 0.9rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+            <span>❌</span> Cancel Order
+          </button>
+          <div style="position: relative; display: inline-flex;">
+            <button type="button" onclick="printAdminBulkShipments('4perpage')" class="btn-primary" style="background: #2563eb; color: #ffffff; padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem 0 0 0.375rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 4px rgba(37,99,235,0.3);">
+              <span>🏷️</span> Generate Labels
+            </button>
+            <button type="button" onclick="printAdminBulkShipments('single')" class="btn-secondary" title="Thermal 100x150mm" style="background: #1e293b; color: #f8fafc; border: 1px solid #3b82f6; border-left: none; padding: 0.45rem 0.65rem; font-size: 0.75rem; font-weight: 600; border-radius: 0 0.375rem 0.375rem 0; cursor: pointer;">
+              Thermal
+            </button>
+          </div>
+          <button type="button" onclick="generateAdminBulkInvoices()" class="btn-primary" style="background: #16a34a; color: #ffffff; border: 1px solid #15803d; padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 4px rgba(22,163,74,0.3);" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+            <span>📄</span> Generate Invoice
+          </button>
+          <button type="button" onclick="clearAllAdminShipmentSelection()" style="background: transparent; color: #94a3b8; border: none; font-size: 0.75rem; cursor: pointer; padding: 0.45rem 0.6rem; text-decoration: underline;">
+            Deselect All
+          </button>
+        </div>
+      </div>
+
       <div class="card" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table>
           <thead>
             <tr>
+              <th style="width: 36px; text-align: center;">
+                <input type="checkbox" id="admSelectAllShipments" onchange="toggleSelectAllAdminShipments(this.checked)" title="Select all shipments" style="cursor: pointer; width: 16px; height: 16px;" />
+              </th>
               <th>Order Number</th>
+              <th>User ID</th>
               <th>AWB Number</th>
               <th>Courier</th>
               <th>Buyer / City</th>
               <th>Rate Charged</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody id="admAllShipmentsBody">
-            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading shipments...</td></tr>
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading shipments...</td></tr>
           </tbody>
         </table>
       </div>
@@ -859,6 +1242,45 @@
       </div>
     </div>
 
+    <!-- TAB: SUPPORT TICKETS & SELLER CHAT -->
+    <div id="admin-tab-tickets" class="admin-tab" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Support Tickets & Seller Chat Desk</h2>
+          <p style="color: var(--text-muted); font-size: 0.775rem;">Direct 2-way chat with sellers, handle courier escalations, inspect AI Bot transcripts, and resolve queries.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn-secondary" onclick="loadAdminTickets('')">All</button>
+          <button class="btn-secondary" onclick="loadAdminTickets('OPEN')">🔴 Open</button>
+          <button class="btn-secondary" onclick="loadAdminTickets('IN_PROGRESS')">🟡 In Progress</button>
+          <button class="btn-secondary" onclick="loadAdminTickets('ESCALATED')">🚨 Escalated</button>
+          <button class="btn-secondary" onclick="loadAdminTickets('RESOLVED')">🟢 Resolved</button>
+          <button class="btn-primary" onclick="loadAdminTickets()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <table>
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>User ID</th>
+              <th>Seller</th>
+              <th>Subject</th>
+              <th>Order / AWB</th>
+              <th>Status</th>
+              <th>Messages</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="admTicketsTableBody">
+            <tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading support tickets...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
   </div>
 
@@ -903,6 +1325,64 @@
           <button type="button" class="btn-secondary" onclick="closeAddRuleModal()">Cancel</button>
           <button type="submit" id="saveRuleSubmitBtn" class="btn-primary">Save Commission Rule</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Admin Ticket Response Chatbox -->
+  <div id="adminTicketChatModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 740px; width: 100%; height: 88vh; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: 0.875rem; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.45);">
+      <!-- Admin Chat Header -->
+      <div style="padding: 1rem 1.25rem; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="overflow: hidden; flex: 1; padding-right: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span style="font-size: 0.7rem; font-family: monospace; background: rgba(255,255,255,0.15); padding: 0.15rem 0.45rem; border-radius: 4px; color: #94a3b8;" id="admChatModalTicketId">TKT-101</span>
+            <span style="font-size: 0.725rem; color: #e2e8f0; font-weight: 700;" id="admChatModalSeller">Seller: -</span>
+            <span id="admChatModalOrderAwb" style="font-size: 0.725rem; color: #94a3b8;">AWB: -</span>
+          </div>
+          <h3 id="admChatModalSubject" style="font-size: 0.95rem; font-weight: 700; color: #ffffff; margin-top: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Ticket Subject</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <!-- Status Dropdown for Admin -->
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <label style="font-size: 0.7rem; color: #94a3b8; font-weight: 600;">Status:</label>
+            <select id="admChatStatusSelect" onchange="updateTicketStatusFromChat(this.value)" style="background: #1e293b; color: #fff; border: 1px solid #334155; font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 0.375rem; outline: none; cursor: pointer;">
+              <option value="OPEN">🔴 OPEN</option>
+              <option value="IN_PROGRESS">🟡 IN_PROGRESS</option>
+              <option value="ESCALATED">🚨 ESCALATED</option>
+              <option value="RESOLVED">🟢 RESOLVED</option>
+              <option value="CLOSED">⚪ CLOSED</option>
+            </select>
+          </div>
+          <button type="button" onclick="closeAdminTicketChatModal()" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">✕</button>
+        </div>
+      </div>
+
+      <!-- Live Carrier Tracking Snapshot Bar -->
+      <div id="admChatLiveTrackingBar" style="display: none; padding: 0.5rem 1.25rem; background: #eff6ff; border-bottom: 1px solid #bfdbfe; font-size: 0.75rem; color: #1e40af;">
+        <span id="admChatLiveTrackingText">📍 Live tracking context</span>
+      </div>
+
+      <!-- Message History Thread -->
+      <div id="admTicketChatMessagesList" style="flex: 1; overflow-y: auto; padding: 1.25rem; background: #f8fafc; display: flex; flex-direction: column; gap: 0.85rem;">
+        <!-- Dynamically rendered messages -->
+      </div>
+
+      <!-- Canned Admin Quick Replies -->
+      <div style="padding: 0.4rem 1rem; background: #f1f5f9; border-top: 1px solid var(--border); display: flex; gap: 0.4rem; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+        <button type="button" onclick="insertAdminCanned('We have contacted the courier hub; pickup vehicle has been scheduled for today.')" style="white-space: nowrap; background: #ffffff; border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.725rem; color: #334155; font-weight: 600; cursor: pointer;">🚚 Pickup Scheduled</button>
+        <button type="button" onclick="insertAdminCanned('Dispute raised with courier auditor. Corrected weight will reflect in 24 hours.')" style="white-space: nowrap; background: #ffffff; border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.725rem; color: #334155; font-weight: 600; cursor: pointer;">⚖️ Weight Disputed</button>
+        <button type="button" onclick="insertAdminCanned('Delivery branch confirms shipment is out for delivery today. Delivery agent will contact buyer.')" style="white-space: nowrap; background: #ffffff; border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.725rem; color: #334155; font-weight: 600; cursor: pointer;">📦 Out For Delivery</button>
+        <button type="button" onclick="insertAdminCanned('This issue has been resolved. Please reach back out if you require further assistance.')" style="white-space: nowrap; background: #ffffff; border: 1px solid var(--border); border-radius: 999px; padding: 0.25rem 0.65rem; font-size: 0.725rem; color: #166534; font-weight: 600; cursor: pointer;">✅ Mark Resolved</button>
+      </div>
+
+      <!-- Admin Reply Input Form -->
+      <form id="admTicketChatForm" onsubmit="submitAdminTicketReply(event)" style="padding: 0.75rem 1rem; background: #ffffff; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.65rem;">
+        <input type="text" id="admTicketChatInput" class="form-control" placeholder="Write reply to seller as HetEx Operations Desk..." autocomplete="off" style="flex: 1; padding: 0.6rem 0.85rem; border-radius: 0.5rem; font-size: 0.825rem;" />
+        <button type="submit" id="admTicketChatSendBtn" class="btn-primary" style="padding: 0.6rem 1.1rem; border-radius: 0.5rem; background: #b91c1c; border-color: #b91c1c; display: flex; align-items: center; gap: 0.4rem; font-weight: 700; white-space: nowrap;">
+          <span>Reply as Admin</span>
+          <span>➤</span>
+        </button>
       </form>
     </div>
   </div>
@@ -1112,6 +1592,63 @@
     </div>
   </div>
 
+  <!-- Modal: Configure Seller Rate Margin -->
+  <div id="admUserMarginModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--navy);">
+          Configure Seller Rate Margin
+        </h3>
+        <button class="btn-secondary" onclick="closeUserMarginModal()" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✕</button>
+      </div>
+      <form id="admUserMarginForm" onsubmit="submitUserMargin(event)">
+        <input type="hidden" id="marginModalUserId" />
+        <div class="form-group">
+          <label>Target Seller Account</label>
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.5rem 0.75rem;">
+            <p id="marginModalSellerName" style="font-weight: 800; color: var(--navy); font-size: 0.9375rem; margin: 0;"></p>
+            <p id="marginModalSellerBiz" style="font-size: 0.75rem; color: var(--text-muted); margin: 0;"></p>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Margin Calculation Type</label>
+          <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8125rem; cursor: pointer;">
+              <input type="radio" name="userMarginType" value="PERCENT" checked onchange="onMarginTypeChange()" />
+              <span style="font-weight: 700;">Percentage (%)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8125rem; cursor: pointer;">
+              <input type="radio" name="userMarginType" value="FLAT" onchange="onMarginTypeChange()" />
+              <span style="font-weight: 700;">Flat Amount (₹)</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label id="userMarginInputLabel">Custom Margin Value (% on carrier freight) *</label>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <input type="number" id="userMarginValueInput" class="form-control" placeholder="e.g. 12.5" min="0" max="1000" step="0.1" style="font-size: 1.125rem; font-weight: 800;" required />
+            <span id="userMarginUnitLabel" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); min-width: 25px;">%</span>
+          </div>
+          <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.25rem;">This margin is applied automatically during rate calculations and order bookings for this user.</p>
+        </div>
+
+        <div class="form-group" style="background: #f1f5f9; padding: 0.5rem 0.75rem; border-radius: 0.375rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; cursor: pointer; margin: 0;">
+            <input type="checkbox" id="userMarginResetCheckbox" onchange="onMarginResetCheckboxChange()" />
+            <span style="font-weight: 600; color: #334155;">Reset to Platform Default (10.0% Commission Rule)</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+          <button type="button" class="btn-secondary" onclick="closeUserMarginModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="btnSubmitUserMargin">Save Rate Margin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     // Clean URL normalization: ensure no .html in browser URL
     (function() {
@@ -1130,6 +1667,13 @@
     const userJson = localStorage.getItem('hetex_user');
     let u = null;
 
+    // Global state initialized at top of script to prevent any TDZ errors
+    var currentAdminTickets = [];
+    var currentAdminChatTicketId = null;
+    var admTicketChatPollTimer = null;
+    var adminCouriersList = [];
+    var platformSettings = {};
+
     if (!token) {
       window.location.href = '/login';
     } else {
@@ -1143,15 +1687,28 @@
 
     function showAdminToast(msg, type = 'info') {
       const c = document.getElementById('adminToastContainer');
-      if (!c) return;
-      const el = document.createElement('div');
-      el.className = 'toast toast-' + type;
-      el.textContent = msg;
-      c.appendChild(el);
-      setTimeout(() => {
-        el.style.animation = 'slideOutToast 0.25s ease-out forwards';
-        setTimeout(() => el.remove(), 250);
-      }, 3500);
+      if (c) {
+        const el = document.createElement('div');
+        el.className = 'toast toast-' + type;
+        el.textContent = msg;
+        c.appendChild(el);
+        setTimeout(() => {
+          el.style.animation = 'slideOutToast 0.25s ease-out forwards';
+          setTimeout(() => el.remove(), 250);
+        }, 3500);
+      }
+
+      // Trigger native browser notification if granted
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          const clean = (msg || '').replace(/<[^>]*>/g, '').trim();
+          new Notification('HetEx Admin HQ Alert', {
+            body: clean,
+            icon: '/favicon.ico',
+            tag: 'hetex-adm-' + Date.now()
+          });
+        } catch (e) {}
+      }
     }
 
     function promptAdminSignout() {
@@ -1189,7 +1746,34 @@
       if (bd) bd.classList.remove('active');
     }
 
+    function toggleAdminQuickServicesDropdown(event) {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      const dd = document.getElementById('admQuickServicesDropdown');
+      const chevron = document.getElementById('admQuickServicesChevron');
+      if (!dd) return;
+      const isHidden = (dd.style.display === 'none' || !dd.style.display);
+      dd.style.display = isHidden ? 'block' : 'none';
+      if (chevron) chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+
+      // Close admin profile dropdown if open
+      closeAdminProfileDropdown();
+      if (window.HetExNotifications && window.HetExNotifications.closeDropdown) {
+        window.HetExNotifications.closeDropdown();
+      }
+    }
+
+    function closeAdminQuickServicesDropdown() {
+      const dd = document.getElementById('admQuickServicesDropdown');
+      const chevron = document.getElementById('admQuickServicesChevron');
+      if (dd) dd.style.display = 'none';
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+
     function toggleAdminProfileDropdown() {
+      closeAdminQuickServicesDropdown();
       const m = document.getElementById('adminProfileDropdownMenu');
       if (!m) return;
       m.style.display = m.style.display === 'block' ? 'none' : 'block';
@@ -1206,6 +1790,14 @@
       if (m && m.style.display === 'block') {
         if (!m.contains(e.target) && !av.contains(e.target)) {
           m.style.display = 'none';
+        }
+      }
+
+      const qsDd = document.getElementById('admQuickServicesDropdown');
+      const qsBtn = document.getElementById('admQuickServicesBtn');
+      if (qsDd && qsDd.style.display === 'block') {
+        if (!qsDd.contains(e.target) && (!qsBtn || !qsBtn.contains(e.target))) {
+          closeAdminQuickServicesDropdown();
         }
       }
     });
@@ -1244,6 +1836,7 @@
       if (tab === 'couriers') loadAdminCouriers();
       if (tab === 'commission') loadAdminCommission();
       if (tab === 'shipments') loadAdminShipments();
+      if (tab === 'tickets') loadAdminTickets();
       if (tab === 'settings') loadAdminSettings();
     }
 
@@ -1256,20 +1849,56 @@
         document.getElementById('admMarginCount').textContent = '₹' + parseFloat(d.totalMarginEarned || 0).toFixed(2);
         document.getElementById('admWalletCount').textContent = '₹' + parseFloat(d.totalWalletBalance || 0).toFixed(2);
 
+        // Fetch active couriers count
+        try {
+          const cRes = await fetch('/api/couriers');
+          if (cRes.ok) {
+            const cData = await cRes.json();
+            const count = (cData.couriers || []).length;
+            const elActive = document.getElementById('admActiveCouriersCount');
+            if (elActive) elActive.textContent = count;
+          }
+        } catch (e) {}
+
+        // Fetch ticket counts for notification badge
+        try {
+          const tRes = await fetch('/api/tickets', { headers: { 'Authorization': 'Bearer ' + token } });
+          const tData = await tRes.json();
+          const openCount = (tData.tickets || []).filter(tk => tk.status === 'OPEN' || tk.status === 'ESCALATED').length;
+          const badge = document.getElementById('admOpenTicketsBadge');
+          if (badge) {
+            badge.textContent = openCount;
+            badge.style.display = openCount > 0 ? 'inline-block' : 'none';
+          }
+        } catch (e) {}
+
         const recents = d.recentOrders || [];
         const tbody = document.getElementById('admRecentOrdersBody');
         if (recents.length === 0) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No orders yet.</td></tr>';
         } else {
           tbody.innerHTML = recents.map(o => {
+            const uId = o.userCode || o.userId || 'HET000002';
+            const courierName = o.shipment?.courier?.name || o.shipment?.courierName || 'Delhivery';
+            const brandInfo = window.getCourierBrand ? window.getCourierBrand(courierName) : null;
+            let subService = courierName;
+            if (brandInfo && brandInfo.name && courierName.toLowerCase().startsWith(brandInfo.name.toLowerCase())) {
+              subService = courierName.slice(brandInfo.name.length).trim();
+            }
+            const courierLogoHtml = brandInfo && brandInfo.logoSvg
+              ? ('<div style="height: 30px; width: 110px; min-width: 110px; max-width: 110px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 0.45rem; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.04); flex-shrink: 0; box-sizing: border-box;">' + brandInfo.logoSvg + '</div>')
+              : ('<span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.5rem; margin-right: 0.45rem;">' + (brandInfo?.name || courierName) + '</span>');
+            const subServiceHtml = subService ? ('<span style="font-size: 0.775rem; font-weight: 700; color: #475569; white-space: nowrap;">' + subService + '</span>') : '';
+
             return '<tr>' +
               '<td style="font-weight: 700;">' +
                 '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + o.id + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="View order details">' +
                   o.orderNumber +
                 '</a>' +
               '</td>' +
+              '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
               '<td style="font-family: monospace; color: var(--brand);">' + (o.shipment?.awbNumber || '-') + '</td>' +
-              '<td>' + (o.shipment?.courier?.name || 'Delhivery') + '</td>' +
+              '<td><div style="display: inline-flex; align-items: center;">' + courierLogoHtml + subServiceHtml + '</div></td>' +
               '<td>' + (o.buyerAddress?.contactName || 'Buyer') + '</td>' +
               '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
               '<td>₹' + (o.shipment?.rateCharged || 46.2).toFixed(2) + '</td>' +
@@ -1281,7 +1910,11 @@
 
       // Check pending recharge requests count for badge
       try {
-        const rRes = await fetch('/api/admin/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+        const queryParam = token ? ('?token=' + encodeURIComponent(token)) : '';
+        const rRes = await fetch('/api/admin/recharges' + queryParam, {
+          headers: { 'Authorization': 'Bearer ' + token, 'X-Token': token },
+          credentials: 'same-origin'
+        });
         if (rRes.ok) {
           const rData = await rRes.json();
           const pendingCount = (rData.recharges || []).filter(r => r.status === 'UNDER_REVIEW').length;
@@ -1300,8 +1933,15 @@
     async function loadAdminRecharges(statusFilter = '') {
       const tbody = document.getElementById('admRechargesTableBody');
       try {
-        const res = await fetch('/api/admin/recharges', { headers: { 'Authorization': 'Bearer ' + token } });
+        const queryParam = token ? ('?token=' + encodeURIComponent(token)) : '';
+        const res = await fetch('/api/admin/recharges' + queryParam, {
+          headers: { 'Authorization': 'Bearer ' + token, 'X-Token': token },
+          credentials: 'same-origin'
+        });
         const d = await res.json();
+        if (!res.ok) {
+          throw new Error(d.error || ('Failed to load recharge requests (HTTP ' + res.status + ')'));
+        }
         let recharges = d.recharges || [];
         if (statusFilter) {
           recharges = recharges.filter(r => r.status === statusFilter);
@@ -1316,7 +1956,7 @@
         }
 
         if (recharges.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recharge requests found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No recharge requests found.</td></tr>';
           return;
         }
 
@@ -1337,27 +1977,33 @@
             actionsHtml = '<span style="color: var(--danger); font-weight: 700; font-size: 0.75rem;">❌ Rejected</span>';
           }
 
+          const uId = r.userCode || r.user_code || r.userId || r.user_id || r.user?.userCode || 'HET000002';
+          const sellerName = r.businessName || r.business_name || r.userName || r.user_name || r.user?.businessName || r.user?.name || 'Seller';
+          const subName = (r.userName && r.businessName && r.userName !== r.businessName) ? (' (' + r.userName + ')') : '';
           return '<tr>' +
             '<td style="font-family: monospace; font-weight: 700; color: var(--navy);">' + r.id + '</td>' +
-            '<td>' + (r.user?.name || r.user_name || 'Seller') + (r.user?.businessName ? (' (' + r.user.businessName + ')') : '') + '</td>' +
+            '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
+            '<td>' + sellerName + subName + '</td>' +
             '<td style="font-weight: 800; color: var(--brand);">₹' + parseFloat(r.amount).toFixed(2) + '</td>' +
-            '<td><span class="badge ' + badgeClass + '">' + r.status.replace(/_/g, ' ') + '</span></td>' +
+            '<td><span class="badge ' + badgeClass + '">' + (r.status || 'UNDER_REVIEW').replace(/_/g, ' ') + '</span></td>' +
             '<td style="font-family: monospace; font-size: 0.8125rem;">' + (r.utrNumber || r.utr_number || '-') + '</td>' +
             '<td style="font-size: 0.75rem;">' + (r.createdAt ? new Date(r.createdAt).toLocaleString() : '-') + '</td>' +
             '<td>' + actionsHtml + '</td>' +
           '</tr>';
         }).join('');
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger); padding: 2rem;">Failed to load recharge requests</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 2rem;">' + (e.message || 'Failed to load recharge requests') + '</td></tr>';
       }
     }
 
     async function approveRecharge(reqId) {
       if (!confirm('Approve UPI Recharge #' + reqId + ' and credit seller wallet now?')) return;
       try {
-        const res = await fetch('/api/admin/recharges/approve', {
+        const queryParam = token ? ('?token=' + encodeURIComponent(token)) : '';
+        const res = await fetch('/api/admin/recharges/approve' + queryParam, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'X-Token': token },
+          credentials: 'same-origin',
           body: JSON.stringify({ requestId: reqId })
         });
         const d = await res.json();
@@ -1374,9 +2020,11 @@
       const reason = prompt('Please enter reason for rejecting recharge #' + reqId, 'Invalid UPI reference / UTR not found on bank statement');
       if (reason === null) return;
       try {
-        const res = await fetch('/api/admin/recharges/reject', {
+        const queryParam = token ? ('?token=' + encodeURIComponent(token)) : '';
+        const res = await fetch('/api/admin/recharges/reject' + queryParam, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token, 'X-Token': token },
+          credentials: 'same-origin',
           body: JSON.stringify({ requestId: reqId, reason: reason })
         });
         const d = await res.json();
@@ -1401,13 +2049,24 @@
         adminAllSellers = d.users || [];
         const tbody = document.getElementById('admSellersTableBody');
         if (adminAllSellers.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No registered sellers found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No registered sellers found.</td></tr>';
           return;
         }
         tbody.innerHTML = adminAllSellers.map(u => {
           const bal = parseFloat(u.walletBalance || (u.wallet && u.wallet.balance) || 0).toFixed(2);
           const ordersCount = u.orderCount || (u._count && u._count.orders) || 0;
+          const uCode = u.userCode || ('HET' + String(u.id || '').replace(/\D/g, '').slice(-6).padStart(6, '0'));
+          const hasMargin = (u.rateMarginPercent !== null && u.rateMarginPercent !== undefined && u.rateMarginPercent !== '');
+          const marginType = u.rateMarginType === 'FLAT' ? 'FLAT' : 'PERCENT';
+          const marginText = hasMargin
+            ? (marginType === 'FLAT' ? `+₹${parseFloat(u.rateMarginPercent).toFixed(2)}` : `+${parseFloat(u.rateMarginPercent).toFixed(1)}%`)
+            : 'Default (10%)';
+          const marginBadge = hasMargin
+            ? `<span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">${marginText}</span>`
+            : `<span class="badge badge-navy" style="font-size: 0.6875rem;">${marginText}</span>`;
+
           return '<tr>' +
+            '<td style="font-family: monospace; font-weight: 800; color: #0284c7;">' + uCode + '</td>' +
             '<td style="font-weight: 700;">' +
               '<a href="javascript:void(0)" onclick="viewSellerDetail(&quot;' + u.id + '&quot;)" style="color: var(--brand); text-decoration: underline; cursor: pointer;" title="View Seller Details">' +
                 u.name +
@@ -1416,13 +2075,19 @@
             '<td style="font-weight: 600;">' + (u.businessName || '-') + '</td>' +
             '<td>' + (u.email || '-') + '</td>' +
             '<td>' + u.phone + '</td>' +
+            '<td>' + marginBadge + '</td>' +
             '<td><span class="badge badge-success">' + (u.kycStatus || 'VERIFIED') + '</span></td>' +
             '<td style="font-weight: 800; color: var(--navy);">₹' + bal + '</td>' +
             '<td style="font-weight: 700;">' + ordersCount + '</td>' +
             '<td>' +
-              '<button type="button" onclick="viewSellerDetail(&quot;' + u.id + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;">' +
-                'View Details' +
-              '</button>' +
+              '<div style="display: flex; gap: 0.35rem; align-items: center;">' +
+                '<button type="button" onclick="openUserMarginModal(&quot;' + u.id + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.725rem; font-weight: 700;">' +
+                  '⚙️ Margin' +
+                '</button>' +
+                '<button type="button" onclick="viewSellerDetail(&quot;' + u.id + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.725rem;">' +
+                  'View Details' +
+                '</button>' +
+              '</div>' +
             '</td>' +
           '</tr>';
         }).join('');
@@ -1443,7 +2108,7 @@
       } catch (e) {}
 
       if (!seller) {
-        seller = { id: sellerId, name: 'Meena', businessName: 'Zuberia One Enterprises', email: 'meena@zuberia.one', phone: '9876543210', walletBalance: 5949.79, kycStatus: 'VERIFIED', createdAt: '2026-01-15T10:00:00Z' };
+        seller = { id: sellerId, userCode: 'HET000002', name: 'Meena', businessName: 'Zuberia One Enterprises', email: 'meena@zuberia.one', phone: '9876543210', walletBalance: 5949.79, rateMarginPercent: 12.50, rateMarginType: 'PERCENT', kycStatus: 'VERIFIED', createdAt: '2026-01-15T10:00:00Z' };
       }
       currentSelectedSeller = seller;
 
@@ -1453,8 +2118,34 @@
       document.getElementById('sdPhone').textContent = seller.phone || '-';
       document.getElementById('sdEmail').textContent = seller.email || '-';
       document.getElementById('sdJoinedDate').textContent = seller.createdAt ? new Date(seller.createdAt).toLocaleDateString() : 'Jan 15, 2026';
-      document.getElementById('sdUserId').textContent = seller.id || '-';
+      document.getElementById('sdUserId').textContent = seller.userCode || seller.id || '-';
       document.getElementById('sdWalletBalance').textContent = '₹' + parseFloat(seller.walletBalance || (seller.wallet && seller.wallet.balance) || 0).toFixed(2);
+
+      // Populate Card 3 (Rate Margin)
+      const hasCustMargin = (seller.rateMarginPercent !== null && seller.rateMarginPercent !== undefined && seller.rateMarginPercent !== '');
+      const sMarginType = seller.rateMarginType === 'FLAT' ? 'FLAT' : 'PERCENT';
+      const marginValEl = document.getElementById('sdMarginValue');
+      const marginBadgeEl = document.getElementById('sdMarginTypeBadge');
+      if (marginValEl) {
+        if (hasCustMargin) {
+          marginValEl.textContent = sMarginType === 'FLAT' ? ('₹' + parseFloat(seller.rateMarginPercent).toFixed(2)) : (parseFloat(seller.rateMarginPercent).toFixed(1) + '%');
+          marginValEl.style.color = 'var(--brand)';
+        } else {
+          marginValEl.textContent = '10.0%';
+          marginValEl.style.color = 'var(--navy)';
+        }
+      }
+      if (marginBadgeEl) {
+        if (hasCustMargin) {
+          marginBadgeEl.textContent = sMarginType === 'FLAT' ? 'CUSTOM FLAT' : 'CUSTOM %';
+          marginBadgeEl.style.background = '#dcfce7';
+          marginBadgeEl.style.color = '#15803d';
+        } else {
+          marginBadgeEl.textContent = 'DEFAULT';
+          marginBadgeEl.style.background = '#e0f2fe';
+          marginBadgeEl.style.color = '#0369a1';
+        }
+      }
 
       // Fetch fallback orders if needed
       if (!orders || orders.length === 0) {
@@ -1482,12 +2173,14 @@
           const rate = '₹' + parseFloat(o.shipment?.rateCharged || o.rateCharged || 46.2).toFixed(2);
           let badgeClass = (st === 'DELIVERED') ? 'badge-success' : ((st === 'CANCELLED') ? 'badge-danger' : 'badge-navy');
 
+          const uId = o.userCode || o.userId || 'HET000002';
           return '<tr>' +
             '<td style="font-weight: 700;">' +
               '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + (o.id || o.orderNumber) + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;">' +
                 o.orderNumber +
               '</a>' +
             '</td>' +
+            '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
             '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awb + '</td>' +
             '<td>' + courier + '</td>' +
             '<td>' + buyer + '</td>' +
@@ -1508,6 +2201,113 @@
       document.getElementById('admSellerDetailView').style.display = 'none';
       document.getElementById('admSellersListView').style.display = 'block';
       loadAdminSellers();
+    }
+
+    function openUserMarginModal(sellerId) {
+      const seller = adminAllSellers.find(s => s.id === sellerId) || (currentSelectedSeller && currentSelectedSeller.id === sellerId ? currentSelectedSeller : null) || adminAllSellers[0];
+      if (!seller) return;
+
+      document.getElementById('marginModalUserId').value = seller.id;
+      document.getElementById('marginModalSellerName').textContent = seller.name + ' (' + (seller.userCode || seller.id) + ')';
+      document.getElementById('marginModalSellerBiz').textContent = seller.businessName || seller.email || 'Seller Account';
+
+      const hasCustom = (seller.rateMarginPercent !== null && seller.rateMarginPercent !== undefined && seller.rateMarginPercent !== '');
+      const isFlat = (seller.rateMarginType === 'FLAT');
+
+      const radioPercent = document.querySelector('input[name="userMarginType"][value="PERCENT"]');
+      const radioFlat = document.querySelector('input[name="userMarginType"][value="FLAT"]');
+      if (isFlat && radioFlat) radioFlat.checked = true;
+      else if (radioPercent) radioPercent.checked = true;
+
+      const resetCheckbox = document.getElementById('userMarginResetCheckbox');
+      const valInput = document.getElementById('userMarginValueInput');
+
+      if (hasCustom) {
+        if (resetCheckbox) resetCheckbox.checked = false;
+        if (valInput) {
+          valInput.disabled = false;
+          valInput.value = parseFloat(seller.rateMarginPercent);
+        }
+      } else {
+        if (resetCheckbox) resetCheckbox.checked = true;
+        if (valInput) {
+          valInput.disabled = true;
+          valInput.value = 10.0;
+        }
+      }
+
+      onMarginTypeChange();
+      document.getElementById('admUserMarginModal').style.display = 'flex';
+    }
+
+    function closeUserMarginModal() {
+      document.getElementById('admUserMarginModal').style.display = 'none';
+    }
+
+    function onMarginTypeChange() {
+      const isFlat = document.querySelector('input[name="userMarginType"]:checked')?.value === 'FLAT';
+      const unit = document.getElementById('userMarginUnitLabel');
+      const label = document.getElementById('userMarginInputLabel');
+      if (unit) unit.textContent = isFlat ? '₹' : '%';
+      if (label) label.textContent = isFlat ? 'Custom Flat Margin (₹ per shipment) *' : 'Custom Margin Value (% on carrier freight) *';
+    }
+
+    function onMarginResetCheckboxChange() {
+      const isReset = document.getElementById('userMarginResetCheckbox').checked;
+      const valInput = document.getElementById('userMarginValueInput');
+      if (valInput) {
+        valInput.disabled = isReset;
+        if (isReset) valInput.value = 10.0;
+      }
+    }
+
+    async function submitUserMargin(e) {
+      e.preventDefault();
+      const userId = document.getElementById('marginModalUserId').value;
+      const isReset = document.getElementById('userMarginResetCheckbox').checked;
+      const marginType = document.querySelector('input[name="userMarginType"]:checked').value;
+      const marginVal = isReset ? null : parseFloat(document.getElementById('userMarginValueInput').value);
+
+      const btn = document.getElementById('btnSubmitUserMargin');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch('/api/admin/users/margin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            userId,
+            marginPercent: marginVal,
+            marginType
+          })
+        });
+        const d = await res.json();
+        btn.disabled = false;
+        btn.textContent = 'Save Rate Margin';
+
+        if (!res.ok) throw new Error(d.error || 'Failed to update rate margin');
+
+        showAdminToast(d.message || 'User rate margin updated successfully!', 'success');
+        closeUserMarginModal();
+
+        // Update local object
+        const sIdx = adminAllSellers.findIndex(s => s.id === userId);
+        if (sIdx >= 0) {
+          adminAllSellers[sIdx].rateMarginPercent = marginVal;
+          adminAllSellers[sIdx].rateMarginType = marginType;
+        }
+        if (currentSelectedSeller && currentSelectedSeller.id === userId) {
+          currentSelectedSeller.rateMarginPercent = marginVal;
+          currentSelectedSeller.rateMarginType = marginType;
+          viewSellerDetail(userId);
+        }
+        loadAdminSellers();
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Save Rate Margin';
+        showAdminToast(err.message, 'error');
+      }
     }
 
     function openWalletAdjustModal() {
@@ -1564,7 +2364,7 @@
       }
     }
 
-    let adminCouriersList = [];
+    adminCouriersList = [];
     async function loadAdminCouriers() {
       try {
         const res = await fetch('/api/admin/couriers', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -1584,10 +2384,31 @@
             ? '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, false, &quot;' + c.name + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; color: var(--danger); border-color: #fca5a5;">Deactivate</button>'
             : '<button onclick="toggleCourierStatus(&quot;' + c.id + '&quot;, true, &quot;' + c.name + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.625rem; font-size: 0.6875rem; background: var(--success);">Activate</button>';
 
+          const brandInfo = window.getCourierBrand ? window.getCourierBrand(c.name) : null;
+          const logoUrl = (brandInfo && brandInfo.logoUrl) ? ('/' + brandInfo.logoUrl.replace(/^\//, '')) : '';
+          const brandName = brandInfo ? brandInfo.name : c.name;
+          const brandColor = (brandInfo && brandInfo.color) ? brandInfo.color : 'var(--brand)';
+
+          const logoImg = logoUrl
+            ? '<img src="' + logoUrl + '" alt="' + brandName + '" style="max-height: 22px; max-width: 96px; width: auto; height: auto; object-fit: contain; display: block;" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';" /><span style="display: none; font-weight: 800; font-size: 0.75rem; color: ' + brandColor + ';">' + brandName + '</span>'
+            : '<span style="font-weight: 800; font-size: 0.75rem; color: ' + brandColor + ';">' + brandName + '</span>';
+
+          const logoBadge = '<div style="width: 110px; height: 34px; min-width: 110px; max-width: 110px; border-radius: 6px; background: #ffffff; border: 1px solid #e2e8f0; display: inline-flex; align-items: center; justify-content: center; padding: 2px 6px; box-sizing: border-box; overflow: hidden; flex-shrink: 0; margin-right: 0.85rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">' +
+            logoImg +
+          '</div>';
+
           return '<tr>' +
-            '<td style="font-weight: 700;">' + c.name + '</td>' +
-            '<td>' + c.code + '</td>' +
-            '<td>₹' + parseFloat(c.baseRatePerKg || 42).toFixed(2) + '</td>' +
+            '<td style="vertical-align: middle;">' +
+              '<div style="display: flex; align-items: center; min-width: 250px;">' +
+                logoBadge +
+                '<div style="display: flex; flex-direction: column;">' +
+                  '<span style="font-weight: 750; color: var(--navy); font-size: 0.825rem; white-space: nowrap;">' + c.name + '</span>' +
+                  '<span style="font-size: 0.6875rem; color: var(--text-muted); white-space: nowrap;">' + (brandInfo?.fullName || c.name) + '</span>' +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted);">' + c.code + '</td>' +
+            '<td style="font-weight: 600;">₹' + parseFloat(c.baseRatePerKg || 42).toFixed(2) + '</td>' +
             '<td>₹' + parseFloat(c.codChargeFlat || 25).toFixed(2) + '</td>' +
             '<td>' + (c.codChargePercent || 1.5) + '%</td>' +
             '<td>⭐ ' + (c.rating || 4.5) + '</td>' +
@@ -1632,7 +2453,10 @@
             '<td>' + r.maxWeight + ' kg</td>' +
             '<td>' + r.marginType + '</td>' +
             '<td style="font-weight: 700; color: var(--brand);">' + (r.marginType === 'PERCENT' ? r.marginValue + '%' : '₹' + r.marginValue) + '</td>' +
-            '<td><button onclick="deleteCommissionRule(&quot;' + r.id + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem; color: var(--danger);">Delete</button></td>' +
+            '<td style="display: flex; gap: 0.35rem;">' +
+              '<button onclick=\'openEditRuleModal(' + JSON.stringify(JSON.stringify(r)) + ')\' class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem; color: var(--brand);">Edit</button>' +
+              '<button onclick="deleteCommissionRule(&quot;' + r.id + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem; color: var(--danger);">Delete</button>' +
+            '</td>' +
           '</tr>';
         }).join('');
       } catch (e) {}
@@ -1652,39 +2476,7 @@
       document.getElementById('addRuleForm').reset();
     }
 
-    document.getElementById('addRuleForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const btn = document.getElementById('saveRuleSubmitBtn');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-
-      const payload = {
-        courierId: document.getElementById('ruleCourierSelect').value || null,
-        marginType: document.getElementById('ruleMarginType').value,
-        marginValue: parseFloat(document.getElementById('ruleMarginValue').value || 10)
-      };
-
-      try {
-        const res = await fetch('/api/admin/commission', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify(payload)
-        });
-        const d = await res.json();
-        btn.disabled = false;
-        btn.textContent = 'Save Commission Rule';
-
-        if (!res.ok) throw new Error(d.error || 'Failed to save rule');
-
-        closeAddRuleModal();
-        showAdminToast('Platform commission markup rule saved!', 'success');
-        loadAdminCommission();
-      } catch (err) {
-        btn.disabled = false;
-        btn.textContent = 'Save Commission Rule';
-        showAdminToast(err.message, 'error');
-      }
-    });
+    // Original addRuleForm submit handler removed — unified add/edit handler is defined below
 
     async function deleteCommissionRule(id) {
       try {
@@ -1699,6 +2491,93 @@
       } catch (e) {}
     }
 
+    // --- Edit Commission Rule ---
+    let editingRuleId = null;
+
+    function openEditRuleModal(ruleJsonStr) {
+      const r = JSON.parse(ruleJsonStr);
+      editingRuleId = r.id;
+      const sel = document.getElementById('ruleCourierSelect');
+      if (sel) {
+        sel.innerHTML = '<option value="">All Couriers (Default Markup)</option>' +
+          adminCouriersList.map(c => '<option value="' + c.id + '">' + c.name + '</option>').join('');
+        sel.value = r.courierId || '';
+      }
+      document.getElementById('ruleMinWeight').value = r.minWeight || 0;
+      document.getElementById('ruleMaxWeight').value = r.maxWeight || 1000;
+      document.getElementById('ruleMarginType').value = r.marginType || 'PERCENT';
+      document.getElementById('ruleMarginValue').value = r.marginValue || 10;
+      // Update modal title and button text
+      const modalTitle = document.querySelector('#addRuleModal .modal-content h3');
+      if (modalTitle) modalTitle.textContent = 'Edit Commission Rule';
+      const submitBtn = document.getElementById('saveRuleSubmitBtn');
+      if (submitBtn) submitBtn.textContent = 'Update Rule';
+      document.getElementById('addRuleModal').style.display = 'flex';
+    }
+
+    // Override the close to reset edit state
+    const originalCloseAddRuleModal = closeAddRuleModal;
+    closeAddRuleModal = function() {
+      editingRuleId = null;
+      const modalTitle = document.querySelector('#addRuleModal .modal-content h3');
+      if (modalTitle) modalTitle.textContent = 'New Platform Commission Markup';
+      const submitBtn = document.getElementById('saveRuleSubmitBtn');
+      if (submitBtn) submitBtn.textContent = 'Save Commission Rule';
+      originalCloseAddRuleModal();
+    };
+
+    // Form submit handler for Add/Edit commission rule
+    const ruleFormEl = document.getElementById('addRuleForm');
+    if (ruleFormEl) {
+      ruleFormEl.onsubmit = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('saveRuleSubmitBtn');
+        btn.disabled = true;
+        btn.textContent = editingRuleId ? 'Updating...' : 'Saving...';
+
+        const payload = {
+          courierId: document.getElementById('ruleCourierSelect').value || null,
+          minWeight: parseFloat(document.getElementById('ruleMinWeight').value || 0),
+          maxWeight: parseFloat(document.getElementById('ruleMaxWeight').value || 1000),
+          marginType: document.getElementById('ruleMarginType').value,
+          marginValue: parseFloat(document.getElementById('ruleMarginValue').value || 10)
+        };
+
+        try {
+          let url, method;
+          if (editingRuleId) {
+            url = '/api/admin-commission/' + editingRuleId;
+            method = 'PATCH';
+          } else {
+            url = '/api/admin/commission';
+            method = 'POST';
+          }
+          const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(payload)
+          });
+          const d = await res.json();
+          btn.disabled = false;
+          btn.textContent = editingRuleId ? 'Update Rule' : 'Save Commission Rule';
+
+          if (!res.ok) throw new Error(d.error || 'Failed to save rule');
+
+          closeAddRuleModal();
+          showAdminToast(editingRuleId ? 'Commission rule updated!' : 'Platform commission markup rule saved!', 'success');
+          editingRuleId = null;
+          loadAdminCommission();
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = editingRuleId ? 'Update Rule' : 'Save Commission Rule';
+          showAdminToast(err.message, 'error');
+        }
+      };
+    }
+
+    // ==========================================
+    // ALL SHIPMENTS & BULK PRINT HANDLERS (ADMIN)
+    // ==========================================
     async function loadAdminShipments() {
       const tbody = document.getElementById('admAllShipmentsBody');
       try {
@@ -1706,26 +2585,131 @@
         const d = await res.json();
         const shipments = d.shipments || [];
         if (shipments.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
           return;
         }
         tbody.innerHTML = shipments.map(s => {
-          const ordId = s.order_id || s.id;
+          const ordId = s.id || s.order_id || s.order_number || s.orderNumber;
+          const uId = s.user_code || s.userCode || s.userId || 'HET000002';
+          const courierName = s.courier_name || s.courier?.name || 'Courier';
+          const brandInfo = window.getCourierBrand ? window.getCourierBrand(courierName) : null;
+          let subService = courierName;
+          if (brandInfo && brandInfo.name && courierName.toLowerCase().startsWith(brandInfo.name.toLowerCase())) {
+            subService = courierName.slice(brandInfo.name.length).trim();
+          }
+          const courierLogoHtml = brandInfo && brandInfo.logoSvg
+            ? ('<div style="height: 30px; width: 110px; min-width: 110px; max-width: 110px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 6px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 0.45rem; vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,0.04); flex-shrink: 0; box-sizing: border-box;">' + brandInfo.logoSvg + '</div>')
+            : ('<span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 0.7rem; font-weight: 800; padding: 0.25rem 0.5rem; margin-right: 0.45rem;">' + (brandInfo?.name || courierName) + '</span>');
+          const subServiceHtml = subService ? ('<span style="font-size: 0.775rem; font-weight: 700; color: #475569; white-space: nowrap;">' + subService + '</span>') : '';
+
           return '<tr>' +
+            '<td style="text-align: center;">' +
+              '<input type="checkbox" class="adm-shipment-select-cb" value="' + ordId + '" onchange="onAdminShipmentSelectChange()" style="cursor: pointer; width: 16px; height: 16px;" />' +
+            '</td>' +
             '<td style="font-weight: 700;">' +
               '<a href="javascript:void(0)" onclick="openAdminOrderDetail(&quot;' + ordId + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700; cursor: pointer;" title="View order details">' +
-                (s.order_number || '-') +
+                (s.order_number || ordId) +
               '</a>' +
             '</td>' +
-            '<td style="font-family: monospace; color: var(--brand);">' + (s.awb_number || '-') + '</td>' +
-            '<td>' + (s.courier_name || 'Courier') + '</td>' +
+            '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
+            '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + (s.awb_number || '-') + '</td>' +
+            '<td><div style="display: inline-flex; align-items: center;">' + courierLogoHtml + subServiceHtml + '</div></td>' +
             '<td>' + (s.buyer_name || 'Buyer') + (s.buyer_city ? (' · ' + s.buyer_city) : '') + '</td>' +
             '<td>₹' + parseFloat(s.rate_charged || 0).toFixed(2) + '</td>' +
             '<td><span class="badge badge-success">' + (s.status || 'READY_TO_SHIP') + '</span></td>' +
+            '<td>' +
+              '<a href="/api/shipment-label/' + ordId + '" target="_blank" class="btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.6875rem; display: inline-flex; align-items: center; gap: 0.25rem;"><span>🏷️</span> Label</a>' +
+            '</td>' +
           '</tr>';
         }).join('');
+        onAdminShipmentSelectChange();
       } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No system shipments recorded yet.</td></tr>';
+      }
+    }
+
+    function toggleSelectAllAdminShipments(checked) {
+      document.querySelectorAll('.adm-shipment-select-cb').forEach(cb => { cb.checked = checked; });
+      onAdminShipmentSelectChange();
+    }
+
+    function onAdminShipmentSelectChange() {
+      const cbs = Array.from(document.querySelectorAll('.adm-shipment-select-cb:checked'));
+      const count = cbs.length;
+      const bar = document.getElementById('admShipmentsBulkBar');
+      const badge = document.getElementById('admBulkSelectedBadge');
+      const allCb = document.getElementById('admSelectAllShipments');
+      const total = document.querySelectorAll('.adm-shipment-select-cb').length;
+
+      if (badge) badge.textContent = count;
+      if (bar) bar.style.display = count > 0 ? 'flex' : 'none';
+      if (allCb) allCb.checked = (total > 0 && count === total);
+    }
+
+    function clearAllAdminShipmentSelection() {
+      document.querySelectorAll('.adm-shipment-select-cb').forEach(cb => { cb.checked = false; });
+      const allCb = document.getElementById('admSelectAllShipments');
+      if (allCb) allCb.checked = false;
+      onAdminShipmentSelectChange();
+    }
+
+    function printAdminBulkShipments(layout = '4perpage') {
+      const cbs = Array.from(document.querySelectorAll('.adm-shipment-select-cb:checked'));
+      if (cbs.length === 0) {
+        showAdminToast('Please select at least one shipment to print labels.', 'warning');
+        return;
+      }
+      const ids = cbs.map(cb => encodeURIComponent(cb.value)).join(',');
+      window.open('/api/shipment-labels-bulk?ids=' + ids + '&layout=' + layout, '_blank');
+    }
+
+    async function cancelAdminBulkShipments() {
+      const cbs = Array.from(document.querySelectorAll('.adm-shipment-select-cb:checked'));
+      if (cbs.length === 0) {
+        showAdminToast('Please select at least one shipment to cancel.', 'warning');
+        return;
+      }
+      const count = cbs.length;
+      if (!confirm('Are you sure you want to cancel ' + count + ' selected shipment(s)? Freight charges will be refunded to seller wallet(s).')) {
+        return;
+      }
+      const ids = cbs.map(cb => cb.value);
+      try {
+        showAdminToast('Cancelling ' + count + ' shipment(s)...', 'info');
+        const res = await fetch('/api/orders-cancel-bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ orderIds: ids })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Failed to cancel shipments');
+        showAdminToast(d.message || ('Successfully cancelled ' + (d.cancelledCount || count) + ' shipment(s).'), 'success');
+        clearAllAdminShipmentSelection();
+        loadAllShipments();
+        loadAdminStats();
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    function generateAdminBulkInvoices() {
+      const cbs = Array.from(document.querySelectorAll('.adm-shipment-select-cb:checked'));
+      if (cbs.length === 0) {
+        showAdminToast('Please select at least one shipment to generate invoices.', 'warning');
+        return;
+      }
+      const ids = cbs.map(cb => encodeURIComponent(cb.value)).join(',');
+      window.open('/api/shipment-invoices-bulk?ids=' + ids, '_blank');
+    }
+
+    function triggerAdminBulkPrint() {
+      const cbs = Array.from(document.querySelectorAll('.adm-shipment-select-cb:checked'));
+      if (cbs.length === 0) {
+        // Select all automatically and inform
+        toggleSelectAllAdminShipments(true);
+        showAdminToast('All visible shipments selected! Choose 4-Per-Page or Thermal layout above.', 'info');
+      } else {
+        printAdminBulkShipments('4perpage');
       }
     }
 
@@ -1756,7 +2740,16 @@
         // Shipment info
         const awb = o.shipment?.awbNumber || '-';
         document.getElementById('admModalOrderAwb').textContent = awb;
-        document.getElementById('admModalOrderCourier').textContent = 'Courier: ' + (o.shipment?.courier?.name || o.shipment?.courierName || 'Delhivery');
+        const courierName = o.shipment?.courier?.name || o.shipment?.courierName || 'Delhivery';
+        const brandInfo = window.getCourierBrand ? window.getCourierBrand(courierName) : null;
+        const elCourier = document.getElementById('admModalOrderCourier');
+        if (elCourier) {
+          if (brandInfo && brandInfo.logoSvg) {
+            elCourier.innerHTML = '<span style="display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 4px;"><span style="height: 24px; width: 85px; min-width: 85px; display: inline-flex; align-items: center; justify-content: center; background: #fff; padding: 2px 5px; border: 1px solid #e2e8f0; border-radius: 4px;">' + brandInfo.logoSvg + '</span><strong>' + courierName + '</strong></span>';
+          } else {
+            elCourier.textContent = 'Courier: ' + courierName;
+          }
+        }
 
         const labelBtn = document.getElementById('admModalOrderLabelBtn');
         labelBtn.href = '/api/shipment-label/' + (o.shipment?.id || o.id);
@@ -1835,13 +2828,13 @@
     // ==========================================
     // PLATFORM SETTINGS & HELPLINE MANAGEMENT
     // ==========================================
-    let platformSettings = {
+    platformSettings = Object.assign(platformSettings || {}, {
       helplineNumber: '+91 98765 43210',
       helplineHours: 'Mon - Sat: 9:00 AM - 8:00 PM IST',
       supportEmail: 'support@hetex.in',
       upiId: 'hetex@icici',
       payeeName: 'HetEx Logistics'
-    };
+    });
 
     async function loadAdminSettings() {
       try {
@@ -1963,6 +2956,285 @@
       });
     }
 
+    // ==========================================
+    // SUPPORT TICKETS & ADMIN CHAT RESPONSE ENGINE
+    // ==========================================
+    currentAdminTickets = currentAdminTickets || [];
+    currentAdminChatTicketId = currentAdminChatTicketId || null;
+
+    async function loadAdminTickets(filterStatus = '') {
+      const tbody = document.getElementById('admTicketsTableBody');
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading tickets...</td></tr>';
+
+      try {
+        const res = await fetch('/api/tickets', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        let tickets = d.tickets || [];
+        currentAdminTickets = tickets;
+
+        // Update notification badge
+        const openCount = tickets.filter(tk => tk.status === 'OPEN' || tk.status === 'ESCALATED').length;
+        const badge = document.getElementById('admOpenTicketsBadge');
+        if (badge) {
+          badge.textContent = openCount;
+          badge.style.display = openCount > 0 ? 'inline-block' : 'none';
+        }
+
+        if (filterStatus) {
+          tickets = tickets.filter(t => t.status === filterStatus);
+        }
+
+        if (tickets.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No support tickets found for this filter.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = tickets.map(t => {
+          let statusBadge = '<span class="badge badge-info">' + t.status + '</span>';
+          if (t.status === 'OPEN') statusBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:800;">🔴 OPEN</span>';
+          else if (t.status === 'IN_PROGRESS') statusBadge = '<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:800;">🟡 IN PROGRESS</span>';
+          else if (t.status === 'ESCALATED') statusBadge = '<span class="badge" style="background:#dc2626; color:#ffffff; font-weight:800;">🚨 ESCALATED</span>';
+          else if (t.status === 'RESOLVED') statusBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:800;">🟢 RESOLVED</span>';
+          else if (t.status === 'CLOSED') statusBadge = '<span class="badge" style="background:#f1f5f9; color:#64748b; font-weight:800;">⚪ CLOSED</span>';
+
+          const msgCount = (t.messages || []).length;
+          const sellerDisplay = t.sellerName ? (t.sellerName + (t.sellerEmail ? '<br/><span style="font-size:0.7rem; color:var(--text-muted);">' + t.sellerEmail + '</span>' : '')) : 'Seller';
+          const orderDisplay = (t.orderNumber || '-') + (t.awbNumber && t.awbNumber !== '-' ? '<br/><span style="font-family:monospace; color:var(--brand); font-size:0.75rem;">AWB: ' + t.awbNumber + '</span>' : '');
+
+          const uId = t.userCode || t.userId || t.user_code || 'HET000002';
+          return '<tr>' +
+            '<td style="font-family: monospace; font-weight: 700;">' + t.id.substring(0, 10) + '</td>' +
+            '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
+            '<td style="font-weight: 600;">' + sellerDisplay + '</td>' +
+            '<td style="font-weight: 700; color: var(--navy); max-width: 220px; white-space: normal;">' + t.subject + '</td>' +
+            '<td>' + orderDisplay + '</td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td><span class="badge" style="background:#f1f5f9; color:#334155;">' + msgCount + ' msgs</span></td>' +
+            '<td>' + (t.createdAt ? new Date(t.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent') + '</td>' +
+            '<td>' +
+              '<button type="button" class="btn-primary" onclick="openAdminTicketChat(\'' + t.id + '\')" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 700; background: #0f172a; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">' +
+                '<span>💬</span><span>Reply to Seller</span>' +
+              '</button>' +
+            '</td>' +
+          '</tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 2rem;">Failed to load tickets: ' + err.message + '</td></tr>';
+      }
+    }
+
+    async function openAdminTicketChat(ticketId) {
+      currentAdminChatTicketId = ticketId;
+      const modal = document.getElementById('adminTicketChatModal');
+      if (modal) modal.style.display = 'flex';
+
+      const list = document.getElementById('admTicketChatMessagesList');
+      if (list) list.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.8125rem; margin: auto;">Loading ticket conversation...</div>';
+
+      await refreshAdminTicketChatData();
+
+      // Poll every 3 seconds while chat modal is open to catch live seller queries
+      if (admTicketChatPollTimer) clearInterval(admTicketChatPollTimer);
+      admTicketChatPollTimer = setInterval(() => {
+        if (currentAdminChatTicketId) {
+          refreshAdminTicketChatData(true);
+        }
+      }, 3000);
+
+      const inp = document.getElementById('admTicketChatInput');
+      if (inp) inp.focus();
+    }
+
+    function closeAdminTicketChatModal() {
+      const modal = document.getElementById('adminTicketChatModal');
+      if (modal) modal.style.display = 'none';
+      currentAdminChatTicketId = null;
+      if (admTicketChatPollTimer) {
+        clearInterval(admTicketChatPollTimer);
+        admTicketChatPollTimer = null;
+      }
+      loadAdminTickets();
+    }
+
+    async function refreshAdminTicketChatData(isBackgroundPoll = false) {
+      if (!currentAdminChatTicketId) return;
+      try {
+        const res = await fetch('/api/tickets/' + currentAdminChatTicketId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        const t = d.ticket;
+        if (!t) return;
+
+        // Header fields
+        const tktEl = document.getElementById('admChatModalTicketId');
+        if (tktEl) tktEl.textContent = t.id.substring(0, 12);
+
+        const subEl = document.getElementById('admChatModalSubject');
+        if (subEl) subEl.textContent = t.subject || 'Support Ticket';
+
+        const sellerEl = document.getElementById('admChatModalSeller');
+        if (sellerEl) sellerEl.textContent = 'Seller: ' + (t.sellerName || 'Merchant') + (t.sellerEmail ? ' (' + t.sellerEmail + ')' : '');
+
+        const ordEl = document.getElementById('admChatModalOrderAwb');
+        if (ordEl) {
+          ordEl.textContent = 'Order: ' + (t.orderNumber || '-') + ' · AWB: ' + (t.awbNumber || '-');
+        }
+
+        // Status select dropdown
+        const statusSelect = document.getElementById('admChatStatusSelect');
+        if (statusSelect && statusSelect.value !== t.status) {
+          statusSelect.value = t.status || 'OPEN';
+        }
+
+        // Live Tracking Snapshot
+        const trackBar = document.getElementById('admChatLiveTrackingBar');
+        const trackText = document.getElementById('admChatLiveTrackingText');
+        if (t.liveTracking && trackBar && trackText) {
+          trackBar.style.display = 'block';
+          trackText.innerHTML = '📍 <strong>Carrier Telemetry:</strong> ' + (t.liveTracking.courier || 'Courier') + ' | Status: <strong>' + (t.liveTracking.currentStatus || 'IN_TRANSIT') + '</strong> | Location: ' + (t.liveTracking.currentLocation || 'Hub') + (t.liveTracking.expectedDelivery ? ' | Expected Delivery: ' + t.liveTracking.expectedDelivery : '');
+        } else if (trackBar) {
+          trackBar.style.display = 'none';
+        }
+
+        // Render messages
+        renderAdminChatMessages(t.messages || []);
+      } catch (err) {
+        if (!isBackgroundPoll) console.error('Error refreshing admin ticket chat:', err);
+      }
+    }
+
+    function renderAdminChatMessages(messages) {
+      const container = document.getElementById('admTicketChatMessagesList');
+      if (!container) return;
+
+      const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 60;
+
+      if (messages.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #94a3b8; font-size: 0.8125rem; margin: auto;">No messages in this ticket yet.</div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(m => {
+        const timeStr = m.createdAt ? new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const safeMsg = (m.message || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+
+        if (m.senderRole === 'ADMIN') {
+          return '<div style="align-self: flex-end; max-width: 80%;">' +
+            '<div style="display: flex; justify-content: flex-end; align-items: center; gap: 0.35rem; margin-bottom: 2px;">' +
+              '<span style="background: #fee2e2; color: #b91c1c; font-size: 0.625rem; font-weight: 800; padding: 0.1rem 0.45rem; border-radius: 999px;">🛡️ Operations Desk (You)</span>' +
+              '<span style="font-size: 0.625rem; color: #94a3b8;">' + timeStr + '</span>' +
+            '</div>' +
+            '<div style="background: #b91c1c; color: #ffffff; padding: 0.65rem 0.95rem; border-radius: 1rem 1rem 0.25rem 1rem; font-size: 0.8125rem; line-height: 1.45; word-break: break-word; box-shadow: 0 2px 6px rgba(185,28,28,0.15);">' +
+              safeMsg +
+            '</div>' +
+          '</div>';
+        } else if (m.senderRole === 'USER') {
+          return '<div style="align-self: flex-start; max-width: 82%;">' +
+            '<div style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 2px;">' +
+              '<span style="background: #e2e8f0; color: #0f172a; font-size: 0.625rem; font-weight: 800; padding: 0.1rem 0.45rem; border-radius: 999px;">👤 ' + (m.senderName || 'Seller') + '</span>' +
+              '<span style="font-size: 0.625rem; color: #94a3b8;">' + timeStr + '</span>' +
+            '</div>' +
+            '<div style="background: #ffffff; border: 1.5px solid #cbd5e1; color: #0f172a; padding: 0.65rem 0.95rem; border-radius: 1rem 1rem 1rem 0.25rem; font-size: 0.8125rem; line-height: 1.45; word-break: break-word; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">' +
+              safeMsg +
+            '</div>' +
+          '</div>';
+        } else if (m.senderRole === 'BOT') {
+          return '<div style="align-self: flex-start; max-width: 82%;">' +
+            '<div style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 2px;">' +
+              '<span style="background: #e0e7ff; color: #4338ca; font-size: 0.625rem; font-weight: 800; padding: 0.1rem 0.45rem; border-radius: 999px;">🤖 HetEx AI Bot</span>' +
+              '<span style="font-size: 0.625rem; color: #94a3b8;">' + timeStr + '</span>' +
+            '</div>' +
+            '<div style="background: #f8fafc; border: 1px dashed #94a3b8; color: #334155; padding: 0.65rem 0.95rem; border-radius: 1rem 1rem 1rem 0.25rem; font-size: 0.8125rem; line-height: 1.45; word-break: break-word;">' +
+              safeMsg +
+            '</div>' +
+          '</div>';
+        } else {
+          // SYSTEM message
+          return '<div style="align-self: center; width: 100%; max-width: 92%; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.5rem; padding: 0.45rem 0.75rem; font-size: 0.75rem; color: #1e40af; line-height: 1.4; text-align: center;">' +
+            '📦 ' + safeMsg +
+          '</div>';
+        }
+      }).join('');
+
+      if (isScrolledToBottom || messages.length <= 4) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+
+    async function submitAdminTicketReply(e) {
+      if (e) e.preventDefault();
+      if (!currentAdminChatTicketId) return;
+
+      const inp = document.getElementById('admTicketChatInput');
+      const text = (inp.value || '').trim();
+      if (!text) return;
+
+      inp.value = '';
+      const sendBtn = document.getElementById('admTicketChatSendBtn');
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/ticket-messages/' + currentAdminChatTicketId, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            message: text,
+            senderRole: 'ADMIN',
+            isAdmin: true
+          })
+        });
+        const d = await res.json();
+        if (d.ticket) {
+          renderAdminChatMessages(d.ticket.messages || []);
+          const c = document.getElementById('admTicketChatMessagesList');
+          if (c) c.scrollTop = c.scrollHeight;
+          const statusSelect = document.getElementById('admChatStatusSelect');
+          if (statusSelect && d.ticket.status) statusSelect.value = d.ticket.status;
+          showAdminToast('Reply sent to seller!', 'success');
+        }
+      } catch (err) {
+        showAdminToast('Failed to send reply: ' + err.message, 'error');
+      } finally {
+        sendBtn.disabled = false;
+        inp.focus();
+        loadAdminTickets();
+      }
+    }
+
+    async function updateTicketStatusFromChat(newStatus) {
+      if (!currentAdminChatTicketId) return;
+      try {
+        const res = await fetch('/api/tickets/' + currentAdminChatTicketId + '/status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+          showAdminToast('Ticket status updated to ' + newStatus, 'success');
+          loadAdminTickets();
+        }
+      } catch (err) {
+        showAdminToast('Failed to update status: ' + err.message, 'error');
+      }
+    }
+
+    function insertAdminCanned(text) {
+      const inp = document.getElementById('admTicketChatInput');
+      if (inp) {
+        inp.value = text;
+        inp.focus();
+      }
+    }
+
+    if (window.HetExNotifications) window.HetExNotifications.init('admin');
     loadAdminOverview();
     loadAdminSettings();
   </script>

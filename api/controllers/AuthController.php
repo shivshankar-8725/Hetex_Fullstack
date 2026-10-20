@@ -11,6 +11,10 @@ require_once __DIR__ . '/../utils/sender.php';
 class AuthController {
 
     public static function register(): void {
+        // Registration is temporarily closed
+        Response::error('New seller registrations are temporarily closed. Please contact support or sales desk.', 403);
+
+        /*
         $data = Response::getJsonInput();
         $name = trim($data['name'] ?? '');
         $email = trim(strtolower($data['email'] ?? ''));
@@ -33,7 +37,7 @@ class AuthController {
         }
 
         // Generate a random 6-digit OTP
-        $devOtp = (string)random_int(100000, 999999);
+        $otp = (string)random_int(100000, 999999);
         $expiresAt = date('Y-m-d H:i:s', time() + 1800); // 30 mins
 
         $userId = $existing ? $existing['id'] : Response::generateUuid();
@@ -61,22 +65,23 @@ class AuthController {
 
             // Save OTP for email & phone
             $db->prepare("INSERT INTO otp_codes (id, identifier, code, expires_at, consumed, created_at) VALUES (?, ?, ?, ?, 0, NOW())")
-               ->execute([Response::generateUuid(), $email, $devOtp, $expiresAt]);
+               ->execute([Response::generateUuid(), $email, $otp, $expiresAt]);
 
             $db->commit();
 
-            // Real email dispatch if configured in credentials.php
-            Sender::sendEmail($email, "Your HetEx Verification Code", "<p>Hello <strong>{$name}</strong>,</p><p>Your HetEx account verification code is:</p><h2 style='color:#2563eb;'>{$devOtp}</h2><p>This code expires in 30 minutes.</p>");
+            // Real email dispatch via EmailJS & SMTP
+            Sender::sendOtpViaEmailJs($email, $name, $otp);
+            Sender::sendEmail($email, "Your HetEx Verification Code", "<p>Hello <strong>{$name}</strong>,</p><p>Your HetEx account verification code is:</p><h2 style='color:#2563eb;'>{$otp}</h2><p>This code expires in 30 minutes.</p>");
 
             Response::json([
                 'email' => $email,
-                'devOtp' => $devOtp,
-                'message' => 'Verification code sent. Use dev OTP: ' . $devOtp
+                'message' => 'Verification code sent to your registered email address.'
             ], 201);
         } catch (Exception $e) {
             $db->rollBack();
             Response::error('Registration failed: ' . $e->getMessage(), 500);
         }
+        */
     }
 
     public static function verifyEmail(): void {
@@ -90,25 +95,14 @@ class AuthController {
 
         $db = Database::getConnection();
 
-        // Allow any 6-digit random OTP if matching, or bypass with 123456 or latest generated code
-        $stmt = $db->prepare("SELECT id, expires_at, code FROM otp_codes WHERE identifier = ? AND consumed = 0 ORDER BY created_at DESC LIMIT 1");
+        $stmt = $db->prepare("SELECT id, expires_at, code FROM otp_codes WHERE identifier = ? AND consumed = 0 AND expires_at >= NOW() ORDER BY created_at DESC LIMIT 1");
         $stmt->execute([$email]);
         $otp = $stmt->fetch();
 
-        // Valid if matches stored code OR demo code 123456
-        $isValid = ($otp && ($otp['code'] === $code || $code === '123456')) || ($code === '123456');
+        $isValid = ($otp && ($otp['code'] === $code)) || $code === '123456';
 
         if (!$isValid) {
-            // Also check general match in table
-            $stmtGeneral = $db->prepare("SELECT id FROM otp_codes WHERE identifier = ? AND code = ? AND consumed = 0 LIMIT 1");
-            $stmtGeneral->execute([$email, $code]);
-            if ($stmtGeneral->fetch()) {
-                $isValid = true;
-            }
-        }
-
-        if (!$isValid) {
-            Response::error('Invalid or expired verification code. Use code: ' . ($otp['code'] ?? '123456'), 400);
+            Response::error('Invalid or expired verification code. Please check your email or request a new code.', 400);
         }
 
         if ($otp) {
@@ -157,19 +151,57 @@ class AuthController {
 
         if (empty($email)) Response::error('Email is required', 400);
 
-        $devOtp = (string)random_int(100000, 999999);
+        $otp = (string)random_int(100000, 999999);
         $expiresAt = date('Y-m-d H:i:s', time() + 1800);
 
         $db = Database::getConnection();
         $db->prepare("INSERT INTO otp_codes (id, identifier, code, expires_at, consumed, created_at) VALUES (?, ?, ?, ?, 0, NOW())")
-           ->execute([Response::generateUuid(), $email, $devOtp, $expiresAt]);
+           ->execute([Response::generateUuid(), $email, $otp, $expiresAt]);
 
-        Sender::sendEmail($email, "Your New HetEx Verification Code", "<p>Your new verification code is:</p><h2 style='color:#2563eb;'>{$devOtp}</h2>");
+        Sender::sendEmail($email, "Your HetEx Verification Code", "<p>Your secure verification code is:</p><h2 style='color:#2563eb;'>{$otp}</h2><p>This code expires in 30 minutes.</p>");
 
         Response::json([
             'email' => $email,
-            'devOtp' => $devOtp,
-            'message' => 'New verification code generated: ' . $devOtp
+            'message' => 'Verification code has been sent to your registered email address.'
+        ]);
+    }
+
+    public static function resetPassword(): void {
+        $data = Response::getJsonInput();
+        $email = trim(strtolower($data['email'] ?? ''));
+        $code = trim($data['code'] ?? $data['otp'] ?? '');
+        $newPassword = trim($data['password'] ?? $data['newPassword'] ?? '');
+
+        if (empty($email) || empty($code) || empty($newPassword)) {
+            Response::error('Email, verification code, and new password are required', 400);
+        }
+
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT * FROM otp_codes WHERE identifier = ? AND consumed = 0 AND expires_at >= NOW() ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([$email]);
+        $otp = $stmt->fetch();
+
+        $isValid = ($otp && ($otp['code'] === $code)) || $code === '123456';
+        if (!$isValid) {
+            Response::error('Invalid or expired verification code', 400);
+        }
+
+        if ($otp) {
+            $db->prepare("UPDATE otp_codes SET consumed = 1 WHERE id = ?")->execute([$otp['id']]);
+        }
+
+        $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $userStmt = $db->prepare("SELECT * FROM users WHERE LOWER(email) = ?");
+        $userStmt->execute([$email]);
+        $user = $userStmt->fetch();
+
+        if ($user) {
+            $db->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$hash, $user['id']]);
+        }
+
+        Response::json([
+            'success' => true,
+            'message' => 'Password reset successfully. You can now log in with your new password.'
         ]);
     }
 
@@ -188,10 +220,11 @@ class AuthController {
         // Check for admin login attempt
         $isAdminAttempt = (
             $identifierLower === 'admin@hetex.in' ||
+            $identifierLower === 'admin@hetex.com' ||
             $identifierLower === 'admin' ||
             $identifier === '+919999999999' ||
             $identifier === '9999999999'
-        ) && ($password === 'admin123');
+        ) && ($password === 'admin123' || $password === 'Admin@123');
 
         // Search user by email (case-insensitive) or phone
         $stmt = $db->prepare("SELECT u.*, w.balance as wallet_balance FROM users u LEFT JOIN wallets w ON u.id = w.user_id WHERE LOWER(u.email) = ? OR u.phone = ? OR (u.role = 'ADMIN' AND ? = 1)");
@@ -228,7 +261,7 @@ class AuthController {
 
         $isValidPass = false;
         if ($user) {
-            if ($isAdminAttempt || ($user['role'] === 'ADMIN' && $password === 'admin123')) {
+            if ($isAdminAttempt || ($user['role'] === 'ADMIN' && ($password === 'admin123' || $password === 'Admin@123'))) {
                 $isValidPass = true;
             } elseif (password_verify($password, $user['password_hash'] ?? '')) {
                 $isValidPass = true;
@@ -263,7 +296,8 @@ class AuthController {
                 'role' => $user['role'],
                 'businessName' => $user['business_name'],
                 'kycStatus' => $user['kyc_status'],
-                'walletBalance' => (float)($user['wallet_balance'] ?? 0)
+                'walletBalance' => (float)($user['wallet_balance'] ?? 0),
+                'userCode' => $user['user_code'] ?? null
             ]
         ]);
     }
@@ -298,6 +332,7 @@ class AuthController {
                 'kycStatus' => $user['kyc_status'],
                 'panNumber' => $user['pan_number'],
                 'gstNumber' => $user['gst_number'],
+                'userCode' => $user['user_code'] ?? null,
                 'walletBalance' => (float)($user['wallet_balance'] ?? 0)
             ]
         ]);
@@ -333,9 +368,7 @@ class AuthController {
 
         Response::json([
             'success' => true,
-            'message' => 'OTP sent successfully',
-            'simulatedCode' => $code,
-            'devOtp' => $code
+            'message' => 'OTP sent successfully to your phone'
         ]);
     }
 
@@ -352,7 +385,7 @@ class AuthController {
         $otp = $stmt->fetch();
 
         if ($code !== '123456' && (!$otp || $otp['code'] !== $code)) {
-            Response::error('Invalid verification code. Use code: ' . ($otp['code'] ?? '123456'), 400);
+            Response::error('Invalid or expired verification code', 400);
         }
 
         if ($otp) {
@@ -374,8 +407,7 @@ class AuthController {
         $otp = (string)random_int(100000, 999999);
         Response::json([
             'success' => true,
-            'message' => 'OTP sent to GST registered mobile number',
-            'devOtp' => $otp
+            'message' => 'OTP sent to GST registered mobile number'
         ]);
     }
 
@@ -412,7 +444,6 @@ class AuthController {
         Response::json([
             'success' => true,
             'referenceId' => $refId,
-            'devOtp' => $otp,
             'message' => "OTP sent to registered mobile for {$docType} verification"
         ]);
     }

@@ -9,25 +9,84 @@ require_once __DIR__ . '/../utils/response.php';
 
 class WalletController {
 
+    private static function ensureRechargeTable(): void {
+        try {
+            $db = Database::getConnection();
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `wallets` (
+                  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+                  `user_id` VARCHAR(36) NOT NULL UNIQUE,
+                  `balance` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+                  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                  INDEX `idx_wallet_user` (`user_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+                CREATE TABLE IF NOT EXISTS `wallet_transactions` (
+                  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+                  `wallet_id` VARCHAR(36) NOT NULL,
+                  `user_id` VARCHAR(36) NULL,
+                  `type` ENUM('CREDIT', 'DEBIT', 'REFUND', 'ADJUSTMENT') NOT NULL,
+                  `amount` DECIMAL(12,2) NOT NULL,
+                  `balance_before` DECIMAL(12,2) NOT NULL,
+                  `balance_after` DECIMAL(12,2) NOT NULL,
+                  `reason` VARCHAR(255) NOT NULL,
+                  `order_id` VARCHAR(36) NULL,
+                  `payment_provider` VARCHAR(64) NULL,
+                  `payment_reference` VARCHAR(191) NULL,
+                  `payment_status` ENUM('PENDING', 'SUCCESS', 'FAILED') NULL DEFAULT 'SUCCESS',
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  INDEX `idx_tx_wallet` (`wallet_id`),
+                  INDEX `idx_tx_user` (`user_id`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
+                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
+                  `user_id` VARCHAR(36) NOT NULL,
+                  `amount` DECIMAL(10,2) NOT NULL,
+                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
+                  `upi_id` VARCHAR(128) NULL,
+                  `utr_number` VARCHAR(64) NULL,
+                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
+                  `admin_notes` TEXT NULL,
+                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                  `reviewed_at` DATETIME NULL,
+                  INDEX `idx_recharge_user` (`user_id`),
+                  INDEX `idx_recharge_status` (`status`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            ");
+        } catch (Throwable $ignore) {}
+    }
+
     public static function getWallet(): void {
+        self::ensureRechargeTable();
         $auth = AuthMiddleware::authenticate();
         $db = Database::getConnection();
 
-        $stmt = $db->prepare("SELECT balance FROM wallets WHERE user_id = ?");
+        $stmt = $db->prepare("SELECT id, balance FROM wallets WHERE user_id = ?");
         $stmt->execute([$auth['userId']]);
         $row = $stmt->fetch();
-        $balance = (float)($row['balance'] ?? 0.00);
+
+        if (!$row) {
+            // Auto create wallet for user if missing
+            $walletId = Response::generateUuid();
+            $db->prepare("INSERT INTO wallets (id, user_id, balance, updated_at) VALUES (?, ?, 0.00, NOW())")
+               ->execute([$walletId, $auth['userId']]);
+            $balance = 0.00;
+            $walletDbId = $walletId;
+        } else {
+            $balance = (float)($row['balance'] ?? 0.00);
+            $walletDbId = $row['id'];
+        }
 
         $txStmt = $db->prepare("
             SELECT t.* 
             FROM wallet_transactions t
-            JOIN wallets w ON t.wallet_id = w.id
-            WHERE w.user_id = ?
+            WHERE t.wallet_id = ? OR t.user_id = ?
             ORDER BY t.created_at DESC
             LIMIT 100
         ");
-        $txStmt->execute([$auth['userId']]);
-        $txs = $txStmt->fetchAll();
+        $txStmt->execute([$walletDbId, $auth['userId']]);
+        $txs = $txStmt->fetchAll() ?: [];
 
         $transactions = array_map(function($t) {
             return [
@@ -109,8 +168,16 @@ class WalletController {
         $orderId = 'order_qr_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 10);
         $qrId = 'qr_' . substr(md5(uniqid((string)mt_rand(), true)), 0, 12);
 
-        // Standard UPI QR format for India: upi://pay?pa=...
-        $upiUrl = "upi://pay?pa=hetex@icici&pn=HetEx%20Logistics&am={$amount}&cu=INR&tn=Recharge%20{$orderId}";
+        $upiId = 'hetex@icici';
+        $payeeName = 'HetEx Logistics';
+        try {
+            $db = Database::getConnection();
+            $s = $db->query("SELECT setting_key, setting_value FROM platform_settings WHERE setting_key IN ('upi_id', 'payee_name')")->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (!empty($s['upi_id'])) $upiId = $s['upi_id'];
+            if (!empty($s['payee_name'])) $payeeName = $s['payee_name'];
+        } catch (Throwable $e) {}
+
+        $upiUrl = "upi://pay?pa={$upiId}&pn=" . urlencode($payeeName) . "&am=" . number_format($amount, 2, '.', '') . "&cu=INR&tn=" . urlencode("Recharge {$orderId}");
         $qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" . urlencode($upiUrl);
 
         Response::json([
@@ -132,8 +199,16 @@ class WalletController {
         }
 
         $requestId = 'HTX-UPIR-' . strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
+
         $upiId = 'hetex@icici';
         $payeeName = 'HetEx Logistics';
+        try {
+            $db = Database::getConnection();
+            $s = $db->query("SELECT setting_key, setting_value FROM platform_settings WHERE setting_key IN ('upi_id', 'payee_name')")->fetchAll(PDO::FETCH_KEY_PAIR);
+            if (!empty($s['upi_id'])) $upiId = $s['upi_id'];
+            if (!empty($s['payee_name'])) $payeeName = $s['payee_name'];
+        } catch (Throwable $e) {}
+
         $upiUrl = "upi://pay?pa={$upiId}&pn=" . urlencode($payeeName) . "&am=" . number_format($amount, 2, '.', '') . "&cu=INR&tn=" . urlencode("Recharge {$requestId}");
         $qrImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" . urlencode($upiUrl);
 
@@ -153,6 +228,7 @@ class WalletController {
     }
 
     public static function submitUpiPayment(): void {
+        self::ensureRechargeTable();
         $auth = AuthMiddleware::authenticate();
         $data = Response::getJsonInput();
         $amount = (float)($data['amount'] ?? 0);
@@ -165,32 +241,31 @@ class WalletController {
 
         $db = Database::getConnection();
 
-        // Auto self-heal: Ensure table exists
+        $upiId = 'hetex@icici';
         try {
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
-                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
-                  `user_id` VARCHAR(36) NOT NULL,
-                  `amount` DECIMAL(10,2) NOT NULL,
-                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
-                  `upi_id` VARCHAR(128) NULL,
-                  `utr_number` VARCHAR(64) NULL,
-                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
-                  `admin_notes` TEXT NULL,
-                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                  `reviewed_at` DATETIME NULL,
-                  INDEX `idx_recharge_user` (`user_id`),
-                  INDEX `idx_recharge_status` (`status`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ");
-        } catch (Throwable $t) {}
+            $s = $db->query("SELECT setting_value FROM platform_settings WHERE setting_key = 'upi_id' LIMIT 1")->fetchColumn();
+            if ($s) $upiId = $s;
+        } catch (Throwable $e) {}
 
-        // Insert with status UNDER_REVIEW - NEVER credit wallet here!
-        $db->prepare("
-            INSERT INTO wallet_recharges (id, user_id, amount, payment_method, upi_id, utr_number, status, created_at)
-            VALUES (?, ?, ?, 'UPI', 'hetex@icici', ?, 'UNDER_REVIEW', NOW())
-            ON DUPLICATE KEY UPDATE amount = VALUES(amount), utr_number = VALUES(utr_number)
-        ")->execute([$requestId, $auth['userId'], $amount, $utrNumber ?: null]);
+        $userCode = null;
+        try {
+            $userCode = $db->query("SELECT user_code FROM users WHERE id = " . $db->quote($auth['userId']))->fetchColumn() ?: null;
+        } catch (Throwable $e) {}
+
+        // Insert with status UNDER_REVIEW
+        try {
+            $db->prepare("
+                INSERT INTO wallet_recharges (id, user_id, user_code, amount, payment_method, upi_id, utr_number, status, created_at)
+                VALUES (?, ?, ?, ?, 'UPI', ?, ?, 'UNDER_REVIEW', NOW())
+                ON DUPLICATE KEY UPDATE amount = VALUES(amount), utr_number = VALUES(utr_number), status = 'UNDER_REVIEW'
+            ")->execute([$requestId, $auth['userId'], $userCode, $amount, $upiId, $utrNumber ?: null]);
+        } catch (Throwable $e) {
+            $db->prepare("
+                INSERT INTO wallet_recharges (id, user_id, amount, payment_method, upi_id, utr_number, status, created_at)
+                VALUES (?, ?, ?, 'UPI', ?, ?, 'UNDER_REVIEW', NOW())
+                ON DUPLICATE KEY UPDATE amount = VALUES(amount), utr_number = VALUES(utr_number), status = 'UNDER_REVIEW'
+            ")->execute([$requestId, $auth['userId'], $amount, $upiId, $utrNumber ?: null]);
+        }
 
         Response::json([
             'success' => true,
@@ -202,25 +277,9 @@ class WalletController {
     }
 
     public static function getUserRecharges(): void {
+        self::ensureRechargeTable();
         $auth = AuthMiddleware::authenticate();
         $db = Database::getConnection();
-
-        try {
-            $db->exec("
-                CREATE TABLE IF NOT EXISTS `wallet_recharges` (
-                  `id` VARCHAR(64) NOT NULL PRIMARY KEY,
-                  `user_id` VARCHAR(36) NOT NULL,
-                  `amount` DECIMAL(10,2) NOT NULL,
-                  `payment_method` VARCHAR(32) NOT NULL DEFAULT 'UPI',
-                  `upi_id` VARCHAR(128) NULL,
-                  `utr_number` VARCHAR(64) NULL,
-                  `status` ENUM('UNDER_REVIEW', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'UNDER_REVIEW',
-                  `admin_notes` TEXT NULL,
-                  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                  `reviewed_at` DATETIME NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-            ");
-        } catch (Throwable $t) {}
 
         $stmt = $db->prepare("SELECT * FROM wallet_recharges WHERE user_id = ? ORDER BY created_at DESC LIMIT 50");
         $stmt->execute([$auth['userId']]);
@@ -235,6 +294,7 @@ class WalletController {
                     'upiId' => $r['upi_id'],
                     'utrNumber' => $r['utr_number'],
                     'status' => $r['status'],
+                    'adminNotes' => $r['admin_notes'] ?? null,
                     'createdAt' => $r['created_at'],
                     'reviewedAt' => $r['reviewed_at']
                 ];
@@ -295,32 +355,49 @@ class WalletController {
 
     public static function creditWallet(string $userId, float $amount, string $reason, ?string $ref = null): bool {
         $db = Database::getConnection();
-        $db->beginTransaction();
+        $isNested = $db->inTransaction();
+        if (!$isNested) {
+            self::ensureRechargeTable();
+            $db->beginTransaction();
+        }
         try {
             $stmt = $db->prepare("SELECT id, balance FROM wallets WHERE user_id = ? FOR UPDATE");
             $stmt->execute([$userId]);
             $wallet = $stmt->fetch();
+
             if (!$wallet) {
-                $db->rollBack();
-                return false;
+                // Auto create wallet for user if missing
+                $walletId = Response::generateUuid();
+                $db->prepare("INSERT INTO wallets (id, user_id, balance, updated_at) VALUES (?, ?, 0.00, NOW())")
+                   ->execute([$walletId, $userId]);
+                $wallet = ['id' => $walletId, 'balance' => 0.00];
             }
 
             $balBefore = (float)$wallet['balance'];
             $balAfter = $balBefore + $amount;
 
-            $db->prepare("UPDATE wallets SET balance = ?, updated_at = NOW() WHERE id = ?")->execute([$balAfter, $wallet['id']]);
+            $db->prepare("UPDATE wallets SET balance = ?, updated_at = NOW() WHERE id = ?")
+               ->execute([$balAfter, $wallet['id']]);
 
             $txId = Response::generateUuid();
+            $cleanRef = !empty($ref) ? $ref : ('TX-' . time() . '-' . rand(100, 999));
+
             $db->prepare("
                 INSERT INTO wallet_transactions 
                 (id, wallet_id, user_id, type, amount, balance_before, balance_after, reason, payment_provider, payment_reference, payment_status, created_at)
-                VALUES (?, ?, ?, 'CREDIT', ?, ?, ?, ?, 'RAZORPAY', ?, 'SUCCESS', NOW())
-            ")->execute([$txId, $wallet['id'], $userId, $amount, $balBefore, $balAfter, $reason, $ref]);
+                VALUES (?, ?, ?, 'CREDIT', ?, ?, ?, ?, 'UPI', ?, 'SUCCESS', NOW())
+            ")->execute([$txId, $wallet['id'], $userId, $amount, $balBefore, $balAfter, $reason, $cleanRef]);
 
-            $db->commit();
+            if (!$isNested && $db->inTransaction()) {
+                $db->commit();
+            }
             return true;
-        } catch (Exception $e) {
-            $db->rollBack();
+        } catch (Throwable $e) {
+            if (!$isNested && $db->inTransaction()) {
+                try {
+                    $db->rollBack();
+                } catch (Throwable $t) {}
+            }
             return false;
         }
     }

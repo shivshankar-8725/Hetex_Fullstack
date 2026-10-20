@@ -266,8 +266,8 @@
       <form id="loginForm">
         <div class="form-group">
           <label for="identifierInput">Email</label>
-          <input type="text" id="identifierInput" class="form-control" placeholder="admin@hetex.com"
-            value="admin@hetex.com" required autofocus />
+          <input type="text" id="identifierInput" class="form-control" placeholder="you@company.com"
+            required autofocus />
         </div>
 
         <div class="form-group">
@@ -277,7 +277,7 @@
               style="font-size: 0.75rem; color: var(--brand); font-weight: 600;">Forgot?</a>
           </div>
           <div style="position: relative;">
-            <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" value="Admin@123"
+            <input type="password" id="passwordInput" class="form-control" placeholder="••••••••"
               required />
             <button type="button" id="togglePassword"
               style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); font-size: 0.75rem; font-weight: 600;">Show</button>
@@ -320,6 +320,16 @@
     const submitBtn = document.getElementById('submitBtn');
     const passInput = document.getElementById('passwordInput');
     const toggleBtn = document.getElementById('togglePassword');
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('reset') === 'success') {
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#dcfce7';
+        alertBox.style.color = '#15803d';
+        alertBox.textContent = '✅ Password has been reset successfully! Please log in with your new password.';
+      }
+    } catch (e) {}
 
     function autofill(email, pass) {
       document.getElementById('identifierInput').value = email;
