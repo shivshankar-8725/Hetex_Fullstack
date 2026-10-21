@@ -69,7 +69,8 @@ class OrderController {
             "ALTER TABLE `orders` ADD COLUMN `courier_billable_weight` DECIMAL(10,3) NULL",
             "ALTER TABLE `orders` ADD COLUMN `weight_dispute_status` ENUM('NO_DISPUTE', 'OPEN', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'NO_DISPUTE'",
             "ALTER TABLE `orders` ADD COLUMN `weight_dispute_note` TEXT NULL",
-            "ALTER TABLE `orders` ADD COLUMN `discrepancy_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00"
+            "ALTER TABLE `orders` ADD COLUMN `discrepancy_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+            "ALTER TABLE `orders` ADD COLUMN `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
         ];
         foreach ($patches as $sql) {
             try { $db->exec($sql); } catch (Throwable $t) {}
@@ -1461,8 +1462,7 @@ HTML;
                     billable_weight = ?,
                     item_description = ?,
                     package_type = ?,
-                    shipping_charges = ?,
-                    updated_at = NOW()
+                    shipping_charges = ?
                 WHERE id = ?
             ")->execute([
                 $pickupAddressId, $paymentMode, $codAmount, $totalDeclaredValue,
@@ -1484,6 +1484,7 @@ HTML;
     public static function shipSavedOrder(string $orderId): void {
         $auth = AuthMiddleware::authenticate();
         $db = Database::getConnection();
+        self::ensureAuxiliaryTables($db);
 
         $stmt = $db->prepare("SELECT o.*, s.id as shipment_id FROM orders o LEFT JOIN shipments s ON o.id = s.order_id WHERE (o.id = ? OR o.order_number = ?) AND o.user_id = ?");
         $stmt->execute([$orderId, $orderId, $auth['userId']]);
@@ -1515,20 +1516,34 @@ HTML;
             $balAfter = (float)$wallet['balance'] - $charge;
             $db->prepare("UPDATE wallets SET balance = ?, updated_at = NOW() WHERE id = ?")->execute([$balAfter, $wallet['id']]);
 
+            // Record wallet debit transaction
+            $txId = Response::generateUuid();
+            try {
+                $db->prepare("
+                    INSERT INTO wallet_transactions (id, wallet_id, user_id, type, amount, balance_before, balance_after, reason, order_id, created_at)
+                    VALUES (?, ?, ?, 'DEBIT', ?, ?, ?, ?, ?, NOW())
+                ")->execute([$txId, $wallet['id'], $auth['userId'], $charge, $wallet['balance'], $balAfter, "Shipping charge for order {$order['order_number']}", $realOrderId]);
+            } catch (Throwable $tErr) {}
+
             $courierId = 'c1000000-0000-0000-0000-000000000002';
             $awb = 'HTX' . mt_rand(100000000, 999999999);
             $shipmentId = Response::generateUuid();
 
-            $db->prepare("
-                INSERT INTO shipments (id, order_id, courier_id, awb_number, status, rate_charged, tracking_url, created_at)
-                VALUES (?, ?, ?, ?, 'READY_TO_SHIP', ?, ?, NOW())
-                ON DUPLICATE KEY UPDATE status = 'READY_TO_SHIP', awb_number = VALUES(awb_number)
-            ")->execute([
-                $shipmentId, $realOrderId, $courierId, $awb, $charge,
-                "https://hetex.in/track?awb={$awb}"
-            ]);
+            try {
+                $db->prepare("
+                    INSERT INTO shipments (id, order_id, courier_id, awb_number, rate_charged, margin_earned, status, current_location, label_generated, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, 0.00, 'READY_TO_SHIP', 'Origin Hub', 1, NOW(), NOW())
+                    ON DUPLICATE KEY UPDATE status = 'READY_TO_SHIP', awb_number = VALUES(awb_number), rate_charged = VALUES(rate_charged)
+                ")->execute([$shipmentId, $realOrderId, $courierId, $awb, $charge]);
+            } catch (Throwable $sErr) {
+                $db->prepare("
+                    INSERT INTO shipments (id, order_id, courier_id, awb_number, rate_charged, margin_earned, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, 0.00, 'READY_TO_SHIP', NOW())
+                    ON DUPLICATE KEY UPDATE status = 'READY_TO_SHIP', awb_number = VALUES(awb_number)
+                ")->execute([$shipmentId, $realOrderId, $courierId, $awb, $charge]);
+            }
 
-            $db->prepare("UPDATE orders SET status = 'READY_TO_SHIP', shipping_payment_status = 'PAID', updated_at = NOW() WHERE id = ?")->execute([$realOrderId]);
+            $db->prepare("UPDATE orders SET status = 'READY_TO_SHIP', shipping_payment_status = 'PAID' WHERE id = ?")->execute([$realOrderId]);
 
             $db->prepare("
                 INSERT INTO tracking_events (id, shipment_id, status, description, location, timestamp)
@@ -1569,7 +1584,7 @@ HTML;
 
                 $realId = $o['id'];
                 $db->beginTransaction();
-                $db->prepare("UPDATE orders SET status = 'CANCELLED', updated_at = NOW() WHERE id = ?")->execute([$realId]);
+                $db->prepare("UPDATE orders SET status = 'CANCELLED' WHERE id = ?")->execute([$realId]);
                 if (!empty($o['shipment_id'])) {
                     $db->prepare("UPDATE shipments SET status = 'CANCELLED', updated_at = NOW() WHERE id = ?")->execute([$o['shipment_id']]);
                     $refund = (float)($o['rate_charged'] ?? 0);
