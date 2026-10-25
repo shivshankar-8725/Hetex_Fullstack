@@ -32,6 +32,7 @@ require_once __DIR__ . '/utils/response.php';
 require_once __DIR__ . '/controllers/AuthController.php';
 require_once __DIR__ . '/controllers/WalletController.php';
 require_once __DIR__ . '/controllers/RateController.php';
+require_once __DIR__ . '/utils/rate_limit.php';
 require_once __DIR__ . '/controllers/OrderController.php';
 require_once __DIR__ . '/controllers/AddressController.php';
 require_once __DIR__ . '/controllers/TicketController.php';
@@ -62,16 +63,20 @@ try {
             Response::error('New seller registrations are temporarily closed. Please contact sales or support.', 403);
             break;
         case ($endpoint === '/auth/verify-email' && $method === 'POST'):
+            RateLimiter::check('verify-email', 5, 60);
             AuthController::verifyEmail();
             break;
         case ($endpoint === '/auth/resend-email-otp' && $method === 'POST'):
         case ($endpoint === '/auth/forgot-password' && $method === 'POST'):
+            RateLimiter::check('forgot-password', 5, 60);
             AuthController::resendEmailOtp();
             break;
         case ($endpoint === '/auth/reset-password' && $method === 'POST'):
+            RateLimiter::check('reset-password', 5, 60);
             AuthController::resetPassword();
             break;
         case ($endpoint === '/auth/login' && $method === 'POST'):
+            RateLimiter::check('login', 5, 60);
             AuthController::login();
             break;
         case ($endpoint === '/auth/logout' && $method === 'POST'):
@@ -135,6 +140,21 @@ try {
         case (preg_match('#^/order-cancel/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
             OrderController::cancelOrder($m[1]);
             break;
+        case ($endpoint === '/schedule-pickup' && $method === 'POST'):
+            OrderController::schedulePickup();
+            break;
+        case (preg_match('#^/order-pickup/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
+            OrderController::schedulePickup($m[1]);
+            break;
+        case ($endpoint === '/push-return-order' && $method === 'POST'):
+            OrderController::pushReturnOrder();
+            break;
+        case ($endpoint === '/orders/bulk' && $method === 'POST'):
+            OrderController::bulkImport();
+            break;
+        case ($endpoint === '/manifest' && $method === 'GET'):
+            OrderController::getManifestPdf();
+            break;
 
         // --- Tracking ---
         case ($endpoint === '/track' && $method === 'GET'):
@@ -161,6 +181,15 @@ try {
         case (preg_match('#^/shipment-invoice/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
             OrderController::getInvoicePdf($m[1]);
             break;
+        case ($endpoint === '/billing/monthly-invoices' && $method === 'GET'):
+            ExtraController::listMonthlyInvoices();
+            break;
+        case ($endpoint === '/billing/monthly-invoice' && $method === 'GET'):
+            ExtraController::getMonthlyInvoiceHtml();
+            break;
+        case (preg_match('#^/billing/monthly-invoice/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
+            ExtraController::getMonthlyInvoiceHtml($m[1]);
+            break;
         case (preg_match('#^/shipment-raise-dispute/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
             ExtraController::raiseDispute($m[1]);
             break;
@@ -176,6 +205,7 @@ try {
             ExtraController::pincodeLookup($_GET['pincode'] ?? $_GET['pin'] ?? '');
             break;
         case ($endpoint === '/addresses/lookup' && $method === 'GET'):
+        case ($endpoint === '/address-lookup' && $method === 'GET'):
             AddressController::lookupByPhone();
             break;
         case ($endpoint === '/addresses' && $method === 'GET'):
@@ -184,10 +214,14 @@ try {
         case ($endpoint === '/addresses' && $method === 'POST'):
             AddressController::createAddress();
             break;
+        case (preg_match('#^/addresses/([^/]+)/sync-warehouse$#', $endpoint, $m) && $method === 'POST'):
+            AddressController::syncWarehouse($m[1]);
+            break;
         case (preg_match('#^/addresses/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
-            $auth = AuthMiddleware::authenticate();
-            Database::getConnection()->prepare("DELETE FROM addresses WHERE id = ? AND user_id = ?")->execute([$m[1], $auth['userId']]);
-            Response::json(['ok' => true]);
+            AddressController::deleteAddress($m[1]);
+            break;
+        case ($endpoint === '/warehouses' && $method === 'GET'):
+            AddressController::listShipmozoWarehouses();
             break;
 
         // --- Wallet ---
@@ -298,6 +332,12 @@ try {
         case ($endpoint === '/notifications' && $method === 'GET'):
             ExtraController::listNotifications();
             break;
+        case ($endpoint === '/notification-settings' && $method === 'GET'):
+            ExtraController::getNotificationSettings();
+            break;
+        case ($endpoint === '/notification-settings' && ($method === 'PATCH' || $method === 'POST')):
+            ExtraController::updateNotificationSettings();
+            break;
 
         // --- Analytics ---
         case ($endpoint === '/analytics' && $method === 'GET'):
@@ -310,6 +350,45 @@ try {
             break;
         case ($endpoint === '/settings/tracking-page' && $method === 'PATCH'):
             ExtraController::updateTrackingPageConfig();
+            break;
+        case (($endpoint === '/upload-logo' || $endpoint === '/settings/tracking-page/logo') && $method === 'POST'):
+            ExtraController::uploadLogo();
+            break;
+
+        // --- Bank Accounts (TASK-P2-05) ---
+        case ($endpoint === '/bank-accounts' && $method === 'GET'):
+            ExtraController::listBankAccounts();
+            break;
+        case ($endpoint === '/bank-accounts' && $method === 'POST'):
+            ExtraController::createBankAccount();
+            break;
+        case (preg_match('#^/bank-accounts/([^/]+)/default$#', $endpoint, $m) && $method === 'POST'):
+            ExtraController::setDefaultBankAccount($m[1]);
+            break;
+        case (preg_match('#^/bank-accounts/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
+            ExtraController::deleteBankAccount($m[1]);
+            break;
+
+        // --- API Keys (TASK-P2-07) ---
+        case ($endpoint === '/api-keys' && $method === 'GET'):
+            ExtraController::listApiKeys();
+            break;
+        case ($endpoint === '/api-keys' && $method === 'POST'):
+            ExtraController::createApiKey();
+            break;
+        case (preg_match('#^/api-keys/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
+            ExtraController::deleteApiKey($m[1]);
+            break;
+
+        // --- Outbound Webhooks (TASK-P2-07) ---
+        case ($endpoint === '/webhooks' && $method === 'GET'):
+            ExtraController::listWebhooks();
+            break;
+        case ($endpoint === '/webhooks' && $method === 'POST'):
+            ExtraController::createWebhook();
+            break;
+        case (preg_match('#^/webhooks/([^/]+)$#', $endpoint, $m) && $method === 'DELETE'):
+            ExtraController::deleteWebhook($m[1]);
             break;
         case ($endpoint === '/settings' && $method === 'GET'):
             AdminController::getSettings();
@@ -371,6 +450,9 @@ try {
             break;
         case ($endpoint === '/admin/recharges/reject' && $method === 'POST'):
             AdminController::rejectRechargeRequest();
+            break;
+        case ($endpoint === '/admin/audit-logs' && $method === 'GET'):
+            AdminController::listAuditLogs();
             break;
 
         default:

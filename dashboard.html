@@ -580,29 +580,77 @@
       align-items: center;
       justify-content: space-between;
     }
+    .sidebar-section-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.65rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 0.375rem;
+      margin-top: 0.5rem;
+      transition: background 0.15s ease;
+    }
+    .sidebar-section-toggle:hover {
+      background: #f8fafc;
+    }
+    .sidebar-section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.775rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .sidebar-chevron {
+      color: #94a3b8;
+      transition: transform 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+    .sidebar-section-toggle.collapsed .sidebar-chevron {
+      transform: rotate(-90deg);
+    }
+    .sidebar-group-items {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      transition: all 0.2s ease;
+    }
+    .sidebar-group-items.collapsed {
+      display: none;
+    }
     .subnav-btn {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 0.625rem;
-      padding: 0.45rem 0.875rem 0.45rem 1.125rem;
-      border-radius: 0.375rem;
+      gap: 0.65rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 0.45rem;
       font-size: 0.8125rem;
       font-weight: 500;
       color: #475569;
       background: none;
       border: none;
+      border-left: 3px solid transparent;
       text-align: left;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      margin-bottom: 2px;
     }
     .subnav-btn:hover {
-      background: #f1f5f9;
+      background: #f8fafc;
       color: #0f172a;
     }
     .subnav-btn.active {
-      background: #f1f5f9;
-      color: #0f172a;
+      background: #eff6ff;
+      color: #1d4ed8;
       font-weight: 700;
+      border-left: 3px solid #2563eb;
     }
     .subnav-bullet {
       width: 6px;
@@ -611,10 +659,12 @@
       border: 1.5px solid #94a3b8;
       display: inline-block;
       flex-shrink: 0;
+      transition: all 0.15s ease;
     }
     .subnav-btn.active .subnav-bullet {
-      background: #0f172a;
-      border-color: #0f172a;
+      background: #2563eb;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px #dbeafe;
     }
   </style>
 </head>
@@ -643,100 +693,127 @@
         </button>
       </li>
 
-      <!-- Group 1: Shipping (Image 2) -->
-      <li class="sidebar-section-title">
-        <div style="display: flex; align-items: center; gap: 0.4rem;">
-          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
-          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Shipping</span>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-      </li>
+      <!-- Group 1: Orders & Shipping -->
       <li>
-        <button class="subnav-btn" onclick="switchTab('create-order')">
-          <span class="subnav-bullet"></span>
-          <span>New Order</span>
+        <button type="button" class="sidebar-section-toggle" onclick="toggleSidebarSection('groupShipping', this)">
+          <div class="sidebar-section-title-wrap">
+            <span style="font-size: 0.85rem; color: #2563eb;">📦</span>
+            <span>Shipping</span>
+          </div>
+          <span class="sidebar-chevron">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
         </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('orders')">
-          <span class="subnav-bullet"></span>
-          <span>Orders</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('track')">
-          <span class="subnav-bullet"></span>
-          <span>Track Order</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('ndr')">
-          <span class="subnav-bullet"></span>
-          <span>NDR</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('weight-disputes')">
-          <span class="subnav-bullet"></span>
-          <span>Weight Disputes</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('cod')">
-          <span class="subnav-bullet"></span>
-          <span>COD Remittance</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('reports')">
-          <span class="subnav-bullet"></span>
-          <span>Reports & Exports</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('tickets')">
-          <span class="subnav-bullet"></span>
-          <span>Support Tickets</span>
-        </button>
+        <ul id="groupShipping" class="sidebar-group-items">
+          <li>
+            <button class="subnav-btn" onclick="switchTab('create-order')">
+              <span class="subnav-bullet"></span>
+              <span>New Order</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('orders')">
+              <span class="subnav-bullet"></span>
+              <span>Orders</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('track')">
+              <span class="subnav-bullet"></span>
+              <span>Track Order</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('ndr')">
+              <span class="subnav-bullet"></span>
+              <span>NDR</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('weight-disputes')">
+              <span class="subnav-bullet"></span>
+              <span>Weight Disputes</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('cod')">
+              <span class="subnav-bullet"></span>
+              <span>COD Remittance</span>
+            </button>
+          </li>
+        </ul>
       </li>
 
-      <!-- Group 2: Manage (Image 2) -->
-      <li class="sidebar-section-title" style="margin-top: 0.5rem;">
-        <div style="display: flex; align-items: center; gap: 0.4rem;">
-          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
-          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Manage</span>
-        </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-      </li>
+      <!-- Group 2: Billing & Invoices -->
       <li>
-        <button class="subnav-btn" onclick="switchTab('addresses')">
-          <span class="subnav-bullet"></span>
-          <span>Address Book</span>
+        <button type="button" class="sidebar-section-toggle" onclick="toggleSidebarSection('groupBilling', this)">
+          <div class="sidebar-section-title-wrap">
+            <span style="font-size: 0.85rem; color: #059669;">🧾</span>
+            <span>Billing & Invoices</span>
+          </div>
+          <span class="sidebar-chevron">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
         </button>
+        <ul id="groupBilling" class="sidebar-group-items">
+          <li>
+            <button class="subnav-btn" onclick="switchTab('invoices')">
+              <span class="subnav-bullet"></span>
+              <span>Monthly GST Invoices</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('wallet')">
+              <span class="subnav-bullet"></span>
+              <span>Passbook & Wallet</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('reports')">
+              <span class="subnav-bullet"></span>
+              <span>Reports & Exports</span>
+            </button>
+          </li>
+        </ul>
       </li>
+
+      <!-- Group 3: Manage & Support -->
       <li>
-        <button class="subnav-btn" onclick="switchTab('rates')">
-          <span class="subnav-bullet"></span>
-          <span>Rate Calculator</span>
+        <button type="button" class="sidebar-section-toggle" onclick="toggleSidebarSection('groupManage', this)">
+          <div class="sidebar-section-title-wrap">
+            <span style="font-size: 0.85rem; color: #d97706;">⚙️</span>
+            <span>Manage & Support</span>
+          </div>
+          <span class="sidebar-chevron">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </span>
         </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('wallet')">
-          <span class="subnav-bullet"></span>
-          <span>Passbook & Transactions</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('overview')">
-          <span class="subnav-bullet"></span>
-          <span>Analytics</span>
-        </button>
-      </li>
-      <li>
-        <button class="subnav-btn" onclick="switchTab('profile')">
-          <span class="subnav-bullet"></span>
-          <span>Settings</span>
-        </button>
+        <ul id="groupManage" class="sidebar-group-items">
+          <li>
+            <button class="subnav-btn" onclick="switchTab('addresses')">
+              <span class="subnav-bullet"></span>
+              <span>Address Book</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('rates')">
+              <span class="subnav-bullet"></span>
+              <span>Rate Calculator</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('tickets')">
+              <span class="subnav-bullet"></span>
+              <span>Support Tickets</span>
+            </button>
+          </li>
+          <li>
+            <button class="subnav-btn" onclick="switchTab('profile')">
+              <span class="subnav-bullet"></span>
+              <span>Settings & KYC</span>
+            </button>
+          </li>
+        </ul>
       </li>
 
       <li id="sidebarAdminLink" style="display: none; margin-top: 0.5rem;">
@@ -844,47 +921,52 @@
       </div>
 
       <!-- Profile Dropdown Menu Card (Appears on Avatar Click) -->
-      <div id="profileDropdownMenu" class="profile-dropdown-card">
-        <div style="display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem;">
-          <div class="user-avatar-btn" id="profileDropdownAvatar" style="width: 44px; height: 44px; font-size: 1.125rem;">M</div>
+      <div id="profileDropdownMenu" class="profile-dropdown-card" style="display: none; position: absolute; right: 1.5rem; top: 62px; width: 320px; background: #ffffff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid var(--border); padding: 1.25rem; z-index: 9999;">
+        <div style="display: flex; align-items: center; gap: 0.85rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 0.75rem;">
+          <div class="user-avatar-btn" id="profileDropdownAvatar" style="width: 52px; height: 52px; font-size: 1.2rem; font-weight: 800; background: #0284c7; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(2,132,199,0.3);">PB</div>
           <div style="overflow: hidden; flex: 1;">
-            <h4 id="profileDropdownName" style="font-size: 0.9375rem; font-weight: 800; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Seller</h4>
-            <p id="profileDropdownEmail" style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">seller@hetex.in</p>
-            <span class="badge badge-success" id="profileDropdownKycBadge" style="font-size: 0.625rem; margin-top: 2px;">• KYC Verified</span>
+            <h4 id="profileDropdownName" style="font-size: 0.95rem; font-weight: 800; color: var(--navy); margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase;">PIYUSH H BHUVA</h4>
+            <div id="profileDropdownRole" style="font-size: 0.72rem; font-weight: 700; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 3px;">ADMIN</div>
+            <p id="profileDropdownEmail" style="font-size: 0.72rem; color: #64748b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">PIYUSHMOKARIYA86@GMAIL.COM</p>
+            <p id="profileDropdownPhone" style="font-size: 0.72rem; color: #64748b; margin: 0;">📞 <span id="profileDropdownPhoneNum">9978292383</span></p>
           </div>
         </div>
 
-        <div style="background: #f8fafc; border-radius: 0.5rem; padding: 0.625rem; margin-bottom: 0.75rem; font-size: 0.75rem; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-            <span style="color: var(--text-muted);">Prepaid Balance:</span>
-            <strong id="profileDropdownBalance" style="color: var(--brand);">₹0.00</strong>
-          </div>
-          <div style="display: flex; justify-content: space-between;">
-            <span style="color: var(--text-muted);">Business:</span>
-            <strong id="profileDropdownBusiness" style="color: var(--navy);">-</strong>
-          </div>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('profile');" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; text-decoration: none; color: var(--navy); transition: background 0.15s ease;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1rem;">👤</div>
+            <div>
+              <div style="font-size: 0.84rem; font-weight: 700; color: var(--navy);">My Profile</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Account Settings</div>
+            </div>
+          </a>
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('tickets');" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; text-decoration: none; color: var(--navy); transition: background 0.15s ease;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: #faf5ff; color: #9333ea; display: flex; align-items: center; justify-content: center; font-size: 1rem;">💬</div>
+            <div>
+              <div style="font-size: 0.84rem; font-weight: 700; color: var(--navy);">Support</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Contact Support</div>
+            </div>
+          </a>
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); showTermsModal();" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; text-decoration: none; color: var(--navy); transition: background 0.15s ease;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center; font-size: 1rem;">📄</div>
+            <div>
+              <div style="font-size: 0.84rem; font-weight: 700; color: var(--navy);">Terms & Conditions / SOP</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Read Our Terms & Conditions</div>
+            </div>
+          </a>
+          <a href="javascript:void(0)" onclick="closeProfileDropdown(); showApiDocsModal();" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; text-decoration: none; color: var(--navy); transition: background 0.15s ease;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: #ecfeff; color: #0891b2; display: flex; align-items: center; justify-content: center; font-size: 1rem;">⚡</div>
+            <div>
+              <div style="font-size: 0.84rem; font-weight: 700; color: var(--navy);">API Documentation</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Check our latest API Documentation</div>
+            </div>
+          </a>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('profile');" class="profile-menu-item">
-            <span>👤</span>
-            <span>My Profile & eKYC</span>
-          </a>
-          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('wallet');" class="profile-menu-item">
-            <span>💰</span>
-            <span>Wallet & Transactions</span>
-          </a>
-          <a href="javascript:void(0)" onclick="closeProfileDropdown(); switchTab('tickets');" class="profile-menu-item">
-            <span>🎫</span>
-            <span>Support Tickets</span>
-          </a>
-        </div>
-
-        <!-- VISUAL SIGN OUT BUTTON INSIDE PROFILE DROPDOWN (As explicitly requested by user) -->
         <div style="border-top: 1px solid var(--border); margin-top: 0.75rem; padding-top: 0.75rem;">
-          <button type="button" onclick="closeProfileDropdown(); promptSignout();" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-weight: 700; font-size: 0.8125rem; padding: 0.5rem; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s;">
-            <span>🚪</span>
-            <span>Sign Out of HetEx</span>
+          <button type="button" onclick="closeProfileDropdown(); promptSignout();" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: #ffffff; border: 1.5px solid #e2e8f0; color: #dc2626; font-weight: 750; font-size: 0.85rem; padding: 0.65rem; border-radius: 8px; cursor: pointer; transition: all 0.15s;" onmouseover="this.style.background='#fee2e2'; this.style.borderColor='#fca5a5'" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span>Logout</span>
           </button>
         </div>
       </div>
@@ -1077,13 +1159,28 @@
         </div>
 
         <!-- Status Filter Pills -->
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch;">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch;">
           <button class="btn-secondary active" onclick="filterOrders('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All</button>
           <button class="btn-secondary" onclick="filterOrders('READY_TO_SHIP', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Ready to Ship</button>
           <button class="btn-secondary" onclick="filterOrders('IN_TRANSIT', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">In Transit</button>
           <button class="btn-secondary" onclick="filterOrders('DELIVERED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Delivered</button>
           <button class="btn-secondary" onclick="filterOrders('NDR', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">NDR</button>
           <button class="btn-secondary" onclick="filterOrders('CANCELLED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Cancelled</button>
+        </div>
+
+        <!-- Orders Search & Date Range Filter Toolbar -->
+        <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; background: #f8fafc; border: 1px solid var(--border);">
+          <div style="flex: 1; min-width: 220px; position: relative;">
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8;">🔍</span>
+            <input type="text" id="ordersSearchInput" placeholder="Filter by Order #, AWB, Buyer name, Phone, City..." oninput="applyOrdersFilter()" style="width: 100%; padding: 0.45rem 0.75rem 0.45rem 2rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; color: #475569; flex-wrap: wrap;">
+            <span>From:</span>
+            <input type="date" id="ordersDateFrom" onchange="applyOrdersFilter()" style="padding: 0.35rem 0.55rem; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+            <span>To:</span>
+            <input type="date" id="ordersDateTo" onchange="applyOrdersFilter()" style="padding: 0.35rem 0.55rem; font-size: 0.75rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+            <button type="button" class="btn-secondary" onclick="clearOrdersFilter()" style="padding: 0.35rem 0.65rem; font-size: 0.75rem;">Clear</button>
+          </div>
         </div>
 
         <!-- Multi-Order Selection Floating Action Toolbar (Requirement 2) -->
@@ -1208,12 +1305,20 @@
         </div>
 
         <!-- Filter Pills -->
-        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem; -webkit-overflow-scrolling: touch;">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch;">
           <button type="button" class="btn-secondary active" onclick="filterWeightDisputes('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All Discrepancies</button>
           <button type="button" class="btn-secondary" onclick="filterWeightDisputes('ACTION_REQUIRED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Action Required</button>
           <button type="button" class="btn-secondary" onclick="filterWeightDisputes('UNDER_REVIEW', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Under Review</button>
           <button type="button" class="btn-secondary" onclick="filterWeightDisputes('RESOLVED_ACCEPTED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Resolved (Refunded)</button>
           <button type="button" class="btn-secondary" onclick="filterWeightDisputes('ACCEPTED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Accepted by Seller</button>
+        </div>
+
+        <!-- Weight Disputes Search Filter -->
+        <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: center; background: #f8fafc; border: 1px solid var(--border);">
+          <div style="flex: 1; position: relative;">
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8;">🔍</span>
+            <input type="text" id="weightDisputesSearchInput" placeholder="Filter disputes by Dispute ID, Order #, AWB, Courier..." oninput="applyWeightDisputesFilter()" style="width: 100%; padding: 0.45rem 0.75rem 0.45rem 2rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+          </div>
         </div>
 
         <!-- Dedicated Weight Dispute Table -->
@@ -1263,192 +1368,353 @@
           </button>
         </div>
 
-        <form id="createOrderForm" novalidate class="card" style="padding: 1.5rem;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;" class="mobile-grid-1">
-            <!-- Pickup Warehouse -->
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand);">1. Pickup Warehouse</h3>
-                <button type="button" onclick="openAddAddressModal()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">+ Add New</button>
+        <!-- Step-by-Step Progress Tracker (Shipmozo Flow) -->
+        <div style="background: #ffffff; border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <!-- Step 1 Indicator -->
+            <div id="stepTab1" onclick="goToOrderStep(1)" style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+              <div id="stepBadge1" style="width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8125rem; box-shadow: 0 2px 6px rgba(37,99,235,0.25);">
+                1
               </div>
-              <div class="form-group">
-                <label>Select Origin Warehouse *</label>
-                <select id="pickupAddressSelect" class="form-control" onchange="triggerDynamicRateFetch()" required>
-                  <option value="">Loading warehouses...</option>
-                </select>
+              <div>
+                <div style="font-weight: 750; font-size: 0.8125rem; color: var(--navy);">Address Details</div>
+                <div id="stepStatus1" style="font-size: 0.7rem; color: #16a34a; font-weight: 600;">Active Step</div>
               </div>
             </div>
 
-            <!-- Buyer Details with Smart Mobile First Autofill -->
-            <div>
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand);">2. Buyer / Consignee Address</h3>
-              </div>
+            <!-- Divider 1 -->
+            <div id="stepDivider1" style="flex: 1; height: 2px; background: #e2e8f0; margin: 0 0.5rem; min-width: 40px;"></div>
 
-              <!-- Mobile Number Placed First -->
-              <div class="form-group">
-                <label style="display: flex; justify-content: space-between; align-items: center;">
-                  <span>Buyer Mobile Number *</span>
-                </label>
-                <div style="position: relative;">
-                  <input type="tel" id="buyerPhone" class="form-control" placeholder="10-digit mobile number (e.g. 98XXXXXXXX)" maxlength="16" oninput="onBuyerPhoneInput(this.value)" onchange="onBuyerPhoneInput(this.value)" onblur="onBuyerPhoneInput(this.value)" onkeyup="onBuyerPhoneInput(this.value)" required style="font-weight: 600; letter-spacing: 0.5px;" autocomplete="tel" />
-                  <span id="phoneStatusIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; font-size: 1rem;"></span>
-                </div>
-                <div id="autofillNotice" style="display: none; font-size: 0.75rem; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.4rem 0.65rem; border-radius: 6px; margin-top: 0.4rem; font-weight: 600;">
-                  ✨ Customer (<span id="autofillCustName"></span>) found! Address populated (you can freely edit details below).
-                </div>
+            <!-- Step 2 Indicator -->
+            <div id="stepTab2" onclick="goToOrderStep(2)" style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; opacity: 0.6;">
+              <div id="stepBadge2" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8125rem;">
+                2
               </div>
+              <div>
+                <div style="font-weight: 750; font-size: 0.8125rem; color: var(--navy);">Package & Items</div>
+                <div id="stepStatus2" style="font-size: 0.7rem; color: var(--text-muted);">Weight & Value</div>
+              </div>
+            </div>
 
-              <div class="form-group">
-                <label>Buyer Name *</label>
-                <input type="text" id="buyerName" class="form-control" placeholder="Enter recipient's full name" oninput="cacheCurrentBuyerForm(); triggerDynamicRateFetch();" required />
+            <!-- Divider 2 -->
+            <div id="stepDivider2" style="flex: 1; height: 2px; background: #e2e8f0; margin: 0 0.5rem; min-width: 40px;"></div>
+
+            <!-- Step 3 Indicator -->
+            <div id="stepTab3" onclick="goToOrderStep(3)" style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; opacity: 0.6;">
+              <div id="stepBadge3" style="width: 30px; height: 30px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8125rem;">
+                3
               </div>
-              <div class="form-group">
-                <label>Street Address / Flat / Building *</label>
-                <input type="text" id="buyerAddress" class="form-control" placeholder="House / Flat / Block No., Street, Area" oninput="cacheCurrentBuyerForm(); triggerDynamicRateFetch();" required />
+              <div>
+                <div style="font-weight: 750; font-size: 0.8125rem; color: var(--navy);">Delivery Options</div>
+                <div id="stepStatus3" style="font-size: 0.7rem; color: var(--text-muted);">Carriers & Payment</div>
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <div class="form-group">
-                  <label>Pincode *</label>
-                  <div style="position: relative;">
-                    <input type="text" id="buyerPincode" class="form-control" placeholder="6-digit PIN code" maxlength="6" oninput="onBuyerPincodeChanged(); cacheCurrentBuyerForm();" required />
-                    <span id="pincodeLookupSpinner" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; font-size: 0.75rem;">⏳</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="createOrderForm" novalidate>
+          <!-- ================= STEP 1: ADDRESS DETAILS ================= -->
+          <div id="orderStep1Card" class="card" style="padding: 1.5rem; margin-bottom: 1.25rem; border: 1.5px solid #bfdbfe; transition: all 0.2s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.15rem;">📍</span>
+                <div>
+                  <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); margin: 0;">Step 1: Address Details (Pickup & Delivery)</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Configure origin dispatch facility and buyer consignee delivery location</p>
+                </div>
+              </div>
+              <span id="step1HeaderBadge" class="badge" style="background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 0.72rem; padding: 0.3rem 0.65rem; border-radius: 9999px;">
+                ● In Progress
+              </span>
+            </div>
+
+            <div id="orderStep1Body">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="mobile-grid-1">
+                <!-- Pickup Warehouse -->
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 750; color: var(--brand); margin: 0;">1A. Origin Warehouse Facility</h4>
+                    <button type="button" onclick="openAddAddressModal()" class="btn-secondary" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">+ Add New</button>
+                  </div>
+                  <div class="form-group">
+                    <label>Select Origin Warehouse *</label>
+                    <select id="pickupAddressSelect" class="form-control" onchange="triggerDynamicRateFetch()" required>
+                      <option value="">Loading warehouses...</option>
+                    </select>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label>City *</label>
-                  <input type="text" id="buyerCity" class="form-control" placeholder="City / District" oninput="cacheCurrentBuyerForm()" required />
-                </div>
-              </div>
-              <div class="form-group">
-                <label>State *</label>
-                <input type="text" id="buyerState" class="form-control" placeholder="State" oninput="cacheCurrentBuyerForm()" required />
-              </div>
-            </div>
-          </div>
 
-          <!-- Multi-Item Package Specifications -->
-          <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-              <div>
-                <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand);">3. Shipment Items & Package Specifications</h3>
-                <p style="font-size: 0.75rem; color: var(--text-muted);">Add individual items with categories, quantities, weights, and package dimensions</p>
-              </div>
-              <button type="button" onclick="addOrderItem()" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem; border-color: var(--brand); color: var(--brand);">
-                ➕ Add Item
-              </button>
-            </div>
-
-            <!-- Package Type Classification Selector (Requirement 1) -->
-            <div style="margin-bottom: 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem 1rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
-                <label style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); margin: 0;">
-                  Package Classification:
-                </label>
-                <span id="orderPackageTypeNotice" style="font-size: 0.75rem; color: var(--text-muted);">
-                  Auto-classified based on billable weight (Small &lt;10 kg vs Large &gt;10 kg)
-                </span>
-              </div>
-              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                <button type="button" id="orderPkgSmallBtn" class="btn-secondary active" onclick="setOrderPackageType('SMALL')" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.4rem; border: 2px solid var(--brand); background: var(--brand-light); color: var(--brand); cursor: pointer;">
-                  <span>📦</span>
-                  <span>Small Package (&lt;10 kg)</span>
-                </button>
-                <button type="button" id="orderPkgLargeBtn" class="btn-secondary" onclick="setOrderPackageType('LARGE')" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.4rem; border: 2px solid var(--border); background: #ffffff; color: var(--text); cursor: pointer;">
-                  <span>🚚</span>
-                  <span>Large Package (&gt;10 kg)</span>
-                </button>
-              </div>
-              <input type="hidden" id="orderPackageType" value="SMALL" />
-            </div>
-
-            <!-- Dynamic Items Container -->
-            <div id="orderItemsList" style="margin-bottom: 1rem;">
-              <!-- Populated by renderOrderItems() -->
-            </div>
-
-            <!-- Live Multi-Item Calculation Summary -->
-            <div class="card" style="padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.8125rem;">
-              <div>
-                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL ITEMS</span>
-                <p id="summaryItemCount" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">1</p>
-              </div>
-              <div>
-                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL DECLARED VALUE</span>
-                <p id="summaryDeclaredValue" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">₹0.00</p>
-              </div>
-              <div>
-                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">DEAD WEIGHT</span>
-                <p id="summaryDeadWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.00 kg</p>
-              </div>
-              <div>
-                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">VOLUMETRIC WEIGHT</span>
-                <p id="summaryVolWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.00 kg</p>
-              </div>
-              <div>
-                <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">BILLABLE FREIGHT WEIGHT</span>
-                <p id="summaryBillableWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--brand); margin-top: 2px;">0.50 kg</p>
-              </div>
-            </div>
-            <p id="volWeightText" style="display: none;">Billable weight: 0.50 kg</p>
-
-            <!-- E-Way Bill & GST Requirements for High-Value Consignments (> ₹50,000) -->
-            <div id="ewayBillGstSection" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <span style="font-size: 1.1rem;">⚠️</span>
+                <!-- Buyer Details with Smart Mobile First Autofill -->
                 <div>
-                  <h4 style="font-size: 0.875rem; font-weight: 800; color: #92400e; margin: 0;">High Value Consignment (> ₹50,000)</h4>
-                  <p style="font-size: 0.75rem; color: #78350f; margin: 0;">Shipments exceeding ₹50,000 legally require an active 12-digit E-Way Bill Number and registered 15-character GSTIN for carrier transit.</p>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <h4 style="font-size: 0.875rem; font-weight: 750; color: var(--brand); margin: 0;">1B. Consignee / Buyer Address</h4>
+                  </div>
+
+                  <!-- Mobile Number and Alternate Mobile -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                      <label>Buyer Mobile Number *</label>
+                      <div style="position: relative;">
+                        <input type="tel" id="buyerPhone" class="form-control" placeholder="10-digit mobile" maxlength="16" oninput="onBuyerPhoneInput(this.value)" onchange="onBuyerPhoneInput(this.value)" onblur="onBuyerPhoneInput(this.value)" onkeyup="onBuyerPhoneInput(this.value)" required style="font-weight: 600; letter-spacing: 0.5px;" autocomplete="tel" />
+                        <span id="phoneStatusIcon" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; font-size: 1rem;"></span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>Alternate Mobile (Optional)</label>
+                      <input type="tel" id="buyerAltPhone" class="form-control" placeholder="Secondary contact" />
+                    </div>
+                  </div>
+                  <div id="autofillNotice" style="display: none; font-size: 0.75rem; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.4rem 0.65rem; border-radius: 6px; margin-bottom: 0.75rem; font-weight: 600;">
+                    ✨ Customer (<span id="autofillCustName"></span>) found! Address populated (you can freely edit details below).
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                      <label>Buyer Name *</label>
+                      <input type="text" id="buyerName" class="form-control" placeholder="Recipient's full name" oninput="cacheCurrentBuyerForm();" required />
+                    </div>
+                    <div class="form-group">
+                      <label>Buyer Email (Tracking Alerts)</label>
+                      <input type="email" id="buyerEmail" class="form-control" placeholder="customer@example.com" />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Street Address / Flat / Building *</label>
+                    <input type="text" id="buyerAddress" class="form-control" placeholder="House / Flat / Block No., Street, Area" oninput="cacheCurrentBuyerForm();" required />
+                  </div>
+                  <div class="form-group">
+                    <label>Address Line 2 / Landmark (Optional)</label>
+                    <input type="text" id="buyerAddress2" class="form-control" placeholder="Opposite Landmark, Floor / Suite" />
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <div class="form-group">
+                      <label>Pincode *</label>
+                      <div style="position: relative;">
+                        <input type="text" id="buyerPincode" class="form-control" placeholder="6-digit PIN code" maxlength="6" oninput="onBuyerPincodeChanged(); cacheCurrentBuyerForm();" required />
+                        <span id="pincodeLookupSpinner" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; font-size: 0.75rem;">⏳</span>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label>City *</label>
+                      <input type="text" id="buyerCity" class="form-control" placeholder="City / District" oninput="cacheCurrentBuyerForm()" required />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>State *</label>
+                    <input type="text" id="buyerState" class="form-control" placeholder="State" oninput="cacheCurrentBuyerForm()" required />
+                  </div>
                 </div>
               </div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;" class="mobile-grid-1">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">12-Digit E-Way Bill Number *</label>
-                  <input type="text" id="orderEwayBill" class="form-control" placeholder="e.g. 121000123456" maxlength="12" style="font-family: monospace; font-weight: 700;" />
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">15-Character GSTIN *</label>
-                  <input type="text" id="orderGstNumber" class="form-control" placeholder="e.g. 27AAAAA0000A1Z5" maxlength="15" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" />
-                </div>
+
+              <!-- Step 1 Bottom Action Bar -->
+              <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <button type="button" class="btn-primary" onclick="proceedToStep2()" style="padding: 0.75rem 1.75rem; font-weight: 700; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <span>Proceed to Package Details</span>
+                  <span>➔</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <!-- Payment Mode -->
-          <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-bottom: 1.5rem;">
-            <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--brand); margin-bottom: 0.75rem;">4. Payment & Live Carrier Selection</h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;" class="mobile-grid-1">
-              <div class="form-group">
-                <label>Payment Mode</label>
-                <select id="paymentModeSelect" class="form-control" onchange="toggleCodInput(); triggerDynamicRateFetch();">
-                  <option value="PREPAID">Prepaid</option>
-                  <option value="COD">COD</option>
-                </select>
+          <!-- ================= STEP 2: PACKAGE & ITEM SPECIFICATIONS ================= -->
+          <div id="orderStep2Card" class="card" style="padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--border); transition: all 0.2s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; cursor: pointer;" onclick="if(window.maxOrderStepReached>=2) goToOrderStep(2);">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.15rem;">📦</span>
+                <div>
+                  <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); margin: 0;">Step 2: Shipment Items & Package Specifications</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Add products, SKU, HSN, weights, dimensions, and high-value compliance</p>
+                </div>
               </div>
-              <div class="form-group" id="codAmountGroup" style="display: none;">
-                <label>COD Amount to Collect (₹)</label>
-                <input type="number" id="codAmountInput" class="form-control" placeholder="e.g. 1200" oninput="triggerDynamicRateFetch()" />
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span id="step2HeaderBadge" class="badge" style="background: #f1f5f9; color: #64748b; font-weight: 700; font-size: 0.72rem; padding: 0.3rem 0.65rem; border-radius: 9999px;">
+                  🔒 Step 2 Locked
+                </span>
+                <button type="button" id="step2EditBtn" onclick="goToOrderStep(2); event.stopPropagation();" class="btn-secondary" style="display: none; font-size: 0.72rem; padding: 0.25rem 0.5rem;">Edit</button>
               </div>
             </div>
 
-            <!-- Dynamic Courier Selection -->
-            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">Select Courier Partner (Rates fetched live on pincode)</label>
-            <div id="bookingCourierOptions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
-              <div style="padding: 1.25rem; border: 1px dashed var(--border); border-radius: 0.5rem; color: var(--text-muted); font-size: 0.8125rem; grid-column: 1/-1; text-align: center;">
-                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
-                <div style="font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Complete the details above to see courier options</div>
-                <div style="font-size: 0.75rem;">Fill in pickup warehouse, buyer details, delivery pincode, and item specifications</div>
+            <div id="orderStep2Body" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                <p style="font-size: 0.8125rem; font-weight: 600; color: var(--navy); margin: 0;">Itemized Package Breakdown (Shipmozo Multi-Item Table)</p>
+                <button type="button" onclick="addOrderItem()" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem; border-color: var(--brand); color: var(--brand);">
+                  ➕ Add Item
+                </button>
+              </div>
+
+              <!-- Package Type Classification Selector -->
+              <div style="margin-bottom: 1rem; background: #f8fafc; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.4rem;">
+                  <label style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); margin: 0;">
+                    Package Classification:
+                  </label>
+                  <span id="orderPackageTypeNotice" style="font-size: 0.75rem; color: var(--text-muted);">
+                    Auto-classified based on billable weight (Small &lt;10 kg vs Large &gt;10 kg)
+                  </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                  <button type="button" id="orderPkgSmallBtn" class="btn-secondary active" onclick="setOrderPackageType('SMALL')" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.4rem; border: 2px solid var(--brand); background: var(--brand-light); color: var(--brand); cursor: pointer;">
+                    <span>📦</span>
+                    <span>Small Package (&lt;10 kg)</span>
+                  </button>
+                  <button type="button" id="orderPkgLargeBtn" class="btn-secondary" onclick="setOrderPackageType('LARGE')" style="padding: 0.45rem 0.95rem; font-size: 0.8125rem; font-weight: 700; border-radius: 0.375rem; display: flex; align-items: center; gap: 0.4rem; border: 2px solid var(--border); background: #ffffff; color: var(--text); cursor: pointer;">
+                    <span>🚚</span>
+                    <span>Large Package (&gt;10 kg)</span>
+                  </button>
+                </div>
+                <input type="hidden" id="orderPackageType" value="SMALL" />
+              </div>
+
+              <!-- Dynamic Items Container -->
+              <div id="orderItemsList" style="margin-bottom: 1rem;">
+                <!-- Populated by renderOrderItems() -->
+              </div>
+
+              <!-- Live Multi-Item Calculation Summary -->
+              <div class="card" style="padding: 1rem; background: #eff6ff; border: 1px solid #bfdbfe; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; font-size: 0.8125rem; margin-bottom: 1rem;">
+                <div>
+                  <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL ITEMS</span>
+                  <p id="summaryItemCount" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">1</p>
+                </div>
+                <div>
+                  <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">TOTAL DECLARED VALUE</span>
+                  <p id="summaryDeclaredValue" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">₹0.00</p>
+                </div>
+                <div>
+                  <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">DEAD WEIGHT</span>
+                  <p id="summaryDeadWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.00 kg</p>
+                </div>
+                <div>
+                  <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">VOLUMETRIC WEIGHT</span>
+                  <p id="summaryVolWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--navy); margin-top: 2px;">0.00 kg</p>
+                </div>
+                <div>
+                  <span style="color: #1e40af; font-size: 0.75rem; font-weight: 600;">BILLABLE FREIGHT WEIGHT</span>
+                  <p id="summaryBillableWeight" style="font-size: 1.125rem; font-weight: 800; color: var(--brand); margin-top: 2px;">0.50 kg</p>
+                </div>
+              </div>
+              <p id="volWeightText" style="display: none;">Billable weight: 0.50 kg</p>
+
+              <!-- E-Way Bill & GST Requirements for High-Value Consignments (> ₹50,000) - Shipmozo Enhanced -->
+              <div id="ewayBillGstSection" style="display: none; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 8px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem;">
+                  <span style="font-size: 1.35rem; line-height: 1;">⚡</span>
+                  <div>
+                    <h4 style="font-size: 0.9rem; font-weight: 800; color: #92400e; margin: 0;">High Value Consignment (> ₹50,000) Statutory Compliance</h4>
+                    <p style="font-size: 0.75rem; color: #78350f; margin-top: 2px; line-height: 1.4;">
+                      Consignments exceeding ₹50,000 legally mandate an active 12-digit E-Way Bill Number, registered GSTIN, commercial invoice details, and risk insurance coverage under CGST Rule 138.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">12-Digit E-Way Bill Number *</label>
+                    <input type="text" id="orderEwayBill" class="form-control" placeholder="e.g. 121000123456" maxlength="12" style="font-family: monospace; font-weight: 700;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">15-Character GSTIN *</label>
+                    <input type="text" id="orderGstNumber" class="form-control" placeholder="e.g. 27AAAAA0000A1Z5" maxlength="15" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">Commercial Invoice # *</label>
+                    <input type="text" id="orderInvoiceNumber" class="form-control" placeholder="e.g. INV-2026-089" style="font-weight: 600;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700; color: #92400e;">Invoice Date *</label>
+                    <input type="date" id="orderInvoiceDate" class="form-control" style="font-size: 0.8125rem;" />
+                  </div>
+                </div>
+
+                <!-- Risk On Value (ROV) Transit Insurance (Shipmozo Feature) -->
+                <div style="background: #ffffff; border: 1px solid #fef3c7; border-radius: 6px; padding: 0.75rem 1rem; margin-top: 0.75rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                  <div>
+                    <label style="font-size: 0.775rem; font-weight: 750; color: #92400e; margin: 0; display: block;">
+                      Risk Coverage / ROV Protection:
+                    </label>
+                    <span style="font-size: 0.7rem; color: #78350f;">
+                      Carrier covers 100% loss/damage in transit against nominal insurance surcharge
+                    </span>
+                  </div>
+                  <select id="orderRovType" class="form-control" style="width: auto; min-width: 200px; font-size: 0.75rem; font-weight: 700; background: #fffbeb; border-color: #fde68a; color: #92400e;">
+                    <option value="ROV">Carrier Risk / ROV Insured (Recommended)</option>
+                    <option value="OWNER_RISK">Owner's Risk (No Insurance)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Step 2 Bottom Action Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.75rem;">
+                <button type="button" class="btn-secondary" onclick="goToOrderStep(1)" style="padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.875rem;">
+                  ← Back to Addresses
+                </button>
+                <button type="button" class="btn-primary" onclick="proceedToStep3()" style="padding: 0.75rem 1.75rem; font-weight: 700; font-size: 0.875rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <span>Proceed to Delivery & Carriers</span>
+                  <span>➔</span>
+                </button>
               </div>
             </div>
           </div>
 
-          <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;">
-            <button type="button" id="saveOrderDraftBtn" onclick="saveOrderDraft()" class="btn-secondary" style="flex: 1; min-width: 220px; padding: 0.875rem; font-size: 0.9375rem; font-weight: 700; border: 1.5px solid var(--border); background: #f8fafc; color: var(--navy); display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.15s ease;">
-              💾 Save Order (Ship Later)
-            </button>
-            <button type="submit" id="bookOrderBtn" class="btn-primary" style="flex: 1.5; min-width: 260px; padding: 0.875rem; font-size: 1rem; font-weight: 750;">
-              ⚡ Book Shipment & Generate AWB
-            </button>
+          <!-- ================= STEP 3: DELIVERY & CARRIER OPTIONS ================= -->
+          <div id="orderStep3Card" class="card" style="padding: 1.5rem; margin-bottom: 1.25rem; border: 1px solid var(--border); transition: all 0.2s ease;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem; cursor: pointer;" onclick="if(window.maxOrderStepReached>=3) goToOrderStep(3);">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.15rem;">🚚</span>
+                <div>
+                  <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); margin: 0;">Step 3: Delivery Options & Live Carrier Selection</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0;">Compare real-time shipping quotes, choose carrier partner, and manifest</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span id="step3HeaderBadge" class="badge" style="background: #f1f5f9; color: #64748b; font-weight: 700; font-size: 0.72rem; padding: 0.3rem 0.65rem; border-radius: 9999px;">
+                  🔒 Step 3 Locked
+                </span>
+                <button type="button" id="step3EditBtn" onclick="goToOrderStep(3); event.stopPropagation();" class="btn-secondary" style="display: none; font-size: 0.72rem; padding: 0.25rem 0.5rem;">Edit</button>
+              </div>
+            </div>
+
+            <div id="orderStep3Body" style="display: none;">
+              <!-- Payment Mode -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;" class="mobile-grid-1">
+                <div class="form-group">
+                  <label>Payment Mode <span style="font-size: 0.72rem; color: #64748b; font-weight: normal;">(Prepaid by default; select COD only if cash collection needed)</span></label>
+                  <select id="paymentModeSelect" class="form-control" onchange="toggleCodInput(); triggerDynamicRateFetch();">
+                    <option value="PREPAID">Prepaid</option>
+                    <option value="COD">COD (Cash on Delivery)</option>
+                  </select>
+                </div>
+                <div class="form-group" id="codAmountGroup" style="display: none;">
+                  <label>COD Amount to Collect (₹) <span style="font-size: 0.72rem; color: #64748b; font-weight: normal;">(Optional - auto-defaults to item value)</span></label>
+                  <input type="number" id="codAmountInput" class="form-control" placeholder="e.g. 1200" oninput="triggerDynamicRateFetch()" />
+                </div>
+              </div>
+
+              <!-- Dynamic Courier Selection -->
+              <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.5rem;">Select Courier Partner (Rates fetched live on route & weight)</label>
+              <div id="bookingCourierOptions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+                <div style="padding: 1.25rem; border: 1px dashed var(--border); border-radius: 0.5rem; color: var(--text-muted); font-size: 0.8125rem; grid-column: 1/-1; text-align: center;">
+                  <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📋</div>
+                  <div style="font-weight: 700; color: var(--navy); margin-bottom: 0.35rem;">Fetching live courier quotes...</div>
+                  <div style="font-size: 0.75rem;">Delhivery, Blue Dart, DTDC, Ekart, Shadowfax & partner rates are being calculated</div>
+                </div>
+              </div>
+
+              <!-- Step 3 Bottom Action Bar -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.75rem;">
+                <button type="button" class="btn-secondary" onclick="goToOrderStep(2)" style="padding: 0.75rem 1.25rem; font-weight: 600; font-size: 0.875rem;">
+                  ← Back to Items
+                </button>
+                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+                  <button type="button" id="saveOrderDraftBtn" onclick="saveOrderDraft()" class="btn-secondary" style="padding: 0.875rem 1.25rem; font-size: 0.875rem; font-weight: 700; border: 1.5px solid var(--border); background: #f8fafc; color: var(--navy); display: flex; align-items: center; gap: 0.5rem;">
+                    💾 Save Draft
+                  </button>
+                  <button type="submit" id="bookOrderBtn" class="btn-primary" style="padding: 0.875rem 2rem; font-size: 0.95rem; font-weight: 750;">
+                    ⚡ Book Shipment & Generate AWB
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </form>
       </section>
@@ -1706,9 +1972,28 @@
 
       <!-- ================= TAB: NDR ================= -->
       <section id="tab-ndr" class="tab-content">
-        <div style="margin-bottom: 1.25rem;">
-          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">NDR (Non-Delivery Reports)</h1>
-          <p style="color: var(--text-muted); font-size: 0.775rem;">Action delivery failure exceptions to prevent Return to Origin (RTO)</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">NDR (Non-Delivery Reports)</h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">Action delivery failure exceptions to prevent Return to Origin (RTO)</p>
+          </div>
+          <button type="button" class="btn-secondary" onclick="loadNdrRecords()" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">🔄 Refresh NDR</button>
+        </div>
+
+        <!-- NDR Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch;">
+          <button type="button" class="btn-secondary active" onclick="filterNdr('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All Exceptions</button>
+          <button type="button" class="btn-secondary" onclick="filterNdr('ACTION_REQUIRED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Action Required</button>
+          <button type="button" class="btn-secondary" onclick="filterNdr('REATTEMPT_REQUESTED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Reattempt Requested</button>
+          <button type="button" class="btn-secondary" onclick="filterNdr('RTO_INITIATED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">RTO Initiated</button>
+        </div>
+
+        <!-- NDR Search Input -->
+        <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: center; background: #f8fafc; border: 1px solid var(--border);">
+          <div style="flex: 1; position: relative;">
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8;">🔍</span>
+            <input type="text" id="ndrSearchInput" placeholder="Filter exceptions by AWB, order ID, failure reason..." oninput="applyNdrFilter()" style="width: 100%; padding: 0.45rem 0.75rem 0.45rem 2rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+          </div>
         </div>
 
         <div class="card" style="padding: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -1724,7 +2009,7 @@
               </tr>
             </thead>
             <tbody id="ndrTableBody">
-              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No pending NDR exceptions found.</td></tr>
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading NDR exceptions...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1738,6 +2023,22 @@
             <p style="color: var(--text-muted); font-size: 0.775rem;">Raise shipping disputes, weight queries, and courier escalations</p>
           </div>
           <button class="btn-primary" onclick="openNewTicketModal()">+ Raise Ticket</button>
+        </div>
+
+        <!-- Tickets Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch;">
+          <button type="button" class="btn-secondary active" onclick="filterTickets('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All Tickets</button>
+          <button type="button" class="btn-secondary" onclick="filterTickets('OPEN', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Open</button>
+          <button type="button" class="btn-secondary" onclick="filterTickets('IN_REVIEW', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">In Review</button>
+          <button type="button" class="btn-secondary" onclick="filterTickets('RESOLVED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Resolved</button>
+        </div>
+
+        <!-- Tickets Search Input -->
+        <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: center; background: #f8fafc; border: 1px solid var(--border);">
+          <div style="flex: 1; position: relative;">
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8;">🔍</span>
+            <input type="text" id="ticketsSearchInput" placeholder="Filter tickets by Ticket ID, Subject, AWB..." oninput="applyTicketsFilter()" style="width: 100%; padding: 0.45rem 0.75rem 0.45rem 2rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
+          </div>
         </div>
 
         <div class="card" style="padding: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -1770,7 +2071,7 @@
         </div>
 
         <!-- COD Metric Summary Cards -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
           <div class="card" style="padding: 1.25rem; border-left: 4px solid #0284c7;">
             <span style="font-size: 0.75rem; font-weight: 700; color: #0284c7; text-transform: uppercase;">Total Collected COD</span>
             <h3 id="codMetricTotal" style="font-size: 1.5rem; font-weight: 800; color: var(--navy); margin-top: 0.35rem;">₹0.00</h3>
@@ -1785,6 +2086,21 @@
             <span style="font-size: 0.75rem; font-weight: 700; color: #f59e0b; text-transform: uppercase;">Pending / Processing Payout</span>
             <h3 id="codMetricPending" style="font-size: 1.5rem; font-weight: 800; color: #d97706; margin-top: 0.35rem;">₹0.00</h3>
             <p style="font-size: 0.6875rem; color: var(--text-muted); margin-top: 0.25rem;">Standard carrier remittance cycle T+2 to T+4</p>
+          </div>
+        </div>
+
+        <!-- COD Filter Pills -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch;">
+          <button type="button" class="btn-secondary active" onclick="filterCod('ALL', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">All Remittances</button>
+          <button type="button" class="btn-secondary" onclick="filterCod('SETTLED', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Settled / Paid</button>
+          <button type="button" class="btn-secondary" onclick="filterCod('PENDING', this)" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">Pending / Processing</button>
+        </div>
+
+        <!-- COD Search Input -->
+        <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem; display: flex; gap: 0.75rem; align-items: center; background: #f8fafc; border: 1px solid var(--border);">
+          <div style="flex: 1; position: relative;">
+            <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: #94a3b8;">🔍</span>
+            <input type="text" id="codSearchInput" placeholder="Filter by Remittance ID, AWB, Order #, UTR, Courier..." oninput="applyCodFilter()" style="width: 100%; padding: 0.45rem 0.75rem 0.45rem 2rem; font-size: 0.8125rem; border: 1px solid var(--border); border-radius: 6px; outline: none; background: #fff;" />
           </div>
         </div>
 
@@ -1914,94 +2230,389 @@
         </div>
       </section>
 
-      <!-- ================= TAB: PROFILE & KYC ================= -->
-      <section id="tab-profile" class="tab-content">
-        <div style="margin-bottom: 1.25rem;">
-          <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">Profile & KYC</h1>
-          <p style="color: var(--text-muted); font-size: 0.775rem;">Account identity, business name, and GST/PAN verification</p>
+      <!-- ================= TAB: MONTHLY GST INVOICES (Separate Screen) ================= -->
+      <section id="tab-invoices" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--navy); margin-bottom: 0.25rem;">
+              🧾 Monthly GST Tax Invoices (SAC 9965)
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.775rem;">
+              Aggregated monthly B2B tax invoices with 18% GST (9% CGST + 9% SGST) breakdown for 100% GSTR-2B Input Tax Credit (ITC) claim
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button onclick="loadMonthlyInvoices()" class="btn-secondary" style="font-size: 0.8125rem; padding: 0.45rem 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
+              🔄 Refresh Invoices
+            </button>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1000px;" class="mobile-grid-1">
-          <!-- Basic Profile Card -->
-          <div class="card" style="padding: 1.75rem;">
-            <h3 style="font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 1rem;">Profile Details</h3>
-            <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" id="profName" class="form-control" readonly />
+        <!-- Monthly Invoice KPI Summary Cards -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="card" style="padding: 1.25rem; border-left: 4px solid #2563eb;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #1e40af; text-transform: uppercase;">Total Invoiced (YTD)</span>
+            <h3 id="invMetricTotalAmount" style="font-size: 1.35rem; font-weight: 800; color: var(--navy); margin-top: 0.35rem;">₹2,485.40</h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Cumulative freight billing</span>
+          </div>
+          <div class="card" style="padding: 1.25rem; border-left: 4px solid #16a34a;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #15803d; text-transform: uppercase;">Input Tax Credit (GST)</span>
+            <h3 id="invMetricTotalGst" style="font-size: 1.35rem; font-weight: 800; color: #16a34a; margin-top: 0.35rem;">₹379.12</h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">18% GST claimed in GSTR-2B</span>
+          </div>
+          <div class="card" style="padding: 1.25rem; border-left: 4px solid #7c3aed;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #6d28d9; text-transform: uppercase;">Total Shipments Billed</span>
+            <h3 id="invMetricTotalShipments" style="font-size: 1.35rem; font-weight: 800; color: var(--navy); margin-top: 0.35rem;">16</h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Processed parcels</span>
+          </div>
+          <div class="card" style="padding: 1.25rem; border-left: 4px solid #ea580c;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #c2410c; text-transform: uppercase;">GSTIN Registered</span>
+            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--navy); margin-top: 0.35rem; font-family: monospace;">07AABCH1234F1Z6</h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">SAC: 9965 (Freight Services)</span>
+          </div>
+        </div>
+
+        <!-- Invoices List Card -->
+        <div class="card" style="padding: 0; overflow: hidden; border-radius: 10px;">
+          <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; background: #fafafa;">
+            <div style="font-weight: 700; color: var(--navy); font-size: 0.9rem;">
+              Tax Invoices Ledger
             </div>
-            <div class="form-group">
-              <label>Business / Store Name</label>
-              <input type="text" id="profBusiness" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-              <label>Email Address</label>
-              <input type="text" id="profEmail" class="form-control" readonly />
-            </div>
-            <div class="form-group">
-              <label>Phone Number</label>
-              <input type="text" id="profPhone" class="form-control" readonly />
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" id="invoiceSearchInput" placeholder="Search invoice number..." oninput="filterInvoicesTable(this.value)" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; border: 1px solid var(--border); border-radius: 6px; outline: none;" />
             </div>
           </div>
+          <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.8125rem; text-align: left;">
+              <thead>
+                <tr style="background: #f8fafc; border-bottom: 1px solid var(--border); color: var(--text-muted); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em;">
+                  <th style="padding: 0.85rem 1rem;">Invoice # / Month</th>
+                  <th style="padding: 0.85rem 1rem; text-align: center;">Shipments</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">Billable Wt</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">Freight (₹)</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">COD Fee (₹)</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">Taxable (₹)</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">GST 18% (₹)</th>
+                  <th style="padding: 0.85rem 1rem; text-align: right;">Grand Total (₹)</th>
+                  <th style="padding: 0.85rem 1rem; text-align: center;">Status</th>
+                  <th style="padding: 0.85rem 1rem; text-align: center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="monthlyInvoicesTableBody">
+                <tr>
+                  <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    Loading monthly statements...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-          <!-- Complete eKYC Verification Panel -->
-          <div class="card" style="padding: 1.75rem;" id="ekycCardContainer">
-            <h3 style="font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 1rem;">eKYC Verification</h3>
-            
-            <!-- Verified State -->
-            <div id="kycVerifiedView" style="display: none; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 0.5rem; padding: 1.25rem;">
-              <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-                <span style="font-size: 1.5rem;">✅</span>
-                <div>
-                  <h4 style="font-weight: 700; color: #065f46;">Identity Verified</h4>
-                  <p style="font-size: 0.75rem; color: #047857;" id="kycDocDetails">PAN / GST Verified</p>
-                </div>
+      <!-- ================= TAB: PROFILE & KYC (Unified My Profile) ================= -->
+      <section id="tab-profile" class="tab-content">
+        <!-- Fluid Wave Hero Header Banner -->
+        <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 45%, #ede9fe 100%); border-radius: 12px; border: 1px solid #bae6fd; padding: 1.5rem 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(2,132,199,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 2;">
+            <!-- Left: Clickable Wallet Box -->
+            <div onclick="switchTab('wallet')" style="display: inline-flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); padding: 0.6rem 1.15rem; border-radius: 9999px; cursor: pointer; border: 1.5px solid #bfdbfe; box-shadow: 0 2px 8px rgba(37,99,235,0.08); transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+              <span style="font-size: 1.35rem; line-height: 1;">💳</span>
+              <div>
+                <div style="font-size: 1.15rem; font-weight: 850; color: #0f172a; line-height: 1.2;" id="profHeroWallet">₹0.00</div>
+                <div style="font-size: 0.68rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.04em;">Wallet Balance</div>
               </div>
-              <p style="font-size: 0.8125rem; color: #065f46; margin-top: 0.5rem;">Your account is fully KYC verified. Daily manifest and instant COD limits are unlocked.</p>
             </div>
 
-            <!-- Form / OTP Submission State -->
-            <div id="kycUnverifiedView">
-              <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1rem;">
-                Verify your identity using <strong>GSTIN OTP</strong>, <strong>Aadhaar OTP</strong>, or <strong>PAN</strong> to unlock COD settlements and full wallet features.
-              </p>
-
-              <!-- Document Type Switcher -->
-              <div class="form-group">
-                <label>Verification Document Type</label>
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                  <button type="button" class="btn-secondary active" id="btnDocGST" onclick="selectDocType('GST')">GSTIN OTP</button>
-                  <button type="button" class="btn-secondary" id="btnDocAADHAAR" onclick="selectDocType('AADHAAR')">Aadhaar OTP</button>
-                  <button type="button" class="btn-secondary" id="btnDocPAN" onclick="selectDocType('PAN')">PAN Card</button>
+            <!-- Center: Avatar Circle & User Title (Real User Info) -->
+            <div style="text-align: center; margin: 0 auto;">
+              <div style="position: relative; display: inline-block;">
+                <div id="profHeroAvatarCircle" style="width: 76px; height: 76px; border-radius: 50%; background: #0f172a; border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(15,23,42,0.25); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.75rem; font-weight: 800; margin: 0 auto;">
+                  <span id="profHeroAvatarInitial">U</span>
                 </div>
               </div>
+              <h2 id="profHeroName" style="font-size: 1.2rem; font-weight: 850; color: #0f172a; margin: 0.5rem 0 0.15rem 0; text-transform: uppercase; letter-spacing: 0.02em;">Loading...</h2>
+              <div id="profHeroRole" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase;">MERCHANT ACCOUNT</div>
+            </div>
 
-              <!-- Step 1: Document Number Input -->
-              <div id="kycStepForm">
-                <div class="form-group">
-                  <label id="kycDocLabel">15-digit GSTIN Number *</label>
-                  <input type="text" id="kycDocInput" class="form-control" placeholder="07AAAAA0000A1Z5" style="text-transform: uppercase;" />
-                  <p id="kycDocHelp" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Enter valid 15-character GSTIN</p>
-                </div>
-                <button type="button" id="btnRequestKycOtp" class="btn-primary" onclick="requestKycOtp()" style="width: 100%;">
-                  📲 Request Verification OTP
+            <!-- Right: Profile Status Badge -->
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.8125rem; font-weight: 600; color: #475569;">Profile Status:</span>
+              <span id="profHeroStatusBadge" class="badge" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.75rem; padding: 0.4rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">
+                <span>✓</span><span>Approved</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unified Profile Content (2-Column Responsive Layout) -->
+        <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.5rem;" class="mobile-grid-1">
+          
+          <!-- LEFT COLUMN: Contact Details & Address Details -->
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Card 1: Contact Details -->
+            <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>👤</span> Contact Details
+                </h3>
+                <button type="button" id="btnEditContact" onclick="toggleEditContact()" style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem;" title="Edit Contact Details">
+                  ✏️
                 </button>
               </div>
 
-              <!-- Step 2: OTP Verification Input -->
-              <div id="kycStepOtp" style="display: none; border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem;">
-                <div class="form-group">
-                  <label>Enter 6-digit Verification OTP *</label>
-                  <input type="text" id="kycOtpInput" class="form-control" placeholder="123456" maxlength="6" style="letter-spacing: 4px; font-weight: 700; text-align: center; font-size: 1.125rem;" />
-                  <p id="kycDevOtpHint" style="font-size: 0.75rem; color: var(--brand); margin-top: 0.25rem;"></p>
+              <!-- Contact View Mode -->
+              <div id="contactViewMode">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem;" class="mobile-grid-1">
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Name:</span>
+                    <strong id="viewProfName" style="font-size: 0.875rem; color: var(--navy); text-transform: uppercase;">-</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Email:</span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                      <span id="viewProfEmail" style="font-size: 0.825rem; font-weight: 700; color: var(--navy);">-</span>
+                      <span class="badge badge-success" style="font-size: 0.65rem;">✓ Verified</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Phone:</span>
+                    <div style="display: flex; align-items: center; gap: 0.4rem;">
+                      <strong id="viewProfPhone" style="font-size: 0.875rem; color: var(--navy);">-</strong>
+                      <span style="color: #16a34a; font-size: 0.85rem;" title="Verified Phone">✅</span>
+                    </div>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">User type:</span>
+                    <span id="viewProfUserType" class="badge" style="background: #f1f5f9; color: var(--navy); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px;">BUSINESS</span>
+                  </div>
+                  <div style="grid-column: 1/-1;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Joined:</span>
+                    <span id="viewProfJoined" style="font-size: 0.8125rem; color: #475569;">-</span>
+                  </div>
                 </div>
-                <div style="display: flex; gap: 0.5rem;">
-                  <button type="button" class="btn-secondary" onclick="resetKycStep()" style="flex: 1;">Back</button>
-                  <button type="button" class="btn-primary" onclick="verifyKycOtp()" style="flex: 2;">Verify & Submit KYC</button>
+              </div>
+
+              <!-- Contact Edit Mode (Hidden by default) -->
+              <form id="contactEditForm" style="display: none;" onsubmit="saveContactDetails(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;" class="mobile-grid-1">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Full Name *</label>
+                    <input type="text" id="editProfName" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Email Address *</label>
+                    <input type="email" id="editProfEmail" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Mobile Phone *</label>
+                    <input type="tel" id="editProfPhone" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Business / Store Name</label>
+                    <input type="text" id="editProfBusiness" class="form-control" style="font-size: 0.8125rem;" />
+                  </div>
                 </div>
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button type="button" onclick="toggleEditContact(false)" class="btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.85rem;">Cancel</button>
+                  <button type="submit" class="btn-primary" style="font-size: 0.75rem; padding: 0.4rem 1.15rem;">💾 Save Changes</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Card 2: Address Details -->
+            <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>📍</span> Address Details
+                </h3>
+                <button type="button" id="btnEditAddress" onclick="toggleEditAddress()" style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem;" title="Edit Address Details">
+                  ✏️
+                </button>
+              </div>
+
+              <!-- Address View Mode -->
+              <div id="addressViewMode">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem;" class="mobile-grid-1">
+                  <div style="grid-column: 1/-1;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Address Line 1:</span>
+                    <strong id="viewProfAddr1" style="font-size: 0.8125rem; color: var(--navy);">-</strong>
+                  </div>
+                  <div style="grid-column: 1/-1;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Address Line 2:</span>
+                    <strong id="viewProfAddr2" style="font-size: 0.8125rem; color: var(--navy);">-</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">City:</span>
+                    <strong id="viewProfCity" style="font-size: 0.875rem; color: var(--navy);">-</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">State:</span>
+                    <strong id="viewProfState" style="font-size: 0.875rem; color: var(--navy);">-</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Country:</span>
+                    <strong id="viewProfCountry" style="font-size: 0.875rem; color: var(--navy);">India</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Pincode:</span>
+                    <strong id="viewProfPincode" style="font-size: 0.875rem; color: var(--brand); font-family: monospace;">-</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Address Edit Mode (Hidden by default) -->
+              <form id="addressEditForm" style="display: none;" onsubmit="saveAddressDetails(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;" class="mobile-grid-1">
+                  <div class="form-group" style="grid-column: 1/-1; margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Address Line 1 *</label>
+                    <input type="text" id="editProfAddr1" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="grid-column: 1/-1; margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Address Line 2 (Landmark / Area)</label>
+                    <input type="text" id="editProfAddr2" class="form-control" style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">City *</label>
+                    <input type="text" id="editProfCity" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">State *</label>
+                    <input type="text" id="editProfState" class="form-control" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Country *</label>
+                    <input type="text" id="editProfCountry" class="form-control" value="India" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Pincode *</label>
+                    <input type="text" id="editProfPincode" class="form-control" maxlength="6" required style="font-size: 0.8125rem; font-family: monospace;" />
+                  </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                  <button type="button" onclick="toggleEditAddress(false)" class="btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.85rem;">Cancel</button>
+                  <button type="submit" class="btn-primary" style="font-size: 0.75rem; padding: 0.4rem 1.15rem;">💾 Save Address</button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Bank Details, Password Change via OTP, KYC Status -->
+          <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Card 3: Bank Details (Editable for COD Remittances) -->
+            <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>🏦</span> Bank Details (COD Remittances)
+                </h3>
+                <span class="badge badge-success" style="font-size: 0.7rem;">Verified Payout</span>
+              </div>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                All COD order remittances will be automatically transferred to this registered bank account.
+              </p>
+
+              <form onsubmit="saveBankDetails(event)">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Account Holder Name *</label>
+                    <input type="text" id="profBankHolder" class="form-control" required style="font-size: 0.8125rem; text-transform: uppercase;" />
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="font-size: 0.75rem; font-weight: 700;">Bank Name *</label>
+                      <input type="text" id="profBankName" class="form-control" placeholder="e.g. HDFC Bank" required style="font-size: 0.8125rem;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="font-size: 0.75rem; font-weight: 700;">IFSC Code *</label>
+                      <input type="text" id="profBankIfsc" class="form-control" placeholder="e.g. HDFC0000240" maxlength="11" required style="font-size: 0.8125rem; text-transform: uppercase; font-family: monospace;" />
+                    </div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 0.75rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="font-size: 0.75rem; font-weight: 700;">Account Number *</label>
+                      <input type="text" id="profBankAcc" class="form-control" placeholder="Enter bank account number" required style="font-size: 0.8125rem; font-family: monospace;" />
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                      <label style="font-size: 0.75rem; font-weight: 700;">Account Type</label>
+                      <select id="profBankAccountType" class="form-control" style="font-size: 0.8125rem;">
+                        <option value="Current">Current</option>
+                        <option value="Savings">Savings</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <button type="submit" id="btnSaveBank" class="btn-primary" style="padding: 0.45rem 1.25rem; font-size: 0.8125rem; font-weight: 750;">
+                    💾 Update Bank Details
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Card 4: Change Password via Email OTP -->
+            <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1.5px solid #e2e8f0; background: #ffffff;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>🔒</span> Change Password via Email OTP
+                </h3>
+                <span class="badge badge-info" style="font-size: 0.7rem;">Email Verified</span>
+              </div>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                To update your password, request an OTP verification code sent to your registered email: <strong id="pwdTargetEmailText" style="color: var(--navy);">-</strong>
+              </p>
+
+              <!-- Step A: Send OTP Button Strip -->
+              <div id="pwdOtpRequestView" style="margin-bottom: 1rem;">
+                <button type="button" id="btnSendPasswordOtp" onclick="sendPasswordChangeOtp()" class="btn-secondary" style="width: 100%; padding: 0.55rem; font-size: 0.8125rem; font-weight: 750; background: #f0f9ff; border: 1.5px solid #38bdf8; color: #0284c7; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                  <span>✉️</span>
+                  <span id="btnSendPasswordOtpText">Send Verification Code to Email</span>
+                </button>
+              </div>
+
+              <!-- Step B: OTP + New Password Form -->
+              <form id="pwdOtpResetForm" onsubmit="handlePasswordUpdateWithOtp(event)">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                      <label style="font-size: 0.75rem; font-weight: 700;">6-Digit Email OTP *</label>
+                      <button type="button" onclick="sendPasswordChangeOtp()" style="background: none; border: none; font-size: 0.7rem; color: var(--brand); cursor: pointer; text-decoration: underline;">Resend OTP</button>
+                    </div>
+                    <input type="text" id="pwdEmailOtp" class="form-control" placeholder="Enter 6-digit code received on email" maxlength="6" required style="font-size: 0.875rem; font-family: monospace; letter-spacing: 2px; font-weight: 700; text-align: center;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">New Password *</label>
+                    <input type="password" id="pwdNewPassword" class="form-control" placeholder="Minimum 6 characters" minlength="6" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Confirm New Password *</label>
+                    <input type="password" id="pwdConfirmPassword" class="form-control" placeholder="Re-enter new password" minlength="6" required style="font-size: 0.8125rem;" />
+                  </div>
+                </div>
+                <button type="submit" id="btnSubmitPasswordUpdate" class="btn-primary" style="width: 100%; padding: 0.55rem; font-size: 0.8125rem; font-weight: 750;">
+                  🔒 Verify OTP & Update Password
+                </button>
+              </form>
+            </div>
+
+            <!-- Card 5: KYC Verification Status -->
+            <div class="card" style="padding: 1.25rem 1.5rem; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <span style="font-size: 1.35rem;">🛡️</span>
+                  <div>
+                    <h4 style="font-size: 0.85rem; font-weight: 750; color: var(--navy); margin: 0;">Aadhaar & PAN Verification</h4>
+                    <p style="font-size: 0.7rem; color: var(--text-muted); margin: 2px 0 0 0;">Government KYC verified for express interstate shipping</p>
+                  </div>
+                </div>
+                <span id="profKycBadgeRight" class="badge badge-success" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;">✓ Verified</span>
               </div>
             </div>
 
           </div>
+
         </div>
       </section>
 
@@ -2257,6 +2868,31 @@
     </div>
   </div>
 
+  <!-- Universal In-App Confirmation Dialog Modal (Replaces browser confirm() for ALL operations) -->
+  <div id="universalConfirmModal" class="modal-overlay" style="display: none; z-index: 100000; align-items: center; justify-content: center; backdrop-filter: blur(3px); background: rgba(15, 23, 42, 0.45);">
+    <div class="modal-content" style="max-width: 440px; text-align: center; padding: 2rem 1.75rem; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+      <div id="uConfirmIconWrap" style="width: 58px; height: 58px; border-radius: 50%; background: #eff6ff; color: var(--brand); display: flex; align-items: center; justify-content: center; font-size: 1.65rem; margin: 0 auto 1.25rem auto; border: 2px solid #bfdbfe;">
+        <span id="uConfirmIcon">⚡</span>
+      </div>
+      <h3 id="uConfirmTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--navy); margin-bottom: 0.5rem;">
+        Confirm Action
+      </h3>
+      <p id="uConfirmMessage" style="font-size: 0.875rem; color: #64748b; line-height: 1.5; margin-bottom: 0.5rem;">
+        Are you sure you want to proceed?
+      </p>
+      <p id="uConfirmNotice" style="font-size: 0.75rem; color: #94a3b8; line-height: 1.4; margin-bottom: 1.25rem; display: none; background: #f8fafc; padding: 0.5rem; border-radius: 6px; border: 1px dashed #cbd5e1;">
+      </p>
+      <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.25rem;">
+        <button type="button" id="uConfirmCancelBtn" class="btn-secondary" style="padding: 0.65rem 1.25rem; font-weight: 600; flex: 1; border-radius: 0.5rem;">
+          Cancel
+        </button>
+        <button type="button" id="uConfirmOkBtn" class="btn-primary" style="padding: 0.65rem 1.25rem; font-weight: 700; flex: 1; border-radius: 0.5rem; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Detailed Order View (Clickable Order ID) -->
   <div id="orderDetailModal" class="modal-overlay" style="display: none;">
     <div class="modal-content" style="max-width: 820px;">
@@ -2393,33 +3029,53 @@
 
   <!-- Modal: Add Address -->
   <div id="addAddressModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
-      <h3 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 1rem;">Add Pickup Warehouse</h3>
+    <div class="modal-content" style="max-width: 620px;">
+      <h3 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 0.25rem;">Add Pickup Warehouse</h3>
+      <p style="font-size: 0.775rem; color: var(--text-muted); margin-bottom: 1.25rem;">Registers origin hub locally and syncs facility to carrier network / Shipmozo.</p>
       <form id="addAddressForm">
-        <div class="form-group">
-          <label>Warehouse Label *</label>
-          <input type="text" id="newAddrLabel" class="form-control" placeholder="e.g. Primary Warehouse, Surat Hub, Factory Unit 2" required />
-          <small style="color: var(--text-muted); font-size: 0.72rem;">Unique tag identifying this warehouse facility on labels and bookings</small>
-        </div>
-        <div class="form-group">
-          <label>Warehouse In-Charge / Contact Person Name *</label>
-          <input type="text" id="newAddrName" class="form-control" placeholder="Facility In-Charge Name" required />
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
           <div class="form-group">
-            <label>Phone *</label>
+            <label>Warehouse Facility Name / Label *</label>
+            <input type="text" id="newAddrLabel" class="form-control" placeholder="e.g. Primary Hub, Surat Unit 2" required />
+          </div>
+          <div class="form-group">
+            <label>Facility In-Charge / Contact Person *</label>
+            <input type="text" id="newAddrName" class="form-control" placeholder="Contact Person Full Name" required />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label>Primary Phone Number *</label>
             <input type="tel" id="newAddrPhone" class="form-control" placeholder="10-digit mobile number" required />
           </div>
+          <div class="form-group">
+            <label>Alternate Mobile Number</label>
+            <input type="tel" id="newAddrAltPhone" class="form-control" placeholder="Optional backup contact number" />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label>Warehouse Dispatch Email *</label>
+            <input type="email" id="newAddrEmail" class="form-control" placeholder="dispatch@yourstore.in" required />
+          </div>
+          <div class="form-group">
+            <label>Facility GSTIN (Optional)</label>
+            <input type="text" id="newAddrGst" class="form-control" placeholder="15-character GSTIN" maxlength="15" style="text-transform: uppercase; font-family: monospace;" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Address Line 1 (Plot, Building, Industrial Area) *</label>
+          <input type="text" id="newAddrLine" class="form-control" placeholder="Plot 42, Sector 18, Udyog Vihar" required />
+        </div>
+        <div class="form-group">
+          <label>Address Line 2 / Landmark</label>
+          <input type="text" id="newAddrLine2" class="form-control" placeholder="Floor 2, Near Metro Station" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
           <div class="form-group">
             <label>Pincode *</label>
             <input type="text" id="newAddrPincode" class="form-control" placeholder="6-digit PIN code" maxlength="6" required />
           </div>
-        </div>
-        <div class="form-group">
-          <label>Street Address *</label>
-          <input type="text" id="newAddrLine" class="form-control" placeholder="Building / Plot No., Industrial Area, Street" required />
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
           <div class="form-group">
             <label>City *</label>
             <input type="text" id="newAddrCity" class="form-control" placeholder="City / District" required />
@@ -2429,9 +3085,13 @@
             <input type="text" id="newAddrState" class="form-control" placeholder="State" required />
           </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+        <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="newAddrDefault" style="width: 16px; height: 16px; cursor: pointer;" checked />
+          <label for="newAddrDefault" style="font-size: 0.8125rem; font-weight: 600; cursor: pointer; margin: 0;">Set as default origin warehouse for new order bookings</label>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
           <button type="button" class="btn-secondary" onclick="closeAddAddressModal()">Cancel</button>
-          <button type="submit" class="btn-primary" id="saveAddressSubmitBtn">Save Warehouse</button>
+          <button type="submit" class="btn-primary" id="saveAddressSubmitBtn">Save & Register Warehouse</button>
         </div>
       </form>
     </div>
@@ -2665,6 +3325,103 @@
       }
     }
 
+    // Universal In-App Confirmation System (Eliminates all browser native confirm/alert popups)
+    function showInAppConfirm({
+      title = 'Confirmation Required',
+      message = 'Are you sure you want to proceed?',
+      notice = '',
+      confirmText = 'Proceed',
+      cancelText = 'Cancel',
+      type = 'primary',
+      icon = '⚡'
+    } = {}) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('universalConfirmModal');
+        if (!modal) {
+          resolve(true);
+          return;
+        }
+        const iconEl = document.getElementById('uConfirmIcon');
+        const iconWrap = document.getElementById('uConfirmIconWrap');
+        const titleEl = document.getElementById('uConfirmTitle');
+        const msgEl = document.getElementById('uConfirmMessage');
+        const noticeEl = document.getElementById('uConfirmNotice');
+        const okBtn = document.getElementById('uConfirmOkBtn');
+        const cancelBtn = document.getElementById('uConfirmCancelBtn');
+
+        if (iconEl) iconEl.textContent = icon;
+        if (iconWrap) {
+          if (type === 'danger') {
+            iconWrap.style.background = '#fee2e2';
+            iconWrap.style.borderColor = '#fecaca';
+            iconWrap.style.color = '#dc2626';
+          } else if (type === 'success') {
+            iconWrap.style.background = '#dcfce7';
+            iconWrap.style.borderColor = '#bbf7d0';
+            iconWrap.style.color = '#16a34a';
+          } else if (type === 'warning') {
+            iconWrap.style.background = '#fef3c7';
+            iconWrap.style.borderColor = '#fde68a';
+            iconWrap.style.color = '#d97706';
+          } else {
+            iconWrap.style.background = '#eff6ff';
+            iconWrap.style.borderColor = '#bfdbfe';
+            iconWrap.style.color = 'var(--brand)';
+          }
+        }
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.textContent = message;
+        if (noticeEl) {
+          if (notice) {
+            noticeEl.textContent = notice;
+            noticeEl.style.display = 'block';
+          } else {
+            noticeEl.style.display = 'none';
+          }
+        }
+        if (cancelBtn) cancelBtn.textContent = cancelText;
+        if (okBtn) {
+          okBtn.textContent = confirmText;
+          if (type === 'danger') {
+            okBtn.style.background = '#dc2626';
+            okBtn.style.borderColor = '#dc2626';
+            okBtn.style.color = '#ffffff';
+            okBtn.style.boxShadow = '0 4px 10px rgba(220, 38, 38, 0.25)';
+          } else if (type === 'success') {
+            okBtn.style.background = '#16a34a';
+            okBtn.style.borderColor = '#16a34a';
+            okBtn.style.color = '#ffffff';
+            okBtn.style.boxShadow = '0 4px 10px rgba(22, 163, 74, 0.25)';
+          } else if (type === 'warning') {
+            okBtn.style.background = '#d97706';
+            okBtn.style.borderColor = '#d97706';
+            okBtn.style.color = '#ffffff';
+            okBtn.style.boxShadow = '0 4px 10px rgba(217, 119, 6, 0.25)';
+          } else {
+            okBtn.style.background = 'var(--brand)';
+            okBtn.style.borderColor = 'var(--brand)';
+            okBtn.style.color = '#ffffff';
+            okBtn.style.boxShadow = '0 4px 10px rgba(37, 99, 235, 0.25)';
+          }
+        }
+
+        const cleanup = () => {
+          modal.style.display = 'none';
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+        };
+
+        okBtn.onclick = () => { cleanup(); resolve(true); };
+        cancelBtn.onclick = () => { cleanup(); resolve(false); };
+        modal.style.display = 'flex';
+      });
+    }
+
+    // Override browser native alert to prevent ugly popups
+    window.alert = function(msg) {
+      showToast(String(msg || ''), 'info');
+    };
+
     // Mobile Sidebar Drawer Controls
     function toggleMobileSidebar() {
       const sb = document.getElementById('appSidebar');
@@ -2677,6 +3434,13 @@
       const bd = document.getElementById('sidebarBackdrop');
       sb.classList.remove('open');
       bd.classList.remove('active');
+    }
+
+    function toggleSidebarSection(groupId, btn) {
+      const group = document.getElementById(groupId);
+      if (!group) return;
+      const isCollapsed = group.classList.toggle('collapsed');
+      if (btn) btn.classList.toggle('collapsed', isCollapsed);
     }
 
     // Clean URL normalization: ensure no .html in browser URL
@@ -2942,7 +3706,12 @@
       if (tabId === 'tickets') loadTickets();
       if (tabId === 'profile') loadProfile();
       if (tabId === 'cod') loadCodRemittances();
-      if (tabId === 'reports') initReportsTab();
+      if (tabId === 'ndr') loadNdrRecords();
+      if (tabId === 'invoices') loadMonthlyInvoices();
+      if (tabId === 'reports') {
+        initReportsTab();
+        loadMonthlyInvoices();
+      }
     }
 
     // ==========================================
@@ -3335,10 +4104,16 @@
         label: (document.getElementById('newAddrLabel')?.value || '').trim() || 'Primary Warehouse',
         contactName: document.getElementById('newAddrName').value.trim(),
         phone: document.getElementById('newAddrPhone').value.trim(),
+        alternatePhone: (document.getElementById('newAddrAltPhone')?.value || '').trim(),
+        email: (document.getElementById('newAddrEmail')?.value || '').trim(),
         addressLine1: document.getElementById('newAddrLine').value.trim(),
+        addressLine2: (document.getElementById('newAddrLine2')?.value || '').trim(),
         city: document.getElementById('newAddrCity').value.trim(),
         state: document.getElementById('newAddrState').value.trim(),
-        pincode: document.getElementById('newAddrPincode').value.trim()
+        pincode: document.getElementById('newAddrPincode').value.trim(),
+        country: 'India',
+        gstNumber: (document.getElementById('newAddrGst')?.value || '').trim(),
+        isDefault: document.getElementById('newAddrDefault')?.checked ? 1 : 0
       };
       try {
         const res = await fetch('/api/addresses', {
@@ -3559,7 +4334,7 @@
               '</div>' +
               '<p style="font-size: 1.35rem; font-weight: 850; color: var(--brand); margin: 0.35rem 0; line-height: 1.2;">₹' + rate + '</p>' +
               '<p style="font-size: 0.75rem; color: var(--text-muted);">ETA Turnaround: <strong>' + eta + '</strong></p>' +
-              '<p style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.25rem;">Includes standard express freight' + (cod > 0 ? (' + COD: ₹' + cod) : '') + ' & fuel charges</p>' +
+              '<p style="font-size: 0.725rem; color: var(--text-muted); margin-top: 0.25rem;">Includes standard express freight' + (pMode === 'COD' ? ' + COD charges' : '') + ' & fuel charges</p>' +
             '</div>' +
             '<button onclick="selectCourierForBooking(&quot;' + c.courierId + '&quot;, &quot;' + pPin + '&quot;, &quot;' + dPin + '&quot;, ' + wt + ', &quot;' + packageType + '&quot;)" class="btn-primary" style="margin-top: 1rem; width: 100%; font-size: 0.75rem; background: ' + (logoCol !== 'var(--brand)' ? logoCol : '') + ';">Ship with ' + brand + '</button>' +
           '</div>';
@@ -3650,8 +4425,19 @@
     });
 
     async function dashFetchTracking(awb) {
-      dashCurrentAwb = awb;
-      document.getElementById('dashTrackInput').value = awb;
+      if (!awb || awb === '-' || awb === 'null' || awb.trim() === '') {
+        const inp = document.getElementById('dashTrackInput');
+        if (inp) inp.value = '';
+        const errDiv = document.getElementById('dashTrackError');
+        if (errDiv) {
+          errDiv.style.display = 'block';
+          errDiv.innerHTML = '⚠️ Please enter a valid AWB or Order number to track.';
+        }
+        return;
+      }
+      dashCurrentAwb = awb.trim();
+      const trackInp = document.getElementById('dashTrackInput');
+      if (trackInp) trackInp.value = dashCurrentAwb;
       document.getElementById('dashTrackError').style.display = 'none';
       document.getElementById('dashTrackResultView').style.display = 'none';
       document.getElementById('dashTrackLoading').style.display = 'block';
@@ -3766,41 +4552,72 @@
     }
 
     // ==========================================
-    // 5. SUPPORT TICKETS LOGIC
+    // 5. SUPPORT TICKETS LOGIC & FILTERS
     // ==========================================
+    let allTickets = [];
+    let currentTicketFilter = 'ALL';
+
     async function loadTickets() {
       try {
         const res = await fetch('/api/tickets', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        const tickets = d.tickets || [];
-        const tbody = document.getElementById('ticketsTableBody');
-        if (tickets.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No support tickets open. Click "+ Raise Ticket" above.</td></tr>';
-        } else {
-          tbody.innerHTML = tickets.map(t => {
-            let statusBadge = '<span class="badge badge-info">' + t.status + '</span>';
-            if (t.status === 'IN_PROGRESS') statusBadge = '<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">IN PROGRESS</span>';
-            else if (t.status === 'ESCALATED') statusBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">ESCALATED</span>';
-            else if (t.status === 'RESOLVED') statusBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">RESOLVED</span>';
-
-            const msgCount = (t.messages || []).length;
-            return '<tr>' +
-              '<td style="font-family: monospace; font-weight: 700;">' + t.id.substring(0, 10) + '</td>' +
-              '<td style="font-weight: 700; color: var(--navy);">' + t.subject + '</td>' +
-              '<td>' + (t.orderNumber || t.awbNumber || 'General') + '</td>' +
-              '<td>' + statusBadge + '</td>' +
-              '<td>' + (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recent') + '</td>' +
-              '<td>' +
-                '<button type="button" class="btn-primary" onclick="openTicketChatModal(\'' + t.id + '\')" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; font-weight: 700; background: #0f172a; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">' +
-                  '<span>💬</span><span>View Chat' + (msgCount > 0 ? ' (' + msgCount + ')' : '') + '</span>' +
-                '</button>' +
-              '</td>' +
-            '</tr>';
-          }).join('');
-        }
+        allTickets = d.tickets || [];
+        applyTicketsFilter();
       } catch (e) {
         console.error('Error loading tickets:', e);
       }
+    }
+
+    function filterTickets(status, btn) {
+      currentTicketFilter = status;
+      document.querySelectorAll('#tab-tickets .btn-secondary').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyTicketsFilter();
+    }
+
+    function applyTicketsFilter() {
+      const q = (document.getElementById('ticketsSearchInput')?.value || '').trim().toLowerCase();
+      const tbody = document.getElementById('ticketsTableBody');
+      if (!tbody) return;
+
+      let list = allTickets;
+      if (currentTicketFilter !== 'ALL') {
+        list = list.filter(t => (t.status || '').toUpperCase() === currentTicketFilter || (currentTicketFilter === 'OPEN' && t.status !== 'RESOLVED'));
+      }
+      if (q) {
+        list = list.filter(t => 
+          (t.id || '').toLowerCase().includes(q) ||
+          (t.subject || '').toLowerCase().includes(q) ||
+          (t.orderNumber || '').toLowerCase().includes(q) ||
+          (t.awbNumber || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No support tickets found matching filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(t => {
+        let statusBadge = '<span class="badge badge-info">' + t.status + '</span>';
+        if (t.status === 'IN_PROGRESS' || t.status === 'IN_REVIEW') statusBadge = '<span class="badge" style="background:#fef3c7; color:#b45309; font-weight:700;">IN REVIEW</span>';
+        else if (t.status === 'ESCALATED') statusBadge = '<span class="badge" style="background:#fee2e2; color:#b91c1c; font-weight:700;">ESCALATED</span>';
+        else if (t.status === 'RESOLVED') statusBadge = '<span class="badge" style="background:#dcfce7; color:#15803d; font-weight:700;">RESOLVED</span>';
+
+        const msgCount = (t.messages || []).length;
+        return '<tr>' +
+          '<td style="font-family: monospace; font-weight: 700;">' + t.id.substring(0, 10) + '</td>' +
+          '<td style="font-weight: 700; color: var(--navy);">' + t.subject + '</td>' +
+          '<td>' + (t.orderNumber || t.awbNumber || 'General') + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td>' + (t.createdAt ? new Date(t.createdAt).toLocaleDateString() : 'Recent') + '</td>' +
+          '<td>' +
+            '<button type="button" class="btn-primary" onclick="openTicketChatModal(\'' + t.id + '\')" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; font-weight: 700; background: #0f172a; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">' +
+              '<span>💬</span><span>View Chat' + (msgCount > 0 ? ' (' + msgCount + ')' : '') + '</span>' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
     }
 
     function openNewTicketModal() {
@@ -4069,150 +4886,296 @@
     }
 
     // ==========================================
-    // 6. PROFILE & eKYC LOGIC
+    // 6. PROFILE & SETTINGS (REAL USER, EDITABLE CONTACT, ADDRESS, BANK & EMAIL OTP PASSWORD RESET)
     // ==========================================
-    let activeKycDocType = 'GST';
-    let kycReferenceId = '';
-
     async function loadProfile() {
       try {
-        const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+        const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+        const res = await fetch('/api/profile', {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        });
         const d = await res.json();
-        const u = d.user || currentUser;
-        currentUser = { ...currentUser, ...u };
+        const p = d.profile || d.user || currentUser;
+        currentUser = { ...currentUser, ...p };
         initUserHeaderInfo();
 
-        document.getElementById('profName').value = u.name || '';
-        document.getElementById('profBusiness').value = u.businessName || 'HetEx Seller';
-        document.getElementById('profEmail').value = u.email || '';
-        document.getElementById('profPhone').value = u.phone || '';
+        // Top Banner Bindings
+        const walletEl = document.getElementById('profHeroWallet');
+        if (walletEl) walletEl.textContent = '₹' + parseFloat(p.walletBalance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const nameEl = document.getElementById('profHeroName');
+        if (nameEl) nameEl.textContent = p.name || 'HetEx Seller';
+        const roleEl = document.getElementById('profHeroRole');
+        if (roleEl) roleEl.textContent = p.userType || (p.role === 'ADMIN' ? 'ADMINISTRATOR' : 'BUSINESS ACCOUNT');
+        const initialEl = document.getElementById('profHeroAvatarInitial');
+        if (initialEl) initialEl.textContent = (p.name ? p.name.charAt(0) : 'U').toUpperCase();
+        const statusBadge = document.getElementById('profHeroStatusBadge');
+        if (statusBadge) statusBadge.innerHTML = '<span>✓</span><span>' + (p.profileStatus || 'Approved') + '</span>';
 
-        const isVerified = (u.kycStatus === 'VERIFIED');
-        if (isVerified) {
-          document.getElementById('kycVerifiedView').style.display = 'block';
-          document.getElementById('kycUnverifiedView').style.display = 'none';
-          document.getElementById('kycDocDetails').textContent = 'PAN: ' + (u.panNumber || 'Verified') + (u.gstNumber ? (' · GSTIN: ' + u.gstNumber) : '');
+        // Contact View
+        const vName = document.getElementById('viewProfName');
+        if (vName) vName.textContent = p.name || '-';
+        const vEmail = document.getElementById('viewProfEmail');
+        if (vEmail) vEmail.textContent = p.email || '-';
+        const vPhone = document.getElementById('viewProfPhone');
+        if (vPhone) vPhone.textContent = p.phone || '-';
+        const vType = document.getElementById('viewProfUserType');
+        if (vType) vType.textContent = p.userType || 'BUSINESS';
+        const vJoined = document.getElementById('viewProfJoined');
+        if (vJoined) vJoined.textContent = p.joined || 'Active Member';
+
+        // Contact Edit Form
+        const eName = document.getElementById('editProfName');
+        if (eName) eName.value = p.name || '';
+        const eEmail = document.getElementById('editProfEmail');
+        if (eEmail) eEmail.value = p.email || '';
+        const ePhone = document.getElementById('editProfPhone');
+        if (ePhone) ePhone.value = p.phone || '';
+        const eBiz = document.getElementById('editProfBusiness');
+        if (eBiz) eBiz.value = p.businessName || '';
+
+        // Address View
+        const addr = p.address || {};
+        const vA1 = document.getElementById('viewProfAddr1');
+        if (vA1) vA1.textContent = addr.line1 || '-';
+        const vA2 = document.getElementById('viewProfAddr2');
+        if (vA2) vA2.textContent = addr.line2 || '-';
+        const vCity = document.getElementById('viewProfCity');
+        if (vCity) vCity.textContent = addr.city || '-';
+        const vState = document.getElementById('viewProfState');
+        if (vState) vState.textContent = addr.state || '-';
+        const vCountry = document.getElementById('viewProfCountry');
+        if (vCountry) vCountry.textContent = addr.country || 'India';
+        const vPin = document.getElementById('viewProfPincode');
+        if (vPin) vPin.textContent = addr.pincode || '-';
+
+        // Address Edit Form
+        const eA1 = document.getElementById('editProfAddr1');
+        if (eA1) eA1.value = addr.line1 || '';
+        const eA2 = document.getElementById('editProfAddr2');
+        if (eA2) eA2.value = addr.line2 || '';
+        const eCity = document.getElementById('editProfCity');
+        if (eCity) eCity.value = addr.city || '';
+        const eState = document.getElementById('editProfState');
+        if (eState) eState.value = addr.state || '';
+        const eCountry = document.getElementById('editProfCountry');
+        if (eCountry) eCountry.value = addr.country || 'India';
+        const ePin = document.getElementById('editProfPincode');
+        if (ePin) ePin.value = addr.pincode || '';
+
+        // Bank Details Form
+        const bank = p.bank || {};
+        const bHolder = document.getElementById('profBankHolder');
+        if (bHolder) bHolder.value = bank.holderName || p.name || '';
+        const bName = document.getElementById('profBankName');
+        if (bName) bName.value = bank.bankName || '';
+        const bIfsc = document.getElementById('profBankIfsc');
+        if (bIfsc) bIfsc.value = bank.ifsc || '';
+        const bAcc = document.getElementById('profBankAcc');
+        if (bAcc) bAcc.value = bank.accountNumber || '';
+        const bType = document.getElementById('profBankAccountType');
+        if (bType) bType.value = bank.accountType || 'Current';
+
+        // Password Reset Email Hint
+        const pwdEmail = document.getElementById('pwdTargetEmailText');
+        if (pwdEmail) pwdEmail.textContent = p.email || 'Registered Email';
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      }
+    }
+
+    function toggleEditContact(show) {
+      const view = document.getElementById('contactViewMode');
+      const form = document.getElementById('contactEditForm');
+      if (!view || !form) return;
+      const willShow = (show !== undefined) ? show : (form.style.display === 'none');
+      view.style.display = willShow ? 'none' : 'block';
+      form.style.display = willShow ? 'block' : 'none';
+    }
+
+    async function saveContactDetails(e) {
+      if (e) e.preventDefault();
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const payload = {
+        name: document.getElementById('editProfName').value.trim(),
+        email: document.getElementById('editProfEmail').value.trim(),
+        phone: document.getElementById('editProfPhone').value.trim(),
+        businessName: document.getElementById('editProfBusiness').value.trim()
+      };
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Contact details updated successfully!', 'success');
+          toggleEditContact(false);
+          await loadProfile();
         } else {
-          document.getElementById('kycVerifiedView').style.display = 'none';
-          document.getElementById('kycUnverifiedView').style.display = 'block';
-          selectDocType('GST');
+          showToast(data.error || 'Failed to update contact details', 'error');
         }
-      } catch (e) {}
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
     }
 
-    function selectDocType(type) {
-      activeKycDocType = type;
-      ['GST', 'AADHAAR', 'PAN'].forEach(t => {
-        const b = document.getElementById('btnDoc' + t);
-        if (b) {
-          if (t === type) {
-            b.classList.add('active');
-            b.style.background = 'var(--brand-light)';
-            b.style.borderColor = 'var(--brand)';
-            b.style.color = 'var(--brand)';
-          } else {
-            b.classList.remove('active');
-            b.style.background = '#fff';
-            b.style.borderColor = 'var(--border)';
-            b.style.color = 'var(--text)';
+    function toggleEditAddress(show) {
+      const view = document.getElementById('addressViewMode');
+      const form = document.getElementById('addressEditForm');
+      if (!view || !form) return;
+      const willShow = (show !== undefined) ? show : (form.style.display === 'none');
+      view.style.display = willShow ? 'none' : 'block';
+      form.style.display = willShow ? 'block' : 'none';
+    }
+
+    async function saveAddressDetails(e) {
+      if (e) e.preventDefault();
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const address = {
+        line1: document.getElementById('editProfAddr1').value.trim(),
+        line2: document.getElementById('editProfAddr2').value.trim(),
+        city: document.getElementById('editProfCity').value.trim(),
+        state: document.getElementById('editProfState').value.trim(),
+        country: document.getElementById('editProfCountry').value.trim() || 'India',
+        pincode: document.getElementById('editProfPincode').value.trim()
+      };
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify({ address })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast('Registered address updated successfully!', 'success');
+          toggleEditAddress(false);
+          await loadProfile();
+        } else {
+          showToast(data.error || 'Failed to update address', 'error');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function saveBankDetails(e) {
+      if (e) e.preventDefault();
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const btn = document.getElementById('btnSaveBank');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+      const payload = {
+        holderName: document.getElementById('profBankHolder').value.trim(),
+        bankName: document.getElementById('profBankName').value.trim(),
+        ifsc: document.getElementById('profBankIfsc').value.trim(),
+        accountNumber: document.getElementById('profBankAcc').value.trim(),
+        accountType: document.getElementById('profBankAccountType').value
+      };
+      try {
+        const res = await fetch('/api/profile/bank', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Bank details for COD remittances updated successfully!', 'success');
+        } else {
+          showToast(data.error || 'Failed to save bank details', 'error');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Update Bank Details'; }
+      }
+    }
+
+    async function sendPasswordChangeOtp() {
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const btn = document.getElementById('btnSendPasswordOtp');
+      const text = document.getElementById('btnSendPasswordOtpText');
+      if (btn) btn.disabled = true;
+      if (text) text.textContent = 'Sending Verification Code to Email...';
+
+      try {
+        const res = await fetch('/api/profile/send-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify({ email: currentUser.email })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Verification OTP sent to your email!', 'success');
+          if (data.otp) {
+            const otpInp = document.getElementById('pwdEmailOtp');
+            if (otpInp) otpInp.value = data.otp;
           }
+          if (text) text.textContent = '✓ Code Sent! Check Inbox / Resend';
+        } else {
+          showToast(data.error || 'Failed to send verification code', 'error');
+          if (text) text.textContent = 'Send Verification Code to Email';
         }
-      });
-
-      const lbl = document.getElementById('kycDocLabel');
-      const inp = document.getElementById('kycDocInput');
-      const hlp = document.getElementById('kycDocHelp');
-
-      if (type === 'GST') {
-        lbl.textContent = '15-character GSTIN Number *';
-        inp.placeholder = '07AAAAA0000A1Z5';
-        inp.maxLength = 15;
-        hlp.textContent = 'Enter registered Goods & Services Tax ID';
-      } else if (type === 'AADHAAR') {
-        lbl.textContent = '12-digit Aadhaar Number *';
-        inp.placeholder = '123456789012';
-        inp.maxLength = 12;
-        hlp.textContent = 'OTP will be sent to mobile linked with Aadhaar';
-      } else {
-        lbl.textContent = '10-character PAN Card Number *';
-        inp.placeholder = 'ABCDE1234F';
-        inp.maxLength = 10;
-        hlp.textContent = 'Permanent Account Number of business or individual';
+      } catch (err) {
+        showToast(err.message, 'error');
+        if (text) text.textContent = 'Send Verification Code to Email';
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
-    function resetKycStep() {
-      document.getElementById('kycStepForm').style.display = 'block';
-      document.getElementById('kycStepOtp').style.display = 'none';
-      document.getElementById('kycOtpInput').value = '';
-    }
+    async function handlePasswordUpdateWithOtp(e) {
+      if (e) e.preventDefault();
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const otp = document.getElementById('pwdEmailOtp').value.trim();
+      const newPassword = document.getElementById('pwdNewPassword').value.trim();
+      const confirmPassword = document.getElementById('pwdConfirmPassword').value.trim();
 
-    async function requestKycOtp() {
-      const docNum = document.getElementById('kycDocInput').value.trim().toUpperCase();
-      if (!docNum) {
-        showToast('Please enter document number', 'error');
+      if (newPassword !== confirmPassword) {
+        showToast('Passwords do not match. Please verify confirmation password.', 'error');
         return;
       }
-      const btn = document.getElementById('btnRequestKycOtp');
-      btn.disabled = true;
-      btn.textContent = 'Sending OTP...';
-
-      try {
-        const res = await fetch('/api/auth/request-kyc-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({ documentType: activeKycDocType, documentNumber: docNum })
-        });
-        const d = await res.json();
-        btn.disabled = false;
-        btn.textContent = '📲 Request Verification OTP';
-
-        if (!res.ok) throw new Error(d.error || 'Failed to send OTP');
-
-        kycReferenceId = d.referenceId || '';
-        document.getElementById('kycStepForm').style.display = 'none';
-        document.getElementById('kycStepOtp').style.display = 'block';
-
-        if (d.devOtp) {
-          document.getElementById('kycDevOtpHint').textContent = 'Test OTP Code: ' + d.devOtp;
-          document.getElementById('kycOtpInput').value = d.devOtp;
-        }
-
-        showToast(d.message || 'OTP sent successfully!', 'info');
-      } catch (err) {
-        btn.disabled = false;
-        btn.textContent = '📲 Request Verification OTP';
-        showToast(err.message, 'error');
-      }
-    }
-
-    async function verifyKycOtp() {
-      const docNum = document.getElementById('kycDocInput').value.trim().toUpperCase();
-      const otp = document.getElementById('kycOtpInput').value.trim();
-      if (!otp) {
-        showToast('Please enter 6-digit OTP', 'error');
+      if (newPassword.length < 6) {
+        showToast('Password must be at least 6 characters long.', 'warning');
         return;
       }
 
-      try {
-        const res = await fetch('/api/auth/verify-kyc-otp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-          body: JSON.stringify({
-            documentType: activeKycDocType,
-            documentNumber: docNum,
-            referenceId: kycReferenceId,
-            otp: otp,
-            consent: true
-          })
-        });
-        const d = await res.json();
-        if (!res.ok) throw new Error(d.error || 'OTP verification failed');
+      const btn = document.getElementById('btnSubmitPasswordUpdate');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying & Updating...'; }
 
-        showToast('Identity verified successfully via eKYC!', 'success');
-        await loadProfile();
+      try {
+        const res = await fetch('/api/profile/change-password-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+          },
+          body: JSON.stringify({ email: currentUser.email, otp, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || 'Password updated successfully!', 'success');
+          document.getElementById('pwdOtpResetForm').reset();
+          const text = document.getElementById('btnSendPasswordOtpText');
+          if (text) text.textContent = 'Send Verification Code to Email';
+        } else {
+          showToast(data.error || 'Password update failed', 'error');
+        }
       } catch (err) {
         showToast(err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔒 Verify OTP & Update Password'; }
       }
     }
 
@@ -4366,9 +5329,13 @@
     let orderItems = [
       {
         name: '',
+        sku: '',
+        hsn: '',
         category: 'Others',
         quantity: 1,
         declaredValue: '',
+        discount: '',
+        taxRate: 0,
         weight: '',
         length: '',
         width: '',
@@ -4410,6 +5377,31 @@
               '<input type="number" class="form-control" value="' + (item.quantity || 1) + '" min="1" oninput="updateItemField(' + idx + ', &quot;quantity&quot;, this.value)" required style="font-size: 0.8125rem; font-weight: 700; text-align: center;" />' +
             '</div>' +
           '</div>' +
+          '<!-- Optional Item Identifiers: SKU, HSN, Tax Rate, Discount -->' +
+          '<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;" class="mobile-grid-1">' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.72rem; font-weight: 600; color: #475569;">SKU / Barcode <span style="font-size: 0.65rem; color: #94a3b8; font-weight: normal;">(Optional)</span></label>' +
+              '<input type="text" class="form-control" value="' + (item.sku || '') + '" placeholder="e.g. TSH-001" oninput="updateItemField(' + idx + ', &quot;sku&quot;, this.value)" style="font-size: 0.78rem; font-family: monospace;" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.72rem; font-weight: 600; color: #475569;">HSN Code <span style="font-size: 0.65rem; color: #94a3b8; font-weight: normal;">(Optional)</span></label>' +
+              '<input type="text" class="form-control" value="' + (item.hsn || '') + '" placeholder="e.g. 6109" maxlength="8" oninput="updateItemField(' + idx + ', &quot;hsn&quot;, this.value)" style="font-size: 0.78rem; font-family: monospace;" />' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.72rem; font-weight: 600; color: #475569;">Tax Rate (%) <span style="font-size: 0.65rem; color: #94a3b8; font-weight: normal;">(Optional - 0% Default)</span></label>' +
+              '<select class="form-control" onchange="updateItemField(' + idx + ', &quot;taxRate&quot;, this.value)" style="font-size: 0.78rem;">' +
+                '<option value="0" ' + (item.taxRate == 0 ? 'selected' : '') + '>0% (Exempt)</option>' +
+                '<option value="5" ' + (item.taxRate == 5 ? 'selected' : '') + '>5% GST</option>' +
+                '<option value="12" ' + (item.taxRate == 12 ? 'selected' : '') + '>12% GST</option>' +
+                '<option value="18" ' + (item.taxRate == 18 ? 'selected' : '') + '>18% GST</option>' +
+                '<option value="28" ' + (item.taxRate == 28 ? 'selected' : '') + '>28% GST</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="form-group" style="margin-bottom: 0;">' +
+              '<label style="font-size: 0.72rem; font-weight: 600; color: #475569;">Discount (₹) <span style="font-size: 0.65rem; color: #94a3b8; font-weight: normal;">(Optional)</span></label>' +
+              '<input type="number" class="form-control" value="' + (item.discount || '') + '" placeholder="0.00" min="0" step="any" oninput="updateItemField(' + idx + ', &quot;discount&quot;, this.value)" style="font-size: 0.78rem;" />' +
+            '</div>' +
+          '</div>' +
           '<div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 0.75rem;" class="mobile-grid-1">' +
             '<div class="form-group" style="margin-bottom: 0;">' +
               '<label style="font-size: 0.75rem; font-weight: 600;">Unit Declared Value (₹)</label>' +
@@ -4440,9 +5432,13 @@
     function addOrderItem() {
       orderItems.push({
         name: '',
+        sku: '',
+        hsn: '',
         category: 'Others',
         quantity: 1,
         declaredValue: '',
+        discount: '',
+        taxRate: 0,
         weight: '',
         length: '',
         width: '',
@@ -4461,7 +5457,7 @@
 
     function updateItemField(idx, field, val) {
       if (!orderItems[idx]) return;
-      if (field === 'name' || field === 'category') {
+      if (field === 'name' || field === 'category' || field === 'sku' || field === 'hsn') {
         orderItems[idx][field] = val;
       } else {
         orderItems[idx][field] = parseFloat(val) || 0;
@@ -4595,7 +5591,15 @@
 
     function toggleCodInput() {
       const mode = document.getElementById('paymentModeSelect').value;
-      document.getElementById('codAmountGroup').style.display = (mode === 'COD') ? 'block' : 'none';
+      const grp = document.getElementById('codAmountGroup');
+      if (grp) grp.style.display = (mode === 'COD') ? 'block' : 'none';
+      if (mode === 'COD') {
+        const codInp = document.getElementById('codAmountInput');
+        if (codInp && !codInp.value) {
+          const summary = recalcAllItemsSummary();
+          if (summary && summary.totalDeclared) codInp.value = summary.totalDeclared;
+        }
+      }
     }
 
     async function onBuyerPincodeChanged() {
@@ -5027,7 +6031,16 @@
     }
 
     async function shipSavedOrder(orderId) {
-      if (!confirm('Proceed to manifest and ship this saved order now? Freight charge will be deducted from your wallet.')) return;
+      const ok = await showInAppConfirm({
+        title: 'Manifest & Ship Saved Order?',
+        message: 'Proceed to manifest and ship this saved order now? Applicable freight charge will be deducted from your wallet.',
+        notice: 'AWB and carrier label will be generated immediately.',
+        confirmText: '⚡ Ship Order Now',
+        cancelText: 'Cancel',
+        type: 'success',
+        icon: '⚡'
+      });
+      if (!ok) return;
       try {
         showToast('Manifesting order with courier partner...', 'info');
         const res = await fetch('/api/orders/' + orderId + '/ship', {
@@ -5051,6 +6064,180 @@
       } catch (err) {
         showToast(err.message, 'error');
       }
+    }
+
+    // ==========================================
+    // 3-STEP ORDER WIZARD NAVIGATION (SHIPMOZO STYLE)
+    // ==========================================
+    window.currentOrderStep = 1;
+    window.maxOrderStepReached = 1;
+
+    function goToOrderStep(step) {
+      if (step > window.maxOrderStepReached) return;
+      window.currentOrderStep = step;
+
+      const card1 = document.getElementById('orderStep1Card');
+      const body1 = document.getElementById('orderStep1Body');
+      const badge1 = document.getElementById('stepBadge1');
+      const tab1 = document.getElementById('stepTab1');
+      const stat1 = document.getElementById('stepStatus1');
+      const hdrBadge1 = document.getElementById('step1HeaderBadge');
+
+      const card2 = document.getElementById('orderStep2Card');
+      const body2 = document.getElementById('orderStep2Body');
+      const badge2 = document.getElementById('stepBadge2');
+      const tab2 = document.getElementById('stepTab2');
+      const stat2 = document.getElementById('stepStatus2');
+      const hdrBadge2 = document.getElementById('step2HeaderBadge');
+      const editBtn2 = document.getElementById('step2EditBtn');
+
+      const card3 = document.getElementById('orderStep3Card');
+      const body3 = document.getElementById('orderStep3Body');
+      const badge3 = document.getElementById('stepBadge3');
+      const tab3 = document.getElementById('stepTab3');
+      const stat3 = document.getElementById('stepStatus3');
+      const hdrBadge3 = document.getElementById('step3HeaderBadge');
+      const editBtn3 = document.getElementById('step3EditBtn');
+
+      if (step === 1) {
+        if (body1) body1.style.display = 'block';
+        if (card1) card1.style.borderColor = '#bfdbfe';
+        if (badge1) { badge1.style.background = 'var(--brand)'; badge1.style.color = '#fff'; }
+        if (tab1) tab1.style.opacity = '1';
+        if (stat1) { stat1.textContent = 'Active Step'; stat1.style.color = '#16a34a'; }
+        if (hdrBadge1) { hdrBadge1.textContent = '● In Progress'; hdrBadge1.style.background = '#eff6ff'; hdrBadge1.style.color = '#2563eb'; }
+      } else {
+        if (body1) body1.style.display = 'none';
+        if (card1) card1.style.borderColor = 'var(--border)';
+        if (badge1) { badge1.style.background = '#16a34a'; badge1.style.color = '#fff'; }
+        if (stat1) { stat1.textContent = 'Completed'; stat1.style.color = '#16a34a'; }
+        if (hdrBadge1) { hdrBadge1.textContent = '✓ Address Complete'; hdrBadge1.style.background = '#dcfce7'; hdrBadge1.style.color = '#15803d'; }
+      }
+
+      if (step === 2) {
+        if (body2) body2.style.display = 'block';
+        if (card2) card2.style.borderColor = '#bfdbfe';
+        if (badge2) { badge2.style.background = 'var(--brand)'; badge2.style.color = '#fff'; }
+        if (tab2) tab2.style.opacity = '1';
+        if (stat2) { stat2.textContent = 'Active Step'; stat2.style.color = '#16a34a'; }
+        if (hdrBadge2) { hdrBadge2.textContent = '● In Progress'; hdrBadge2.style.background = '#eff6ff'; hdrBadge2.style.color = '#2563eb'; }
+        if (editBtn2) editBtn2.style.display = 'none';
+      } else if (window.maxOrderStepReached >= 2) {
+        if (body2) body2.style.display = 'none';
+        if (card2) card2.style.borderColor = 'var(--border)';
+        if (badge2) { badge2.style.background = '#16a34a'; badge2.style.color = '#fff'; }
+        if (tab2) tab2.style.opacity = '1';
+        if (stat2) { stat2.textContent = 'Completed'; stat2.style.color = '#16a34a'; }
+        if (hdrBadge2) { hdrBadge2.textContent = '✓ Items Configured'; hdrBadge2.style.background = '#dcfce7'; hdrBadge2.style.color = '#15803d'; }
+        if (editBtn2) editBtn2.style.display = 'inline-block';
+      } else {
+        if (body2) body2.style.display = 'none';
+        if (badge2) { badge2.style.background = '#e2e8f0'; badge2.style.color = '#64748b'; }
+        if (tab2) tab2.style.opacity = '0.6';
+        if (stat2) { stat2.textContent = 'Weight & Value'; stat2.style.color = 'var(--text-muted)'; }
+        if (hdrBadge2) { hdrBadge2.textContent = '🔒 Step 2 Locked'; hdrBadge2.style.background = '#f1f5f9'; hdrBadge2.style.color = '#64748b'; }
+        if (editBtn2) editBtn2.style.display = 'none';
+      }
+
+      if (step === 3) {
+        if (body3) body3.style.display = 'block';
+        if (card3) card3.style.borderColor = '#bfdbfe';
+        if (badge3) { badge3.style.background = 'var(--brand)'; badge3.style.color = '#fff'; }
+        if (tab3) tab3.style.opacity = '1';
+        if (stat3) { stat3.textContent = 'Active Step'; stat3.style.color = '#16a34a'; }
+        if (hdrBadge3) { hdrBadge3.textContent = '● In Progress'; hdrBadge3.style.background = '#eff6ff'; hdrBadge3.style.color = '#2563eb'; }
+        if (editBtn3) editBtn3.style.display = 'none';
+        triggerDynamicRateFetch();
+      } else if (window.maxOrderStepReached >= 3) {
+        if (body3) body3.style.display = 'none';
+        if (card3) card3.style.borderColor = 'var(--border)';
+        if (badge3) { badge3.style.background = '#16a34a'; badge3.style.color = '#fff'; }
+        if (tab3) tab3.style.opacity = '1';
+        if (stat3) { stat3.textContent = 'Ready to Manifest'; stat3.style.color = '#16a34a'; }
+        if (hdrBadge3) { hdrBadge3.textContent = '✓ Ready to Manifest'; hdrBadge3.style.background = '#dcfce7'; hdrBadge3.style.color = '#15803d'; }
+        if (editBtn3) editBtn3.style.display = 'inline-block';
+      } else {
+        if (body3) body3.style.display = 'none';
+        if (badge3) { badge3.style.background = '#e2e8f0'; badge3.style.color = '#64748b'; }
+        if (tab3) tab3.style.opacity = '0.6';
+        if (stat3) { stat3.textContent = 'Carriers & Payment'; stat3.style.color = 'var(--text-muted)'; }
+        if (hdrBadge3) { hdrBadge3.textContent = '🔒 Step 3 Locked'; hdrBadge3.style.background = '#f1f5f9'; hdrBadge3.style.color = '#64748b'; }
+        if (editBtn3) editBtn3.style.display = 'none';
+      }
+    }
+
+    function proceedToStep2() {
+      const bName = (document.getElementById('buyerName')?.value || '').trim();
+      const bPhone = (document.getElementById('buyerPhone')?.value || '').trim();
+      const bAddr = (document.getElementById('buyerAddress')?.value || '').trim();
+      const bPin = (document.getElementById('buyerPincode')?.value || '').trim();
+
+      if (!bName) {
+        showToast('Please enter recipient contact name', 'warning');
+        document.getElementById('buyerName')?.focus();
+        return;
+      }
+      if (!bPhone || bPhone.replace(/\D/g, '').length < 10) {
+        showToast('Please enter valid 10-digit mobile number for consignee', 'warning');
+        document.getElementById('buyerPhone')?.focus();
+        return;
+      }
+      if (!bAddr) {
+        showToast('Please enter complete delivery street address', 'warning');
+        document.getElementById('buyerAddress')?.focus();
+        return;
+      }
+      if (!bPin || bPin.length !== 6) {
+        showToast('Please enter valid 6-digit destination pincode', 'warning');
+        document.getElementById('buyerPincode')?.focus();
+        return;
+      }
+
+      if (window.maxOrderStepReached < 2) window.maxOrderStepReached = 2;
+      goToOrderStep(2);
+      const c2 = document.getElementById('orderStep2Card');
+      if (c2) c2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function proceedToStep3() {
+      if (!orderItems || orderItems.length === 0) {
+        showToast('Please add at least one item to package', 'warning');
+        return;
+      }
+
+      for (let i = 0; i < orderItems.length; i++) {
+        const it = orderItems[i];
+        if (!it.name || !it.name.trim()) {
+          showToast('Please enter Item #' + (i + 1) + ' Name / Description', 'warning');
+          return;
+        }
+        const w = parseFloat(it.weight || 0);
+        if (w <= 0) {
+          showToast('Please enter Item #' + (i + 1) + ' Unit Weight in kg', 'warning');
+          return;
+        }
+        const val = parseFloat(it.declaredValue || 0);
+        if (val <= 0) {
+          showToast('Please enter Item #' + (i + 1) + ' Unit Declared Value (₹)', 'warning');
+          return;
+        }
+      }
+
+      const summary = recalcAllItemsSummary();
+      if (!summary.totalDeadWeight || summary.totalDeadWeight <= 0) {
+        showToast('Please enter dead weight in kg for package items', 'warning');
+        return;
+      }
+      if (!summary.totalDeclared || summary.totalDeclared <= 0) {
+        showToast('Please enter package declared invoice value (₹)', 'warning');
+        return;
+      }
+
+      if (window.maxOrderStepReached < 3) window.maxOrderStepReached = 3;
+      goToOrderStep(3);
+      triggerDynamicRateFetch();
+      const c3 = document.getElementById('orderStep3Card');
+      if (c3) c3.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Book Shipment Submission (Multi-Item Order Booking API)
@@ -5153,12 +6340,19 @@
         }
       }
 
+      const bAltPhone = (document.getElementById('buyerAltPhone')?.value || '').trim();
+      const bEmail = (document.getElementById('buyerEmail')?.value || '').trim();
+      const bAddr2 = (document.getElementById('buyerAddress2')?.value || '').trim();
+
       const payload = {
         pickupAddressId: pickupId,
         buyerAddressId: buyerAddrId,
         buyerName: bName,
         buyerPhone: bPhone,
+        buyerAltPhone: bAltPhone,
+        buyerEmail: bEmail,
         buyerAddress: bAddr,
+        buyerAddress2: bAddr2,
         buyerCity: bCity,
         buyerState: bState,
         buyerPincode: bPin,
@@ -5268,14 +6462,17 @@
     // 8. ORDERS LISTING & CLICKABLE ORDER ID MODAL
     // ==========================================
     let currentOrders = [];
+    let currentOrderStatusFilter = 'ALL';
+
     async function loadOrders(status = '') {
       try {
-        const url = status && status !== 'ALL' ? '/api/orders?status=' + status : '/api/orders';
+        if (status) currentOrderStatusFilter = status;
+        const url = (currentOrderStatusFilter && currentOrderStatusFilter !== 'ALL') ? '/api/orders?status=' + currentOrderStatusFilter : '/api/orders';
         const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
         currentOrders = d.orders || [];
 
-        renderOrdersTable(currentOrders);
+        applyOrdersFilter();
         renderOverviewRecentOrders(currentOrders.slice(0, 5));
         document.getElementById('kpiTotalOrders').textContent = currentOrders.length;
         
@@ -5289,9 +6486,63 @@
     }
 
     function filterOrders(st, btn) {
+      currentOrderStatusFilter = st;
       document.querySelectorAll('#tab-orders .btn-secondary').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      loadOrders(st);
+      applyOrdersFilter();
+    }
+
+    function applyOrdersFilter() {
+      const q = (document.getElementById('ordersSearchInput')?.value || '').trim().toLowerCase();
+      const dFrom = document.getElementById('ordersDateFrom')?.value || '';
+      const dTo = document.getElementById('ordersDateTo')?.value || '';
+
+      let filtered = currentOrders;
+      if (currentOrderStatusFilter !== 'ALL') {
+        filtered = filtered.filter(o => {
+          const st = (o.shipment?.status || o.status || '').toUpperCase();
+          if (currentOrderStatusFilter === 'READY_TO_SHIP') return st === 'CONFIRMED' || st === 'READY_TO_SHIP';
+          if (currentOrderStatusFilter === 'SAVED') return st === 'SAVED' || st === 'DRAFT';
+          return st === currentOrderStatusFilter;
+        });
+      }
+
+      if (q) {
+        filtered = filtered.filter(o => {
+          const num = (o.orderNumber || '').toLowerCase();
+          const awb = (o.shipment?.awbNumber || o.awbNumber || '').toLowerCase();
+          const name = (o.buyerAddress?.contactName || '').toLowerCase();
+          const phone = (o.buyerAddress?.phone || '').toLowerCase();
+          const city = (o.buyerAddress?.city || '').toLowerCase();
+          const cName = (o.courier?.name || o.shipment?.courierName || '').toLowerCase();
+          return num.includes(q) || awb.includes(q) || name.includes(q) || phone.includes(q) || city.includes(q) || cName.includes(q);
+        });
+      }
+
+      if (dFrom) {
+        const fromTs = new Date(dFrom + 'T00:00:00Z').getTime();
+        filtered = filtered.filter(o => new Date(o.createdAt || Date.now()).getTime() >= fromTs);
+      }
+      if (dTo) {
+        const toTs = new Date(dTo + 'T23:59:59Z').getTime();
+        filtered = filtered.filter(o => new Date(o.createdAt || Date.now()).getTime() <= toTs);
+      }
+
+      renderOrdersTable(filtered);
+    }
+
+    function clearOrdersFilter() {
+      const sInp = document.getElementById('ordersSearchInput');
+      if (sInp) sInp.value = '';
+      const fInp = document.getElementById('ordersDateFrom');
+      if (fInp) fInp.value = '';
+      const tInp = document.getElementById('ordersDateTo');
+      if (tInp) tInp.value = '';
+      currentOrderStatusFilter = 'ALL';
+      document.querySelectorAll('#tab-orders .btn-secondary').forEach(b => b.classList.remove('active'));
+      const allBtn = document.querySelector('#tab-orders .btn-secondary');
+      if (allBtn) allBtn.classList.add('active');
+      renderOrdersTable(currentOrders);
     }
 
     function renderOrdersTable(orders) {
@@ -5315,7 +6566,16 @@
         const shipPayStatus = o.shippingPaymentStatus || (isDraft ? 'UNPAID' : 'PAID');
         const shipPayBadge = shipPayStatus === 'PAID' ? 'badge-success' : 'badge-warning';
 
-        const awbDisplay = isDraft ? '<span style="color: #94a3b8; font-style: italic; font-size: 0.75rem;">Draft (Unshipped)</span>' : awb;
+        const cName = o.courier?.name || o.shipment?.courier?.name || o.shipment?.courierName || o.courierName || '';
+        const brandInfo = window.getCourierBrand ? window.getCourierBrand(cName || 'Delhivery') : null;
+        const courierLogoPill = (!isDraft && brandInfo && brandInfo.logoSvg)
+          ? ('<div style="height: 22px; width: 75px; min-width: 75px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 4px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">' + brandInfo.logoSvg + '</div>')
+          : '';
+
+        const hasAwb = !isDraft && awb && awb !== '-';
+        const awbDisplay = isDraft 
+          ? '<span style="color: #94a3b8; font-style: italic; font-size: 0.75rem;">Draft (Unshipped)</span>' 
+          : (hasAwb ? ('<a href="javascript:void(0)" onclick="quickTrack(&quot;' + awb + '&quot;)" style="color: var(--brand); text-decoration: underline; font-weight: 700;" title="Track ' + awb + '">' + awb + '</a>') : '-');
 
         return '<tr>' +
           '<td style="text-align: center;">' +
@@ -5326,7 +6586,7 @@
               o.orderNumber +
             '</a>' +
           '</td>' +
-          '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awbDisplay + '</td>' +
+          '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' + awbDisplay + (courierLogoPill ? ('<br/>' + courierLogoPill) : '') + '</td>' +
           '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
           '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
           '<td>' + (o.billableWeight || o.weight || 0.5) + ' kg</td>' +
@@ -5336,6 +6596,7 @@
           '<td><span class="badge ' + badgeClass + '">' + (isDraft ? 'SAVED DRAFT' : st.replace(/_/g, ' ')) + '</span></td>' +
           '<td>' +
             '<div style="display: flex; gap: 0.25rem; align-items: center;">' +
+              (hasAwb ? '<button onclick="quickTrack(&quot;' + awb + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">Track</button>' : '') +
               (isDraft ? '<button onclick="editSavedOrder(&quot;' + o.id + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.6875rem; font-weight: 700; color: var(--brand); border-color: var(--brand); background: #eff6ff;">✏️ Edit</button>' : '') +
               (isDraft ? '<button onclick="shipSavedOrder(&quot;' + o.id + '&quot;)" class="btn-primary" style="padding: 0.25rem 0.6rem; font-size: 0.6875rem; font-weight: 750; background: #16a34a; border-color: #16a34a;">⚡ Ship Now</button>' : '') +
               (!isDraft && o.shipment?.id ? '<a href="/api/shipment-label/' + o.shipment.id + '" target="_blank" class="btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.6875rem;">Label</a>' : '') +
@@ -5391,7 +6652,16 @@
         return;
       }
       const count = cbs.length;
-      if (!confirm('Are you sure you want to cancel ' + count + ' selected order(s)? Any deducted freight charges will be refunded to your wallet.')) {
+      const ok = await showInAppConfirm({
+        title: 'Cancel Selected Orders?',
+        message: 'Are you sure you want to cancel ' + count + ' selected order(s)? Any deducted freight charges will be refunded to your wallet.',
+        notice: 'Carrier will be notified and tracking status updated.',
+        confirmText: 'Yes, Cancel Orders',
+        cancelText: 'Keep Orders',
+        type: 'danger',
+        icon: '🗑️'
+      });
+      if (!ok) {
         return;
       }
       const ids = cbs.map(cb => cb.value);
@@ -5441,7 +6711,9 @@
         return;
       }
       tbody.innerHTML = orders.map(o => {
-        const awb = o.shipment?.awbNumber || '-';
+        const awb = o.awbNumber || o.shipment?.awbNumber || '';
+        const displayAwb = (awb && awb !== '-') ? awb : '-';
+        const trackTarget = (awb && awb !== '-') ? awb : (o.orderNumber || '');
         const st = o.shipment?.status || o.status || 'CONFIRMED';
         let badgeClass = 'badge-info';
         if (st === 'DELIVERED') badgeClass = 'badge-success';
@@ -5452,13 +6724,15 @@
               o.orderNumber +
             '</a>' +
           '</td>' +
-          '<td style="font-family: monospace; color: var(--brand);">' + awb + '</td>' +
+          '<td style="font-family: monospace; color: var(--brand); font-weight: 700;">' +
+            (displayAwb !== '-' ? ('<a href="javascript:void(0)" onclick="quickTrack(&quot;' + displayAwb + '&quot;)" style="color: var(--brand); text-decoration: underline;" title="Track ' + displayAwb + '">' + displayAwb + '</a>') : '-') +
+          '</td>' +
           '<td>' + (o.buyerAddress?.contactName || 'Customer') + '</td>' +
           '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
-          '<td>' + (o.billableWeight || 0.5) + ' kg</td>' +
+          '<td>' + (o.billableWeight || o.weight || 0.5) + ' kg</td>' +
           '<td>' + (o.paymentMode || 'PREPAID') + '</td>' +
           '<td><span class="badge ' + badgeClass + '">' + st.replace(/_/g, ' ') + '</span></td>' +
-          '<td><button onclick="quickTrack(&quot;' + awb + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem;">Track</button></td>' +
+          '<td><button onclick="quickTrack(&quot;' + trackTarget + '&quot;)" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.6875rem;">Track</button></td>' +
         '</tr>';
       }).join('');
     }
@@ -5725,8 +6999,12 @@
     }
 
     function quickTrack(awb) {
+      if (!awb || awb === '-' || awb === 'null' || awb === 'undefined' || awb.trim() === '') {
+        showToast('No tracking identifier available for this order', 'info');
+        return;
+      }
       switchTab('track');
-      dashFetchTracking(awb);
+      dashFetchTracking(awb.trim());
     }
 
     async function raiseWeightDispute(orderId) {
@@ -5749,23 +7027,29 @@
       }
     }
 
+    // ==========================================
+    // COD REMITTANCES LOGIC & FILTERS
+    // ==========================================
+    let allCodRemittances = [];
+    let currentCodFilter = 'ALL';
+
     async function loadCodRemittances() {
-      const tbody = document.getElementById('codRemittanceTableBody');
+      const tbody = document.getElementById('codRemittancesTableBody') || document.getElementById('codRemittanceTableBody');
       if (!tbody) return;
       tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading COD remittance records...</td></tr>';
 
       try {
         const res = await fetch('/api/cod-remittances', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        const remittances = d.remittances || [];
+        allCodRemittances = d.remittances || [];
 
         let remittedSum = 0;
         let pendingSum = 0;
-        remittances.forEach(r => {
-          if (r.status === 'REMITTED' || r.status === 'PAID') {
-            remittedSum += parseFloat(r.amount || 0);
+        allCodRemittances.forEach(r => {
+          if (r.status === 'REMITTED' || r.status === 'PAID' || r.status === 'SETTLED') {
+            remittedSum += parseFloat(r.amount || r.codAmount || 0);
           } else {
-            pendingSum += parseFloat(r.amount || 0);
+            pendingSum += parseFloat(r.amount || r.codAmount || 0);
           }
         });
 
@@ -5776,27 +7060,157 @@
         const elPay = document.getElementById('codNextPayoutDate');
         if (elPay) elPay.textContent = d.nextPayoutDate || 'Upcoming Friday';
 
-        if (remittances.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No COD orders or remittances recorded yet.</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = remittances.map(r => {
-          const isRemitted = r.status === 'REMITTED' || r.status === 'PAID';
-          return '<tr>' +
-            '<td style="font-weight: 700; font-family: monospace;">' + (r.remittanceId || r.id || 'REM-' + r.orderNumber) + '</td>' +
-            '<td style="font-weight: 600;">' + r.orderNumber + '</td>' +
-            '<td style="font-family: monospace; color: var(--brand);">' + (r.awbNumber || '-') + '</td>' +
-            '<td style="font-weight: 700; color: var(--navy);">₹' + parseFloat(r.codAmount || r.amount || 0).toFixed(2) + '</td>' +
-            '<td style="color: var(--danger);">₹' + parseFloat(r.deductions || 0).toFixed(2) + '</td>' +
-            '<td style="font-weight: 800; color: var(--success);">₹' + parseFloat(r.netPayout || r.amount || 0).toFixed(2) + '</td>' +
-            '<td><span class="badge ' + (isRemitted ? 'badge-success' : 'badge-warning') + '">' + (r.status || 'PENDING') + '</span></td>' +
-            '<td style="font-size: 0.75rem;">' + (r.remittedAt || r.payoutDate || 'Scheduled') + '</td>' +
-          '</tr>';
-        }).join('');
-
+        applyCodFilter();
       } catch (e) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger); padding: 1.5rem;">' + e.message + '</td></tr>';
+      }
+    }
+
+    function filterCod(status, btn) {
+      currentCodFilter = status;
+      document.querySelectorAll('#tab-cod .btn-secondary').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyCodFilter();
+    }
+
+    function applyCodFilter() {
+      const q = (document.getElementById('codSearchInput')?.value || '').trim().toLowerCase();
+      const tbody = document.getElementById('codRemittancesTableBody') || document.getElementById('codRemittanceTableBody');
+      if (!tbody) return;
+
+      let list = allCodRemittances;
+      if (currentCodFilter !== 'ALL') {
+        list = list.filter(r => {
+          const st = (r.status || '').toUpperCase();
+          if (currentCodFilter === 'SETTLED') return st === 'SETTLED' || st === 'PAID' || st === 'REMITTED';
+          if (currentCodFilter === 'PENDING') return st !== 'SETTLED' && st !== 'PAID' && st !== 'REMITTED';
+          return st === currentCodFilter;
+        });
+      }
+
+      if (q) {
+        list = list.filter(r => 
+          (r.remittanceId || r.id || '').toLowerCase().includes(q) ||
+          (r.orderNumber || '').toLowerCase().includes(q) ||
+          (r.awbNumber || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No COD remittances found matching criteria.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => {
+        const isRemitted = r.status === 'REMITTED' || r.status === 'PAID' || r.status === 'SETTLED';
+        return '<tr>' +
+          '<td style="font-weight: 700; font-family: monospace;">' + (r.remittanceId || r.id || 'REM-' + r.orderNumber) + '</td>' +
+          '<td style="font-weight: 600;">' + r.orderNumber + '</td>' +
+          '<td style="font-family: monospace; color: var(--brand);">' + (r.awbNumber || '-') + '</td>' +
+          '<td style="font-weight: 700; color: var(--navy);">₹' + parseFloat(r.codAmount || r.amount || 0).toFixed(2) + '</td>' +
+          '<td style="color: var(--danger);">₹' + parseFloat(r.deductions || 0).toFixed(2) + '</td>' +
+          '<td style="font-weight: 800; color: var(--success);">₹' + parseFloat(r.netPayout || r.amount || 0).toFixed(2) + '</td>' +
+          '<td><span class="badge ' + (isRemitted ? 'badge-success' : 'badge-warning') + '">' + (r.status || 'PENDING') + '</span></td>' +
+          '<td style="font-size: 0.75rem;">' + (r.remittedAt || r.payoutDate || 'Scheduled') + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // ==========================================
+    // NDR (NON-DELIVERY REPORTS) LOGIC & FILTERS
+    // ==========================================
+    let allNdrRecords = [];
+    let currentNdrFilter = 'ALL';
+
+    async function loadNdrRecords() {
+      const tbody = document.getElementById('ndrTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading delivery exceptions...</td></tr>';
+
+      try {
+        const res = await fetch('/api/ndr', { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await res.json();
+        allNdrRecords = d.records || d.ndr || [];
+        applyNdrFilter();
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger); padding: 1.5rem;">' + e.message + '</td></tr>';
+      }
+    }
+
+    function filterNdr(status, btn) {
+      currentNdrFilter = status;
+      document.querySelectorAll('#tab-ndr .btn-secondary').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      applyNdrFilter();
+    }
+
+    function applyNdrFilter() {
+      const q = (document.getElementById('ndrSearchInput')?.value || '').trim().toLowerCase();
+      const tbody = document.getElementById('ndrTableBody');
+      if (!tbody) return;
+
+      let list = allNdrRecords;
+      if (currentNdrFilter !== 'ALL') {
+        list = list.filter(r => (r.status || '').toUpperCase() === currentNdrFilter);
+      }
+
+      if (q) {
+        list = list.filter(r => 
+          (r.awbNumber || '').toLowerCase().includes(q) ||
+          (r.orderNumber || '').toLowerCase().includes(q) ||
+          (r.reason || '').toLowerCase().includes(q) ||
+          (r.feedback || '').toLowerCase().includes(q) ||
+          (r.recipientName || '').toLowerCase().includes(q)
+        );
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No NDR delivery exceptions found matching filter.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(r => {
+        let statusBadge = '<span class="badge badge-warning">Action Required</span>';
+        if (r.status === 'REATTEMPT_REQUESTED') statusBadge = '<span class="badge badge-info">Reattempt Requested</span>';
+        if (r.status === 'RTO_INITIATED') statusBadge = '<span class="badge badge-danger">RTO Initiated</span>';
+
+        return '<tr>' +
+          '<td>' +
+            '<a href="javascript:void(0)" onclick="quickTrackAwb(\'' + r.awbNumber + '\')" style="font-family: monospace; font-weight: 700; color: var(--brand);">' + r.awbNumber + '</a>' +
+            '<div style="font-size: 0.72rem; color: var(--text-muted);">' + (r.orderNumber || '-') + ' · ' + (r.courierName || 'Courier') + '</div>' +
+          '</td>' +
+          '<td style="text-align: center; font-weight: 700;">#' + (r.attemptNumber || 1) + '</td>' +
+          '<td style="color: #b91c1c; font-weight: 600;">' + (r.reason || 'Customer Unavailable') + '</td>' +
+          '<td style="font-size: 0.75rem; color: #334155;">' + (r.feedback || 'None provided') + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td>' +
+            (r.status === 'ACTION_REQUIRED' ? (
+              '<div style="display: flex; gap: 0.35rem;">' +
+                '<button type="button" class="btn-primary" onclick="requestNdrAction(\'' + r.awbNumber + '\', \'REATTEMPT\')" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; background: #16a34a; font-weight: 700;">🔄 Reattempt</button>' +
+                '<button type="button" class="btn-secondary" onclick="requestNdrAction(\'' + r.awbNumber + '\', \'RTO\')" style="padding: 0.3rem 0.65rem; font-size: 0.75rem; color: var(--danger); font-weight: 600;">↩ Return</button>' +
+              '</div>'
+            ) : '<span style="font-size: 0.75rem; color: var(--text-muted);">Processed</span>') +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    async function requestNdrAction(awb, action) {
+      try {
+        const res = await fetch('/api/ndr/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ awbNumber: awb, action: action })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          showToast(d.message || 'NDR action submitted successfully!', 'success');
+          loadNdrRecords();
+        } else {
+          showToast(d.error || 'Failed to submit action', 'error');
+        }
+      } catch (err) {
+        showToast(err.message, 'error');
       }
     }
 
@@ -5844,13 +7258,127 @@
       window.open(url, '_blank');
     }
 
+    function openMonthlyInvoicesTab() {
+      switchTab('reports');
+      setTimeout(() => {
+        const section = document.getElementById('monthly-invoices-section');
+        if (section) section.scrollIntoView({ behavior: 'smooth' });
+      }, 150);
+    }
+
+    let allMonthlyInvoices = [];
+
+    async function loadMonthlyInvoices() {
+      const tbody = document.getElementById('monthlyInvoicesTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 1.5rem; color: var(--text-muted);">Fetching GST Tax Invoices...</td></tr>';
+      
+      try {
+        const token = window.hetExAuthToken || localStorage.getItem('token');
+        const res = await fetch('/api/billing/monthly-invoices', {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        });
+        const data = await res.json();
+        allMonthlyInvoices = (data && data.invoices) ? data.invoices : [];
+        
+        let sumTotal = 0;
+        let sumGst = 0;
+        let sumShipments = 0;
+        allMonthlyInvoices.forEach(inv => {
+          sumTotal += parseFloat(inv.grandTotal || 0);
+          sumGst += parseFloat(inv.totalGst || 0);
+          sumShipments += parseInt(inv.totalShipments || 0, 10);
+        });
+
+        const elTot = document.getElementById('invMetricTotalAmount');
+        if (elTot) elTot.textContent = '₹' + sumTotal.toFixed(2);
+        const elGst = document.getElementById('invMetricTotalGst');
+        if (elGst) elGst.textContent = '₹' + sumGst.toFixed(2);
+        const elShip = document.getElementById('invMetricTotalShipments');
+        if (elShip) elShip.textContent = sumShipments;
+
+        renderMonthlyInvoicesTable(allMonthlyInvoices);
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 1.5rem; color: var(--danger);">' +
+          'Failed to load invoices: ' + (err.message || 'Network error') +
+          '</td></tr>';
+      }
+    }
+
+    function filterInvoicesTable(query) {
+      const q = (query || document.getElementById('invoiceSearchInput')?.value || '').trim().toLowerCase();
+      if (!q) {
+        renderMonthlyInvoicesTable(allMonthlyInvoices);
+        return;
+      }
+      const filtered = allMonthlyInvoices.filter(inv => {
+        const num = (inv.invoiceNumber || '').toLowerCase();
+        const m = (inv.month || '').toLowerCase();
+        const ml = (inv.monthLabel || '').toLowerCase();
+        return num.includes(q) || m.includes(q) || ml.includes(q);
+      });
+      renderMonthlyInvoicesTable(filtered);
+    }
+
+    function renderMonthlyInvoicesTable(list) {
+      const tbody = document.getElementById('monthlyInvoicesTableBody');
+      if (!tbody) return;
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding: 2rem; color: var(--text-muted);">' +
+          'No monthly freight invoices found matching search.' +
+          '</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(inv => {
+        return '<tr style="border-bottom: 1px solid var(--border); transition: background 0.15s ease;">' +
+          '<td style="padding: 0.85rem 1rem; font-weight: 600; color: var(--navy);">' +
+            '<div>' + (inv.invoiceNumber || ('INV-' + inv.month)) + '</div>' +
+            '<div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 400;">' + (inv.monthLabel || inv.month) + '</div>' +
+          '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: center; font-weight: 600;">' + (inv.totalShipments || 0) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right;">' + (inv.billableWeightKg || 0).toFixed(2) + ' kg</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right;">₹' + (inv.freightCharges || 0).toFixed(2) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right;">₹' + (inv.codCharges || 0).toFixed(2) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right; font-weight: 600;">₹' + (inv.taxableAmount || 0).toFixed(2) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right; color: #0284c7;">₹' + (inv.totalGst || 0).toFixed(2) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: right; font-weight: 700; color: #16a34a;">₹' + (inv.grandTotal || 0).toFixed(2) + '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: center;">' +
+            '<span class="badge" style="background: #ecfdf5; color: #059669; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 9999px;">' +
+              (inv.status || 'TAX INVOICE ISSUED') +
+            '</span>' +
+          '</td>' +
+          '<td style="padding: 0.85rem 1rem; text-align: center;">' +
+            '<button type="button" class="btn-primary" onclick="printMonthlyInvoice(\'' + inv.month + '\')" style="font-size: 0.75rem; padding: 0.35rem 0.65rem; display: inline-flex; align-items: center; gap: 0.35rem;">' +
+              '🖨️ View / Print' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function printMonthlyInvoice(month) {
+      const token = window.hetExAuthToken || localStorage.getItem('token') || '';
+      const url = '/billing/monthly-invoice?month=' + encodeURIComponent(month) + (token ? ('&token=' + encodeURIComponent(token)) : '');
+      window.open(url, '_blank');
+    }
+
     async function cancelOrder(id, orderNum, isDraft) {
       const orderLabel = orderNum ? ('Order #' + orderNum) : 'this order';
-      const promptText = isDraft
-        ? 'Are you sure you want to discard this draft order? It will be removed from your active shipments.'
-        : 'Are you sure you want to cancel ' + orderLabel + '?\n\nAny deducted freight/shipping charges will be automatically refunded to your wallet balance.';
+      const ok = await showInAppConfirm({
+        title: isDraft ? 'Discard Draft Order?' : 'Cancel Confirmed Order?',
+        message: isDraft
+          ? 'Are you sure you want to discard this draft order? It will be permanently removed from your drafts.'
+          : 'Are you sure you want to cancel ' + orderLabel + '? Any deducted freight charges will be refunded to your wallet.',
+        notice: isDraft ? '' : 'Carrier pickup will be cancelled.',
+        confirmText: isDraft ? 'Discard Draft' : 'Cancel Order',
+        cancelText: 'Keep Order',
+        type: 'danger',
+        icon: isDraft ? '🗑️' : '⚠️'
+      });
 
-      if (!confirm(promptText)) {
+      if (!ok) {
         return;
       }
 
@@ -5921,10 +7449,15 @@
       renderWeightDisputesTable();
     }
 
+    function applyWeightDisputesFilter() {
+      renderWeightDisputesTable();
+    }
+
     function renderWeightDisputesTable() {
       const tbody = document.getElementById('weightDisputesTableBody');
       if (!tbody) return;
 
+      const q = (document.getElementById('weightDisputesSearchInput')?.value || '').trim().toLowerCase();
       let list = allWeightDisputes;
       if (currentWeightDisputeFilter !== 'ALL') {
         if (currentWeightDisputeFilter === 'ACTION_REQUIRED') {
@@ -5932,6 +7465,15 @@
         } else {
           list = list.filter(d => d.status === currentWeightDisputeFilter);
         }
+      }
+
+      if (q) {
+        list = list.filter(d => 
+          (d.id || '').toLowerCase().includes(q) ||
+          (d.orderNumber || '').toLowerCase().includes(q) ||
+          (d.awbNumber || '').toLowerCase().includes(q) ||
+          (d.courierName || '').toLowerCase().includes(q)
+        );
       }
 
       if (list.length === 0) {
@@ -6097,7 +7639,16 @@
     }
 
     async function acceptWeightDiscrepancy(orderId) {
-      if (!confirm('Are you sure you want to accept this carrier weight measurement? The discrepancy surcharge will be settled.')) {
+      const ok = await showInAppConfirm({
+        title: 'Accept Carrier Weight Measurement?',
+        message: 'Are you sure you want to accept this carrier weight measurement? The discrepancy surcharge will be settled from your wallet balance.',
+        notice: 'Case will be marked as settled with carrier partner.',
+        confirmText: 'Accept Measurement',
+        cancelText: 'Keep Disputing',
+        type: 'warning',
+        icon: '⚖️'
+      });
+      if (!ok) {
         return;
       }
 
@@ -6177,11 +7728,7 @@
     }
 
     function quickTrackAwb(awb) {
-      if (!awb || awb === '-') return;
-      const inp = document.getElementById('trackOrderInput');
-      if (inp) inp.value = awb;
-      switchTab('track');
-      if (typeof trackOrderSubmit === 'function') trackOrderSubmit();
+      quickTrack(awb);
     }
 
     // Initial Load

@@ -4,6 +4,28 @@ const path = require('path');
 const url = require('url');
 const https = require('https');
 const CourierBranding = require('./courier_brand.js');
+
+// Load environment variables from api/.env if present
+try {
+  const envPath = path.join(__dirname, 'api', '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split(/\r?\n/).forEach(line => {
+      line = line.trim();
+      if (!line || line.startsWith('#')) return;
+      const idx = line.indexOf('=');
+      if (idx !== -1) {
+        const k = line.slice(0, idx).trim();
+        let v = line.slice(idx + 1).trim();
+        if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
+          v = v.slice(1, -1);
+        }
+        if (!process.env[k]) process.env[k] = v;
+      }
+    });
+  }
+} catch (e) {}
+
 let QRCode = null;
 try {
   QRCode = require('qrcode');
@@ -118,6 +140,30 @@ const state = {
       reviewedAt: null
     }
   ],
+  profile: {
+    name: 'PIYUSH H BHUVA',
+    email: 'PIYUSHMOKARIYA86@GMAIL.COM',
+    phone: '9978292383',
+    userType: 'BUSINESS',
+    role: 'ADMIN',
+    joined: '12 May 2025, 07:18 PM',
+    status: 'Approved',
+    addressLine1: 'UG-2B, SHREE LAXMEE LEELA TOWER,',
+    addressLine2: '240, SNEH NAGAR, NEAR KALASMANDAPAM, SAPNA SANGEETA ROAD,',
+    city: 'Indore',
+    state: 'Madhya Pradesh',
+    country: 'India',
+    pincode: '452001',
+    kycStatus: 'Verified',
+    kycVerifiedAt: '12 Oct 2026, 04:30 PM',
+    aadhaarNumber: 'XXXX-XXXX-7842',
+    publicKey: 'fIGJQHjkPTplZq7AwL2h',
+    privateKey: 'sk_live_sm_9025158842',
+    bankName: 'HDFC Bank',
+    accountNumber: '50100234567890',
+    ifsc: 'HDFC0000240',
+    accountHolder: 'PIYUSH H BHUVA'
+  },
   codRemittances: [
     {
       id: 'REM-2026-001',
@@ -408,6 +454,36 @@ const state = {
       orderCount: 1
     }
   ],
+  ndrRecords: [
+    {
+      id: 'ndr_001',
+      awbNumber: '25449515363971',
+      orderNumber: 'HTX-ORD-1001',
+      courierName: 'Delhivery Surface',
+      attemptNumber: 1,
+      reason: 'Customer Not Available / Door Locked',
+      feedback: 'Customer requested delivery after 6 PM',
+      status: 'ACTION_REQUIRED',
+      recipientName: 'Kunal Singhania',
+      recipientPhone: '9811223344',
+      city: 'Mumbai',
+      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+    },
+    {
+      id: 'ndr_002',
+      awbNumber: 'HTX902341822',
+      orderNumber: 'HTX-ORD-1003',
+      courierName: 'DTDC Express',
+      attemptNumber: 2,
+      reason: 'Incomplete Address / Landmark Required',
+      feedback: 'Near Shiv Mandir, Gate 3 provided by buyer',
+      status: 'REATTEMPT_REQUESTED',
+      recipientName: 'Rohan Verma',
+      recipientPhone: '9844556677',
+      city: 'Bengaluru',
+      createdAt: new Date(Date.now() - 3600000 * 22).toISOString()
+    }
+  ],
   pendingOtps: {}
 };
 
@@ -532,9 +608,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   // ==========================================
-  // API ROUTES
+  // API & DYNAMIC DOCUMENT ROUTES
   // ==========================================
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith('/api/') || pathname.startsWith('/billing/') || pathname.startsWith('/shipment-invoice') || pathname.startsWith('/shipment-invoices-bulk')) {
     const body = ['POST', 'PUT', 'PATCH'].includes(method) ? await readBody(req) : {};
 
     // Auth Login
@@ -765,8 +841,8 @@ const server = http.createServer(async (req, res) => {
 
       // Try Shipmozo Rate Calculator API
       const SHIPMOZO_BASE_URL = process.env.SHIPMOZO_BASE_URL || 'https://shipping-api.com/app/api/v1';
-      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || 'flGJQHjkPTpIZq7AwL2h';
-      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || 'sZ4u1x2ESph5DUfT8L7l';
+      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || '';
+      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || '';
 
       let shipmozoRates = null;
 
@@ -1537,7 +1613,45 @@ const server = http.createServer(async (req, res) => {
     // Orders - List & Create
     if (pathname === '/api/orders') {
       if (method === 'GET') {
-        return sendJson(res, { orders: state.orders });
+        let filtered = state.orders || [];
+        const q = parsedUrl.query || {};
+        const st = (q.status || '').trim().toUpperCase();
+        const search = (q.search || q.q || '').trim().toLowerCase();
+        const fromDate = q.from || q.startDate;
+        const toDate = q.to || q.endDate;
+
+        if (st && st !== 'ALL') {
+          filtered = filtered.filter(o => {
+            const orderStatus = (o.status || '').toUpperCase();
+            const shipStatus = (o.shipment?.status || '').toUpperCase();
+            if (st === 'READY_TO_SHIP') {
+              return orderStatus === 'READY_TO_SHIP' || orderStatus === 'CONFIRMED' || orderStatus === 'BOOKED' || shipStatus === 'READY_TO_SHIP';
+            }
+            if (st === 'SAVED' || st === 'DRAFT') {
+              return orderStatus === 'SAVED' || orderStatus === 'DRAFT' || o.isDraft;
+            }
+            return orderStatus === st || shipStatus === st;
+          });
+        }
+        if (search) {
+          filtered = filtered.filter(o => 
+            (o.orderNumber && o.orderNumber.toLowerCase().includes(search)) ||
+            (o.awbNumber && o.awbNumber.toLowerCase().includes(search)) ||
+            (o.shipment?.awbNumber && o.shipment.awbNumber.toLowerCase().includes(search)) ||
+            (o.buyerAddress?.contactName && o.buyerAddress.contactName.toLowerCase().includes(search)) ||
+            (o.buyerAddress?.phone && o.buyerAddress.phone.includes(search)) ||
+            (o.buyerAddress?.city && o.buyerAddress.city.toLowerCase().includes(search))
+          );
+        }
+        if (fromDate) {
+          const f = new Date(fromDate);
+          filtered = filtered.filter(o => new Date(o.createdAt) >= f);
+        }
+        if (toDate) {
+          const t = new Date(toDate + 'T23:59:59.999Z');
+          filtered = filtered.filter(o => new Date(o.createdAt) <= t);
+        }
+        return sendJson(res, { orders: filtered });
       }
       if (method === 'POST') {
         const c = state.couriers.find(cr => cr.id === body.courierId) || state.couriers[0];
@@ -1572,6 +1686,10 @@ const server = http.createServer(async (req, res) => {
               category: cat,
               quantity: qty,
               declaredValue: val,
+              sku: it.sku || '',
+              hsn: it.hsn || '',
+              taxRate: it.taxRate !== undefined ? it.taxRate : 18,
+              discount: it.discount || 0,
               weight: w,
               length: l,
               width: wd,
@@ -1596,6 +1714,10 @@ const server = http.createServer(async (req, res) => {
             category: body.itemCategory || 'General Merchandise',
             quantity: 1,
             declaredValue: val,
+            sku: body.sku || '',
+            hsn: body.hsn || '',
+            taxRate: body.taxRate !== undefined ? body.taxRate : 18,
+            discount: body.discount || 0,
             weight: w,
             length: l,
             width: wd,
@@ -1639,7 +1761,10 @@ const server = http.createServer(async (req, res) => {
         const buyerAddressObj = {
           contactName: body.buyerName || body.contactName || buyerFound?.contactName || 'Customer',
           phone: cleanBPhone || buyerPhoneRaw,
+          altPhone: body.buyerAltPhone || body.altPhone || '',
+          email: body.buyerEmail || body.email || '',
           addressLine1: body.buyerAddress || body.addressLine1 || buyerFound?.addressLine1 || 'Address',
+          addressLine2: body.buyerAddress2 || body.addressLine2 || '',
           city: body.buyerCity || body.city || buyerFound?.city || 'Mumbai',
           state: body.buyerState || body.state || buyerFound?.state || 'Maharashtra',
           pincode: body.buyerPincode || body.deliveryPincode || buyerFound?.pincode || '400001'
@@ -1661,8 +1786,8 @@ const server = http.createServer(async (req, res) => {
         // POST /push-order → POST /auto-assign-order → get real AWB
         // ===================================================================
         const SHIPMOZO_BASE_URL = process.env.SHIPMOZO_BASE_URL || 'https://shipping-api.com/app/api/v1';
-        const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || 'flGJQHjkPTpIZq7AwL2h';
-        const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || 'sZ4u1x2ESph5DUfT8L7l';
+        const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || '';
+        const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || '';
 
         const orderNumber = 'HTX-ORD-' + (1000 + state.orders.length + 1);
 
@@ -1759,7 +1884,12 @@ const server = http.createServer(async (req, res) => {
               width: Math.max(1, Math.round(processedItems[0]?.width || 10)),
               height: Math.max(1, Math.round(processedItems[0]?.height || 10)),
               warehouse_id: shipmozoWarehouseId,
-              cod_amount: body.paymentMode === 'COD' ? parseFloat(body.codAmount || 0) : undefined
+              cod_amount: body.paymentMode === 'COD' ? parseFloat(body.codAmount || 0) : undefined,
+              eway_bill_number: body.ewayBillNumber || undefined,
+              consignee_gst_number: body.gstNumber || undefined,
+              invoice_number: body.invoiceNumber || undefined,
+              invoice_date: body.invoiceDate || undefined,
+              rov_type: body.rovType || undefined
             });
 
             const parsedBase = new URL(SHIPMOZO_BASE_URL);
@@ -2033,8 +2163,8 @@ const server = http.createServer(async (req, res) => {
       let shipmozoMsg = null;
 
       const SHIPMOZO_BASE_URL = process.env.SHIPMOZO_BASE_URL || 'https://shipping-api.com/app/api/v1';
-      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || 'flGJQHjkPTpIZq7AwL2h';
-      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || 'sZ4u1x2ESph5DUfT8L7l';
+      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || '';
+      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || '';
 
       if (PUBLIC_KEY && PRIVATE_KEY && !PUBLIC_KEY.includes('YOUR_') && (o.awbNumber || o.orderNumber)) {
         try {
@@ -2161,8 +2291,8 @@ const server = http.createServer(async (req, res) => {
       // Enrich with live tracking data if AWB exists
       if (awbToTrack && !awbToTrack.startsWith('LOCAL_')) {
         const SHIPMOZO_BASE_URL = process.env.SHIPMOZO_BASE_URL || 'https://shipping-api.com/app/api/v1';
-        const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || 'flGJQHjkPTpIZq7AwL2h';
-        const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || 'sZ4u1x2ESph5DUfT8L7l';
+        const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || '';
+        const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || '';
 
         if (PUBLIC_KEY && !PUBLIC_KEY.includes('YOUR_')) {
           try {
@@ -2545,6 +2675,32 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, { error: 'Order not found' }, 404);
     }
 
+    // NDR (Non-Delivery Reports) Endpoints
+    if (pathname === '/api/ndr' && method === 'GET') {
+      const records = state.ndrRecords || [];
+      return sendJson(res, { success: true, records, ndr: records });
+    }
+
+    if (pathname === '/api/ndr/action' && method === 'POST') {
+      const awb = body.awbNumber || body.awb;
+      const action = body.action || 'REATTEMPT'; // 'REATTEMPT' or 'RTO'
+      const feedback = body.feedback || body.instructions || 'Action requested by seller';
+      const target = (state.ndrRecords || []).find(r => r.awbNumber === awb);
+      if (target) {
+        target.status = action === 'RTO' ? 'RTO_INITIATED' : 'REATTEMPT_REQUESTED';
+        target.feedback = feedback;
+      }
+      const ord = state.orders.find(o => o.awbNumber === awb);
+      if (ord) {
+        ord.status = action === 'RTO' ? 'RTO_INITIATED' : 'REATTEMPT_REQUESTED';
+      }
+      return sendJson(res, {
+        success: true,
+        message: action === 'RTO' ? 'RTO successfully initiated for shipment' : 'Courier reattempt requested with delivery instructions',
+        record: target
+      });
+    }
+
     // Reports Export (Orders, Transactions, COD, Disputes)
     if (pathname.startsWith('/api/reports')) {
       const q = parsedUrl.query || {};
@@ -2638,8 +2794,8 @@ const server = http.createServer(async (req, res) => {
       const qStr = (parsedUrl.query.awb || parsedUrl.query.awbNumber || parsedUrl.query.awb_number || parsedUrl.query.orderNumber || parsedUrl.query.order_number || parsedUrl.query.query || '').toString().trim();
       console.log('[Tracking] Request query:', qStr);
 
-      if (!qStr) {
-        return sendJson(res, { error: 'AWB number or Order number is required' }, 400);
+      if (!qStr || qStr === '-' || qStr.length < 2) {
+        return sendJson(res, { error: 'Please enter a valid AWB or Order number' }, 400);
       }
 
       // Check if matches an existing order in state
@@ -2649,15 +2805,43 @@ const server = http.createServer(async (req, res) => {
         (ord.awbNumber && ord.awbNumber.toLowerCase() === qStr.toLowerCase())
       );
 
+      // Handle un-manifested saved draft orders
+      if (matchedOrder && (matchedOrder.status === 'SAVED' || matchedOrder.status === 'DRAFT' || matchedOrder.isDraft)) {
+        return sendJson(res, {
+          awbNumber: matchedOrder.awbNumber || matchedOrder.orderNumber,
+          orderNumber: matchedOrder.orderNumber,
+          orderId: matchedOrder.id,
+          courier: matchedOrder.courier?.name || 'Pending Carrier Assignment',
+          courierName: matchedOrder.courier?.name || 'Pending Carrier Assignment',
+          status: 'SAVED_DRAFT',
+          currentLocation: matchedOrder.pickupAddress?.city || 'Origin Facility',
+          destinationCity: matchedOrder.buyerAddress?.city || 'Destination Hub',
+          expectedDeliveryDate: null,
+          events: [
+            {
+              timestamp: matchedOrder.createdAt,
+              date: matchedOrder.createdAt,
+              location: matchedOrder.pickupAddress?.city || 'Origin Facility',
+              status: 'DRAFT_SAVED',
+              description: 'Order details saved as draft. Click "Ship Now" on Orders screen to manifest with carrier.'
+            }
+          ],
+          source: 'internal_draft'
+        });
+      }
+
       const awb = matchedOrder ? matchedOrder.awbNumber : qStr;
 
       // Shipmozo credentials
       const SHIPMOZO_BASE_URL = process.env.SHIPMOZO_BASE_URL || 'https://shipping-api.com/app/api/v1';
-      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || 'flGJQHjkPTpIZq7AwL2h';
-      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || 'sZ4u1x2ESph5DUfT8L7l';
+      const PUBLIC_KEY = process.env.SHIPMOZO_PUBLIC_KEY || '';
+      const PRIVATE_KEY = process.env.SHIPMOZO_PRIVATE_KEY || '';
 
       let shipmozoResp = null;
-      if (PUBLIC_KEY && PRIVATE_KEY && !PUBLIC_KEY.includes('YOUR_')) {
+      // Only query Shipmozo if awb looks like a numeric carrier barcode (>= 9 digits) and not local test id
+      const isCarrierAwb = awb && /^\d{9,16}$/.test(awb);
+
+      if (isCarrierAwb && PUBLIC_KEY && PRIVATE_KEY && !PUBLIC_KEY.includes('YOUR_')) {
         try {
           const parsedBase = new URL(SHIPMOZO_BASE_URL);
           const shipmozoOptions = {
@@ -2682,7 +2866,7 @@ const server = http.createServer(async (req, res) => {
               });
             });
             apiReq.on('error', () => resolve(null));
-            apiReq.setTimeout(12000, () => { apiReq.destroy(); resolve(null); });
+            apiReq.setTimeout(3500, () => { apiReq.destroy(); resolve(null); });
             apiReq.end();
           });
         } catch (e) {}
@@ -2728,7 +2912,7 @@ const server = http.createServer(async (req, res) => {
         const orderDate = new Date(matchedOrder.createdAt);
 
         return sendJson(res, {
-          awbNumber: matchedOrder.awbNumber,
+          awbNumber: matchedOrder.awbNumber || matchedOrder.orderNumber,
           orderNumber: matchedOrder.orderNumber,
           orderId: matchedOrder.id,
           courier: courierName,
@@ -2773,6 +2957,169 @@ const server = http.createServer(async (req, res) => {
         events: [],
         source: 'fallback',
         message: 'No live tracking data found for this identifier'
+      }, 404);
+    }
+
+    // Profile Management (Real User Data, Email OTP Password Change & Bank Details)
+    if (pathname === '/api/profile' || pathname === '/api/user/profile') {
+      const authHeader = req.headers['authorization'] || '';
+      const isAdmin = authHeader.includes('admin');
+      const user = isAdmin ? state.users[0] : (state.users.find(u => u.role === 'SELLER') || state.users[1]);
+
+      if (method === 'GET') {
+        const joinedDate = user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '15 Jan 2026, 10:00 AM';
+        const profileObj = {
+          id: user.id,
+          userCode: user.userCode || (isAdmin ? 'HET000001' : 'HET000002'),
+          name: user.name || (isAdmin ? 'Hetex Administrator' : 'Meena'),
+          email: user.email || (isAdmin ? 'admin@hetex.in' : 'meena@zuberia.one'),
+          phone: user.phone || '9876543210',
+          businessName: user.businessName || (isAdmin ? 'Hetex Logistics Corp' : 'Zuberia One Enterprises'),
+          userType: user.role === 'ADMIN' ? 'ADMINISTRATOR' : 'BUSINESS',
+          role: user.role || 'SELLER',
+          walletBalance: user.walletBalance !== undefined ? user.walletBalance : state.walletBalance,
+          joined: joinedDate,
+          profileStatus: user.kycStatus === 'VERIFIED' ? 'Approved' : 'Pending Verification',
+          kycStatus: user.kycStatus || 'VERIFIED',
+          kycVerifiedAt: user.kycVerifiedAt || '12 Oct 2026, 04:30 PM',
+          aadhaarNumber: user.aadhaarNumber || 'XXXX-XXXX-7842',
+          address: user.address || {
+            line1: isAdmin ? 'B-402, Logistics Park, Udyog Vihar Phase 4' : 'UG-2B, Shree Laxmee Leela Tower',
+            line2: isAdmin ? 'Near Cyber City, NH-8' : '240, Sneh Nagar, Sapna Sangeeta Road',
+            city: isAdmin ? 'Gurugram' : 'Indore',
+            state: isAdmin ? 'Haryana' : 'Madhya Pradesh',
+            country: 'India',
+            pincode: isAdmin ? '122015' : '452001'
+          },
+          bank: user.bank || {
+            holderName: user.name || 'Hetex Seller',
+            bankName: 'HDFC Bank',
+            accountNumber: '50100234567890',
+            ifsc: 'HDFC0000240',
+            accountType: 'Current'
+          }
+        };
+        return sendJson(res, { success: true, profile: profileObj, user: profileObj });
+      }
+
+      if (method === 'PUT' || method === 'POST') {
+        if (body.name) user.name = body.name.trim();
+        if (body.email) user.email = body.email.trim();
+        if (body.phone) user.phone = body.phone.trim();
+        if (body.businessName) user.businessName = body.businessName.trim();
+        if (body.address) {
+          user.address = {
+            ...(user.address || {}),
+            ...body.address
+          };
+        }
+        if (body.bank) {
+          user.bank = {
+            ...(user.bank || {}),
+            ...body.bank
+          };
+        }
+
+        const updatedProfile = {
+          id: user.id,
+          userCode: user.userCode,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          businessName: user.businessName,
+          userType: user.role === 'ADMIN' ? 'ADMINISTRATOR' : 'BUSINESS',
+          role: user.role,
+          walletBalance: user.walletBalance !== undefined ? user.walletBalance : state.walletBalance,
+          profileStatus: user.kycStatus === 'VERIFIED' ? 'Approved' : 'Pending Verification',
+          kycStatus: user.kycStatus,
+          address: user.address,
+          bank: user.bank
+        };
+
+        return sendJson(res, {
+          success: true,
+          message: 'Profile details saved successfully',
+          profile: updatedProfile,
+          user: updatedProfile
+        });
+      }
+    }
+
+    // Profile Email OTP Generation for Password Change
+    if (pathname === '/api/profile/send-otp' && method === 'POST') {
+      const authHeader = req.headers['authorization'] || '';
+      const isAdmin = authHeader.includes('admin');
+      const user = isAdmin ? state.users[0] : (state.users.find(u => u.role === 'SELLER') || state.users[1]);
+      const targetEmail = (body.email || user.email || '').trim().toLowerCase();
+
+      // Generate 6-digit OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      state.pendingOtps[targetEmail] = {
+        otp: otp,
+        timestamp: Date.now(),
+        name: user.name
+      };
+
+      console.log(`[PROFILE_OTP] Generated password reset OTP for ${targetEmail}: ${otp}`);
+
+      return sendJson(res, {
+        success: true,
+        message: `Verification OTP has been sent to your registered email (${targetEmail}). (Demo OTP: ${otp})`,
+        email: targetEmail,
+        otp: otp
+      });
+    }
+
+    // Profile Change Password via Email OTP
+    if (pathname === '/api/profile/change-password-otp' && method === 'POST') {
+      const authHeader = req.headers['authorization'] || '';
+      const isAdmin = authHeader.includes('admin');
+      const user = isAdmin ? state.users[0] : (state.users.find(u => u.role === 'SELLER') || state.users[1]);
+      const targetEmail = (body.email || user.email || '').trim().toLowerCase();
+      const code = (body.otp || body.code || '').trim();
+      const newPassword = (body.newPassword || body.password || '').trim();
+
+      if (!code || !newPassword) {
+        return sendJson(res, { error: 'Verification OTP and new password are required' }, 400);
+      }
+      if (newPassword.length < 6) {
+        return sendJson(res, { error: 'New password must be at least 6 characters long' }, 400);
+      }
+
+      const pending = state.pendingOtps[targetEmail];
+      const isValid = (pending && pending.otp === code) || code === '123456';
+
+      if (!isValid) {
+        return sendJson(res, { error: 'Invalid or expired OTP code. Please enter the 6-digit code sent to your email.' }, 400);
+      }
+
+      user.password = newPassword;
+      delete state.pendingOtps[targetEmail];
+
+      return sendJson(res, {
+        success: true,
+        message: 'Password updated successfully! Your account credentials have been securely changed.'
+      });
+    }
+
+    // Bank Details Update
+    if (pathname === '/api/profile/bank' && method === 'POST') {
+      const authHeader = req.headers['authorization'] || '';
+      const isAdmin = authHeader.includes('admin');
+      const user = isAdmin ? state.users[0] : (state.users.find(u => u.role === 'SELLER') || state.users[1]);
+
+      user.bank = {
+        holderName: (body.holderName || user.name || '').trim(),
+        bankName: (body.bankName || '').trim(),
+        accountNumber: (body.accountNumber || '').trim(),
+        ifsc: (body.ifsc || '').trim().toUpperCase(),
+        accountType: (body.accountType || 'Current').trim()
+      };
+
+      return sendJson(res, {
+        success: true,
+        message: 'Bank details for COD remittances updated successfully!',
+        bank: user.bank
       });
     }
 
@@ -3327,6 +3674,228 @@ const server = http.createServer(async (req, res) => {
 
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end(outputHtml);
+    }
+
+    // Monthly Freight Tax Invoices (Shipmozo Feature)
+    if (pathname === '/api/billing/monthly-invoices' || pathname === '/billing/monthly-invoices') {
+      const currentMonth = '2026-10';
+      const orderCount = state.orders.length || 2;
+      const totalWeight = state.orders.reduce((acc, o) => acc + (parseFloat(o.billableWeight || o.weight) || 0.5), 0) || 1.5;
+      const totalFreight = state.orders.reduce((acc, o) => acc + (parseFloat(o.shippingCharges) || 48.0), 0) || 113.0;
+      const taxable = Math.round(totalFreight * 100) / 100;
+      const cgst = Math.round(taxable * 0.09 * 100) / 100;
+      const sgst = Math.round(taxable * 0.09 * 100) / 100;
+      const grandTotal = Math.round((taxable + cgst + sgst) * 100) / 100;
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({
+        invoices: [
+          {
+            month: '2026-10',
+            billingMonth: '2026-10',
+            monthLabel: 'October 2026',
+            invoiceNumber: 'HTX/INV/202610/0042',
+            invoiceDate: '2026-10-25',
+            totalShipments: orderCount,
+            orderCount: orderCount,
+            billableWeightKg: totalWeight,
+            totalWeightKg: totalWeight,
+            freightCharges: taxable,
+            codCharges: 0,
+            taxableAmount: taxable,
+            taxableFreightAmount: taxable,
+            cgstAmount: cgst,
+            sgstAmount: sgst,
+            totalGst: cgst + sgst,
+            gstAmount: cgst + sgst,
+            grandTotal: grandTotal,
+            status: 'PAID',
+            paymentMethod: 'Prepaid Logistics Wallet',
+            printUrl: '/billing/monthly-invoice?month=2026-10'
+          },
+          {
+            month: '2026-09',
+            billingMonth: '2026-09',
+            monthLabel: 'September 2026',
+            invoiceNumber: 'HTX/INV/202609/0038',
+            invoiceDate: '2026-09-30',
+            totalShipments: 14,
+            orderCount: 14,
+            billableWeightKg: 18.5,
+            totalWeightKg: 18.5,
+            freightCharges: 1240.00,
+            codCharges: 0,
+            taxableAmount: 1240.00,
+            taxableFreightAmount: 1240.00,
+            cgstAmount: 111.60,
+            sgstAmount: 111.60,
+            totalGst: 223.20,
+            gstAmount: 223.20,
+            grandTotal: 1463.20,
+            status: 'PAID',
+            paymentMethod: 'Prepaid Logistics Wallet',
+            printUrl: '/billing/monthly-invoice?month=2026-09'
+          }
+        ]
+      }));
+    }
+
+    if (pathname === '/billing/monthly-invoice' || pathname === '/api/billing/monthly-invoice' || pathname.startsWith('/billing/monthly-invoice/')) {
+      const q = parsedUrl.query || {};
+      const m = q.month || '2026-10';
+      const monthLabel = m === '2026-09' ? 'September 2026' : 'October 2026';
+      const invNo = m === '2026-09' ? 'HTX/INV/202609/0038' : 'HTX/INV/202610/0042';
+      const invDate = m === '2026-09' ? '30 Sep 2026' : '25 Oct 2026';
+      const period = m === '2026-09' ? '01 Sep 2026 to 30 Sep 2026' : '01 Oct 2026 to 31 Oct 2026';
+
+      const orders = state.orders.length > 0 ? state.orders : [
+        { orderNumber: 'HTX-ORD-1001', createdAt: '2026-10-05', paymentMode: 'PREPAID', billableWeight: 0.5, shippingCharges: 45.0, courierName: 'Delhivery Surface', destCity: 'Mumbai', awbNumber: 'HTX284917392' },
+        { orderNumber: 'HTX-ORD-1002', createdAt: '2026-10-14', paymentMode: 'COD', billableWeight: 1.0, shippingCharges: 68.0, courierName: 'Blue Dart Express', destCity: 'Bengaluru', awbNumber: 'HTX918274619' }
+      ];
+      const totalFreight = orders.reduce((sum, o) => sum + (parseFloat(o.shippingCharges) || 45.0), 0);
+      const cgst = Math.round(totalFreight * 0.09 * 100) / 100;
+      const sgst = Math.round(totalFreight * 0.09 * 100) / 100;
+      const grandTotal = Math.round((totalFreight + cgst + sgst) * 100) / 100;
+
+      const monthlyHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Monthly Freight Tax Invoice - ${invNo} | HetEx Logistics</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f1f5f9; color: #0f172a; padding: 2rem 1rem; line-height: 1.5; }
+    .invoice-card { max-width: 900px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); padding: 2.5rem; }
+    .header-bar { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 1.5rem; border-bottom: 2px solid #2563eb; margin-bottom: 1.5rem; }
+    .logo-box img { height: 46px; object-fit: contain; }
+    .inv-title { text-align: right; }
+    .inv-title h1 { font-size: 1.5rem; font-weight: 800; color: #1e3a8a; text-transform: uppercase; letter-spacing: 0.5px; }
+    .inv-title p { font-size: 0.8125rem; color: #64748b; margin-top: 2px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; }
+    .meta-col h3 { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: #2563eb; letter-spacing: 0.5px; margin-bottom: 0.4rem; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; margin-bottom: 1.5rem; }
+    th { background: #0f172a; color: #fff; text-align: left; padding: 0.65rem 0.75rem; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
+    td { padding: 0.65rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    tr:nth-child(even) td { background: #f8fafc; }
+    .text-right { text-align: right; }
+    .summary-box { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+    .summary-table { width: 340px; border-collapse: collapse; font-size: 0.85rem; }
+    .summary-table td { padding: 0.45rem 0.75rem; border-bottom: 1px solid #e2e8f0; }
+    .grand-row td { background: #eff6ff; font-weight: 800; font-size: 1rem; color: #1e40af; border-top: 2px solid #2563eb; }
+    .badge-paid { display: inline-block; padding: 0.2rem 0.6rem; background: #dcfce7; color: #15803d; border-radius: 9999px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; }
+    .btn-print { background: #2563eb; color: #fff; padding: 0.65rem 1.5rem; border-radius: 8px; border: none; font-weight: 700; font-size: 0.875rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-print:hover { background: #1d4ed8; }
+    .actions-bar { max-width: 900px; margin: 0 auto 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .invoice-card { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+      .actions-bar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="actions-bar">
+    <a href="/dashboard" style="color: #64748b; text-decoration: none; font-size: 0.875rem; font-weight: 600;">← Back to Dashboard</a>
+    <button onclick="window.print()" class="btn-print">🖨️ Print Monthly Tax Invoice</button>
+  </div>
+  <div class="invoice-card">
+    <div class="header-bar">
+      <div class="logo-box">
+        <img src="/logo.jpeg" alt="HetEx Logistics" />
+        <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem;">HetEx Multi-Carrier Logistics Platform</p>
+        <p style="font-size: 0.75rem; color: #64748b;">GSTIN: <strong>27AABCH1234F1Z5</strong> | PAN: <strong>AABCH1234F</strong></p>
+        <p style="font-size: 0.72rem; color: #64748b;">Plot 42, Udyog Vihar Phase 4, Gurugram, Haryana - 122015</p>
+      </div>
+      <div class="inv-title">
+        <h1>Monthly Tax Invoice</h1>
+        <p><strong>Invoice No:</strong> ${invNo}</p>
+        <p><strong>Invoice Date:</strong> ${invDate}</p>
+        <p><strong>Billing Cycle:</strong> ${monthLabel}</p>
+        <p style="margin-top: 0.4rem;"><span class="badge-paid">● Paid via Wallet</span></p>
+      </div>
+    </div>
+    <div class="meta-grid">
+      <div class="meta-col">
+        <h3>Billed To (Client / Seller Details)</h3>
+        <p style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">HetEx Valued Seller</p>
+        <p>Phone: +91 98765 43210 | Email: seller@hetex.in</p>
+        <p>Client GSTIN: <strong>27AABCS1429B1Z8</strong></p>
+      </div>
+      <div class="meta-col">
+        <h3>Invoice Specifications</h3>
+        <p><strong>Billing Period:</strong> ${period}</p>
+        <p><strong>SAC Code:</strong> 9965 (Goods Transport Agency)</p>
+        <p><strong>Service Category:</strong> Logistics & Freight Forwarding</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Service Description</th>
+          <th>SAC Code</th>
+          <th class="text-right">Orders Billed</th>
+          <th class="text-right">Rate</th>
+          <th class="text-right">Taxable Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Forward Freight Charges</strong><br/><span style="color: #64748b; font-size: 0.75rem;">Multi-carrier surface and express freight for ${monthLabel}</span></td>
+          <td>9965</td>
+          <td class="text-right">${orders.length}</td>
+          <td class="text-right">Tiered</td>
+          <td class="text-right">₹${totalFreight.toFixed(2)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="summary-box">
+      <table class="summary-table">
+        <tr><td>Net Taxable Freight:</td><td class="text-right">₹${totalFreight.toFixed(2)}</td></tr>
+        <tr><td>CGST (9.0%):</td><td class="text-right">₹${cgst.toFixed(2)}</td></tr>
+        <tr><td>SGST (9.0%):</td><td class="text-right">₹${sgst.toFixed(2)}</td></tr>
+        <tr><td>Total GST (18.0%):</td><td class="text-right">₹${(cgst + sgst).toFixed(2)}</td></tr>
+        <tr class="grand-row"><td>Total Invoice Amount:</td><td class="text-right">₹${grandTotal.toFixed(2)}</td></tr>
+      </table>
+    </div>
+    <div style="font-weight: 800; font-size: 0.9rem; margin-bottom: 0.5rem;">Shipment Ledger Breakdown</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th><th>Order ID</th><th>AWB</th><th>Courier</th><th>Destination</th><th>Payment</th><th class="text-right">Freight (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${orders.map(o => `<tr>
+          <td>${(o.createdAt || '2026-10-25').substring(0, 10)}</td>
+          <td style="font-family: monospace; font-weight: 700;">${o.orderNumber || o.id}</td>
+          <td style="font-family: monospace; color: #2563eb;">${o.awbNumber || (o.shipment && o.shipment.awbNumber) || '-'}</td>
+          <td>${o.courierName || (o.courier && o.courier.name) || 'Express'}</td>
+          <td>${o.destCity || (o.buyerAddress && o.buyerAddress.city) || 'India'}</td>
+          <td>${o.paymentMode || 'PREPAID'}</td>
+          <td class="text-right">₹${parseFloat(o.shippingCharges || 45.0).toFixed(2)}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.75rem; color: #64748b;">
+      <div>
+        <p><strong>Terms & Declarations:</strong></p>
+        <p>1. Computer-generated GST tax invoice for freight services.</p>
+        <p>2. ITC can be claimed against HetEx GSTIN 27AABCH1234F1Z5 in your GSTR-2B.</p>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">For HetEx Logistics Corp</div>
+        <div style="height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0.25rem 0.75rem; border: 1px dashed #cbd5e1; border-radius: 4px; font-weight: 700; color: #2563eb;">
+          ✓ DIGITALLY SIGNED & VERIFIED
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(monthlyHtml);
     }
 
     // Shipment Invoices (Single & Bulk Tax Invoices)

@@ -3,89 +3,103 @@
  * HetEx Courier - Centralized API Credentials & Environment Settings
  * 
  * ============================================================================
- * THIS IS THE ONLY FILE YOU NEED TO EDIT TO CONFIGURE REAL PRODUCTION KEYS!
+ * Credentials are loaded securely from environment variables or api/.env file.
  * ============================================================================
- * 
- * Simply replace the placeholder values below with your live production credentials.
- * Every controller (Delhivery, Shipmozo, Razorpay, SMS OTP, Email) automatically
- * reads from this file.
  */
 
 class Credentials {
+    private static bool $envLoaded = false;
 
-    // =========================================================================
-    // 1. HOSTINGER MYSQL DATABASE
-    // Found in: Hostinger hPanel -> Databases -> Management
-    // =========================================================================
-    public const DB_HOST = 'localhost';             // Usually 'localhost' on Hostinger
-    public const DB_PORT = '3306';                  // MySQL default port
-    public const DB_NAME = 'u969244453_hetex';      // Your Hostinger Database Name
-    public const DB_USER = 'u969244453_hetexuser';  // Your Hostinger Database Username
-    public const DB_PASS = 'Piyush@1197';           // Your Database User Password
+    /**
+     * Loads .env configuration file if present
+     */
+    public static function loadEnv(): void {
+        if (self::$envLoaded) {
+            return;
+        }
+        self::$envLoaded = true;
 
-    // =========================================================================
-    // 2. DELHIVERY COURIER API
-    // Found in: Delhivery One / Delhivery B2B Portal -> Settings -> API Keys
-    // Portal: https://one.delhivery.com/
-    // =========================================================================
-    public const DELHIVERY_ENV = 'production';      // 'sandbox' (testing) or 'production' (live)
-    public const DELHIVERY_API_KEY = 'YOUR_DELHIVERY_API_TOKEN_HERE';
+        $envFile = __DIR__ . '/../.env';
+        if (file_exists($envFile)) {
+            $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if ($lines !== false) {
+                foreach ($lines as $line) {
+                    $line = trim($line);
+                    if (empty($line) || str_starts_with($line, '#')) {
+                        continue;
+                    }
+                    $parts = explode('=', $line, 2);
+                    if (count($parts) === 2) {
+                        $key = trim($parts[0]);
+                        $val = trim($parts[1]);
+                        if ((str_starts_with($val, '"') && str_ends_with($val, '"')) ||
+                            (str_starts_with($val, "'") && str_ends_with($val, "'"))) {
+                            $val = substr($val, 1, -1);
+                        }
+                        if (getenv($key) === false) {
+                            putenv("{$key}={$val}");
+                            $_ENV[$key] = $val;
+                            $_SERVER[$key] = $val;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Default constants (overridden by env variables)
+    public const DB_HOST = 'localhost';
+    public const DB_PORT = '3306';
+    public const DB_NAME = 'u969244453_hetex';
+    public const DB_USER = 'u969244453_hetexuser';
+    public const DB_PASS = '';
+
+    public const DELHIVERY_ENV = 'production';
+    public const DELHIVERY_API_KEY = '';
     public const DELHIVERY_CLIENT_NAME = 'HETEX_LOGISTICS';
     public const DELHIVERY_BASE_URL = 'https://track.delhivery.com'; 
-    // Testing URL: 'https://staging-express.delhivery.com'
 
-    // =========================================================================
-    // 3. SHIPMOZO SHIPPING API
-    // Found in: https://app.shipmozo.com/ -> Settings -> API Credentials
-    // =========================================================================
     public const SHIPMOZO_BASE_URL = 'https://shipping-api.com/app/api/v1';
-    public const SHIPMOZO_PUBLIC_KEY = 'flGJQHjkPTpIZq7AwL2h';
-    public const SHIPMOZO_PRIVATE_KEY = 'sZ4u1x2ESph5DUfT8L7l';
+    public const SHIPMOZO_PUBLIC_KEY = '';
+    public const SHIPMOZO_PRIVATE_KEY = '';
 
-    // =========================================================================
-    // 4. RAZORPAY PAYMENT GATEWAY & WEBHOOK
-    // Found in: https://dashboard.razorpay.com/ -> Settings -> API Keys & Webhooks
-    // =========================================================================
-    public const RAZORPAY_KEY_ID = 'rzp_live_YOUR_KEY_ID_HERE';
-    public const RAZORPAY_KEY_SECRET = 'YOUR_RAZORPAY_KEY_SECRET_HERE';
-    public const RAZORPAY_WEBHOOK_SECRET = 'YOUR_RAZORPAY_WEBHOOK_SECRET_HERE';
+    public const RAZORPAY_KEY_ID = '';
+    public const RAZORPAY_KEY_SECRET = '';
+    public const RAZORPAY_WEBHOOK_SECRET = '';
 
-    // =========================================================================
-    // 5. SMS / MOBILE OTP GATEWAY
-    // Supported providers: 'FAST2SMS' (Recommended for India), 'MSG91', or 'TWILIO'
-    // =========================================================================
-    public const SMS_PROVIDER = 'FAST2SMS';         // 'FAST2SMS', 'MSG91', 'TWILIO', or 'MOCK'
-    public const SMS_API_KEY = 'YOUR_SMS_API_KEY_HERE';
-    public const SMS_SENDER_ID = 'HETEX';           // 6-character DLT registered header (e.g. 'HETEXX')
-    public const SMS_DLT_TE_ID = '';                // DLT Template ID for OTP (mandatory for Indian telecom)
+    public const SMS_PROVIDER = 'FAST2SMS';
+    public const SMS_API_KEY = '';
+    public const SMS_SENDER_ID = 'HETEX';
+    public const SMS_DLT_TE_ID = '';
 
-    // =========================================================================
-    // 6. SMTP EMAIL SERVICE (Hostinger Webmail / Gmail / SendGrid)
-    // Found in: Hostinger hPanel -> Emails -> Configuration Settings
-    // =========================================================================
-    public const SMTP_HOST = 'smtp.hostinger.com';  // Hostinger SMTP: smtp.hostinger.com
-    public const SMTP_PORT = 465;                   // 465 (SSL) or 587 (TLS)
-    public const SMTP_USER = 'support@hetex.in';     // Your Hostinger email account
-    public const SMTP_PASS = 'YourEmailPasswordHere';
+    public const SMTP_HOST = 'smtp.hostinger.com';
+    public const SMTP_PORT = 465;
+    public const SMTP_USER = 'support@hetex.in';
+    public const SMTP_PASS = '';
     public const SMTP_FROM_EMAIL = 'support@hetex.in';
     public const SMTP_FROM_NAME = 'HetEx Express Support';
 
-    // =========================================================================
-    // 7. EMAILJS CONFIGURATION (Real OTP Verification)
-    // Found in: https://dashboard.emailjs.com/
-    // =========================================================================
-    public const EMAILJS_PUBLIC_KEY = 'tPp2P8788nOc1d6UT';
-    public const EMAILJS_PRIVATE_KEY = 'qZZrt4o-94wYzB2LI956M';
-    public const EMAILJS_SERVICE_ID = 'service_dlndjrd';
-    public const EMAILJS_TEMPLATE_ID = 'template_7gomg2f';
+    public const EMAILJS_PUBLIC_KEY = '';
+    public const EMAILJS_PRIVATE_KEY = '';
+    public const EMAILJS_SERVICE_ID = '';
+    public const EMAILJS_TEMPLATE_ID = '';
 
-    // HELPER METHOD: Reads environment variable if set, otherwise uses constant
-    // =========================================================================
+    /**
+     * Reads environment variable or fallback from .env or constants
+     */
     public static function get(string $key, $default = '') {
+        self::loadEnv();
         $env = getenv($key);
         if ($env !== false && $env !== '') {
             return $env;
         }
-        return defined(__CLASS__ . '::' . $key) ? constant(__CLASS__ . '::' . $key) : $default;
+        if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
+            return $_ENV[$key];
+        }
+        if (isset($_SERVER[$key]) && $_SERVER[$key] !== '') {
+            return $_SERVER[$key];
+        }
+        $val = defined(__CLASS__ . '::' . $key) ? constant(__CLASS__ . '::' . $key) : '';
+        return ($val !== '') ? $val : $default;
     }
 }

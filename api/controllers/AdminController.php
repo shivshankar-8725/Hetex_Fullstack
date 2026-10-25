@@ -213,8 +213,17 @@ class AdminController {
         $db = Database::getConnection();
         $balStmt = $db->prepare("SELECT balance FROM wallets WHERE user_id = ?");
         $balStmt->execute([$userId]);
+        $newBalance = (float)$balStmt->fetchColumn();
 
-        Response::json(['balance' => (float)$balStmt->fetchColumn()]);
+        // Audit log — record every wallet adjustment
+        $admin = AuthMiddleware::requireAdmin();
+        self::auditLog($admin['userId'], 'WALLET_ADJUSTMENT', 'USER', $userId, [
+            'amount' => $amount,
+            'reason' => $reason,
+            'newBalance' => $newBalance,
+        ]);
+
+        Response::json(['balance' => $newBalance]);
     }
 
     public static function updateUserMargin(): void {
@@ -236,6 +245,13 @@ class AdminController {
         $db = Database::getConnection();
         $stmt = $db->prepare("UPDATE users SET rate_margin_percent = ?, rate_margin_type = ? WHERE id = ?");
         $stmt->execute([$marginPercent, $marginType, $userId]);
+
+        // Audit log
+        $admin = AuthMiddleware::requireAdmin();
+        self::auditLog($admin['userId'], 'MARGIN_UPDATED', 'USER', $userId, [
+            'marginPercent' => $marginPercent,
+            'marginType'    => $marginType,
+        ]);
 
         Response::json([
             'success' => true,
@@ -286,7 +302,7 @@ class AdminController {
     }
 
     public static function updateCourier(): void {
-        AuthMiddleware::requireAdmin();
+        $admin = AuthMiddleware::requireAdmin();
         $data = Response::getJsonInput();
         $id = $data['id'] ?? '';
 
@@ -296,6 +312,7 @@ class AdminController {
         if ($id === 'ALL' || !empty($data['all'])) {
             $activeVal = (!empty($data['active']) && $data['active'] !== '0' && $data['active'] !== false) ? 1 : 0;
             $db->prepare("UPDATE couriers SET active = ? WHERE code != 'SHIPMOZO_STD'")->execute([$activeVal]);
+            self::auditLog($admin['userId'], 'COURIER_BULK_UPDATED', 'COURIER', 'ALL', ['active' => $activeVal]);
             Response::json(['success' => true, 'message' => 'All couriers updated', 'active' => $activeVal]);
             return;
         }
@@ -309,6 +326,8 @@ class AdminController {
         if (isset($data['baseRatePerKg'])) {
             $db->prepare("UPDATE couriers SET base_rate_per_kg = ? WHERE id = ? OR code = ?")->execute([(float)$data['baseRatePerKg'], $id, $id]);
         }
+
+        self::auditLog($admin['userId'], 'COURIER_UPDATED', 'COURIER', $id, $data);
 
         $courier = $db->prepare("SELECT * FROM couriers WHERE id = ? OR code = ?");
         $courier->execute([$id, $id]);
@@ -381,7 +400,7 @@ class AdminController {
     }
 
     public static function setCommissionRule(): void {
-        AuthMiddleware::requireAdmin();
+        $admin = AuthMiddleware::requireAdmin();
         $data = Response::getJsonInput();
 
         $marginType = strtoupper($data['marginType'] ?? 'PERCENT');
@@ -397,18 +416,25 @@ class AdminController {
         ");
         $stmt->execute([$id, $courierId, $marginType, $marginValue]);
 
+        self::auditLog($admin['userId'], 'COMMISSION_RULE_SET', 'COMMISSION_RULE', $id, [
+            'marginType' => $marginType,
+            'marginValue' => $marginValue,
+            'courierId' => $courierId
+        ]);
+
         Response::json(['success' => true, 'id' => $id]);
     }
 
     public static function deleteCommissionRule(string $id): void {
-        AuthMiddleware::requireAdmin();
+        $admin = AuthMiddleware::requireAdmin();
         $db = Database::getConnection();
         $db->prepare("DELETE FROM commission_rules WHERE id = ?")->execute([$id]);
+        self::auditLog($admin['userId'], 'COMMISSION_RULE_DELETED', 'COMMISSION_RULE', $id);
         Response::json(['ok' => true]);
     }
 
     public static function updateCommissionRule(string $id): void {
-        AuthMiddleware::requireAdmin();
+        $admin = AuthMiddleware::requireAdmin();
         $data = Response::getJsonInput();
         $db = Database::getConnection();
 
@@ -428,6 +454,14 @@ class AdminController {
 
         $update = $db->prepare("UPDATE commission_rules SET courier_id = ?, min_weight = ?, max_weight = ?, margin_type = ?, margin_value = ? WHERE id = ?");
         $update->execute([$courierId, $minWeight, $maxWeight, $marginType, $marginValue, $id]);
+
+        self::auditLog($admin['userId'], 'COMMISSION_RULE_UPDATED', 'COMMISSION_RULE', $id, [
+            'marginType' => $marginType,
+            'marginValue' => $marginValue,
+            'courierId' => $courierId,
+            'minWeight' => $minWeight,
+            'maxWeight' => $maxWeight
+        ]);
 
         Response::json(['success' => true, 'id' => $id]);
     }
@@ -591,6 +625,13 @@ class AdminController {
             $amount = (float)$recharge['amount'];
             WalletController::creditWallet($recharge['user_id'], $amount, "UPI Recharge Approved (Ref: {$requestId})", $requestId);
 
+            // Audit log
+            $admin = AuthMiddleware::requireAdmin();
+            self::auditLog($admin['userId'], 'RECHARGE_APPROVED', 'RECHARGE', $requestId, [
+                'userId' => $recharge['user_id'],
+                'amount' => $amount,
+            ]);
+
             Response::json([
                 'success' => true,
                 'status' => 'APPROVED',
@@ -613,8 +654,22 @@ class AdminController {
         }
 
         $db = Database::getConnection();
+
+        // Fetch recharge details for audit before updating
+        $rStmt = $db->prepare("SELECT user_id, amount FROM wallet_recharges WHERE id = ?");
+        $rStmt->execute([$requestId]);
+        $rInfo = $rStmt->fetch();
+
         $stmt = $db->prepare("UPDATE wallet_recharges SET status = 'REJECTED', admin_notes = ?, reviewed_at = NOW() WHERE id = ? AND status = 'UNDER_REVIEW'");
         $stmt->execute([$notes, $requestId]);
+
+        // Audit log
+        $admin = AuthMiddleware::requireAdmin();
+        self::auditLog($admin['userId'], 'RECHARGE_REJECTED', 'RECHARGE', $requestId, [
+            'userId' => $rInfo['user_id'] ?? null,
+            'amount' => $rInfo ? (float)$rInfo['amount'] : null,
+            'reason' => $notes,
+        ]);
 
         Response::json([
             'success' => true,
@@ -708,6 +763,158 @@ class AdminController {
             'success' => true,
             'settings' => $current,
             'message' => 'Platform settings updated successfully!'
+        ]);
+    }
+
+    // =========================================================================
+    // AUDIT LOG (TASK-P1-01)
+    // =========================================================================
+
+    /**
+     * Record an admin action to the audit log.
+     * Call this from every admin write method.
+     *
+     * @param string $adminId    UUID of the admin performing the action
+     * @param string $action     Action name, e.g. WALLET_ADJUSTMENT, RECHARGE_APPROVED
+     * @param string $targetType Entity type, e.g. USER, SHIPMENT, COURIER
+     * @param string|null $targetId UUID of the entity affected
+     * @param array  $details    Additional context (amount, old/new values, etc.)
+     */
+    public static function auditLog(
+        string $adminId,
+        string $action,
+        string $targetType,
+        ?string $targetId = null,
+        array $details = []
+    ): void {
+        try {
+            $db = Database::getConnection();
+
+            // Auto-create table on first use (no migration script required)
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `audit_logs` (
+                    `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+                    `admin_id` VARCHAR(36) NOT NULL,
+                    `action` VARCHAR(100) NOT NULL,
+                    `target_type` VARCHAR(50) NOT NULL,
+                    `target_id` VARCHAR(36) NULL,
+                    `details` JSON NULL,
+                    `ip_address` VARCHAR(45) NULL,
+                    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    INDEX `idx_audit_admin` (`admin_id`),
+                    INDEX `idx_audit_action` (`action`),
+                    INDEX `idx_audit_created` (`created_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR']
+                ?? $_SERVER['REMOTE_ADDR']
+                ?? null;
+
+            $db->prepare("
+                INSERT INTO audit_logs (id, admin_id, action, target_type, target_id, details, ip_address, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+            ")->execute([
+                Response::generateUuid(),
+                $adminId,
+                $action,
+                $targetType,
+                $targetId,
+                !empty($details) ? json_encode($details, JSON_UNESCAPED_UNICODE) : null,
+                $ip ? substr($ip, 0, 45) : null,
+            ]);
+        } catch (Throwable $e) {
+            error_log("[AuditLog] Failed to record audit event {$action}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * GET /admin/audit-logs
+     * Returns paginated audit log entries with optional filters.
+     */
+    public static function listAuditLogs(): void {
+        $admin = AuthMiddleware::requireAdmin();
+        $db = Database::getConnection();
+
+        // Ensure table exists
+        try {
+            $db->exec("
+                CREATE TABLE IF NOT EXISTS `audit_logs` (
+                    `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+                    `admin_id` VARCHAR(36) NOT NULL,
+                    `action` VARCHAR(100) NOT NULL,
+                    `target_type` VARCHAR(50) NOT NULL,
+                    `target_id` VARCHAR(36) NULL,
+                    `details` JSON NULL,
+                    `ip_address` VARCHAR(45) NULL,
+                    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    INDEX `idx_audit_admin` (`admin_id`),
+                    INDEX `idx_audit_action` (`action`),
+                    INDEX `idx_audit_created` (`created_at`)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+            ");
+        } catch (Throwable $t) {}
+
+        $page    = max(1, (int)($_GET['page'] ?? 1));
+        $limit   = min(100, max(10, (int)($_GET['limit'] ?? 50)));
+        $offset  = ($page - 1) * $limit;
+        $action  = trim($_GET['action'] ?? '');
+        $fromDate = $_GET['from'] ?? '';
+        $toDate   = $_GET['to'] ?? '';
+
+        $where = [];
+        $params = [];
+
+        if (!empty($action)) {
+            $where[] = 'al.action = ?';
+            $params[] = strtoupper($action);
+        }
+        if (!empty($fromDate)) {
+            $where[] = 'DATE(al.created_at) >= ?';
+            $params[] = $fromDate;
+        }
+        if (!empty($toDate)) {
+            $where[] = 'DATE(al.created_at) <= ?';
+            $params[] = $toDate;
+        }
+
+        $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $countStmt = $db->prepare("SELECT COUNT(*) FROM audit_logs al $whereClause");
+        $countStmt->execute($params);
+        $total = (int)$countStmt->fetchColumn();
+
+        $stmt = $db->prepare("
+            SELECT al.*, u.name as admin_name, u.email as admin_email
+            FROM audit_logs al
+            LEFT JOIN users u ON al.admin_id = u.id
+            $whereClause
+            ORDER BY al.created_at DESC
+            LIMIT $limit OFFSET $offset
+        ");
+        $stmt->execute($params);
+        $logs = $stmt->fetchAll();
+
+        Response::json([
+            'logs' => array_map(function($l) {
+                return [
+                    'id'         => $l['id'],
+                    'adminName'  => $l['admin_name'] ?? 'Admin',
+                    'adminEmail' => $l['admin_email'] ?? '',
+                    'action'     => $l['action'],
+                    'targetType' => $l['target_type'],
+                    'targetId'   => $l['target_id'],
+                    'details'    => $l['details'] ? json_decode($l['details'], true) : null,
+                    'ipAddress'  => $l['ip_address'],
+                    'createdAt'  => $l['created_at'],
+                ];
+            }, $logs),
+            'pagination' => [
+                'total'   => $total,
+                'page'    => $page,
+                'limit'   => $limit,
+                'pages'   => (int)ceil($total / $limit),
+            ],
         ]);
     }
 }

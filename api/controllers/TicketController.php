@@ -41,6 +41,14 @@ class TicketController {
                   INDEX `idx_msg_ticket` (`ticket_id`)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             ");
+
+            // Self-healing schema for priority and category
+            try {
+                $db->exec("ALTER TABLE `support_tickets` ADD COLUMN IF NOT EXISTS `priority` ENUM('LOW','MEDIUM','HIGH','URGENT') NOT NULL DEFAULT 'MEDIUM'");
+            } catch (Throwable $t) {}
+            try {
+                $db->exec("ALTER TABLE `support_tickets` ADD COLUMN IF NOT EXISTS `category` VARCHAR(100) NOT NULL DEFAULT 'General'");
+            } catch (Throwable $t) {}
         } catch (Throwable $ignore) {}
     }
 
@@ -91,6 +99,8 @@ class TicketController {
                     'awbNumber' => $t['awb_number'] ?? '-',
                     'subject' => $t['subject'],
                     'status' => $t['status'],
+                    'priority' => $t['priority'] ?? 'MEDIUM',
+                    'category' => $t['category'] ?? 'General',
                     'sellerName' => $t['seller_name'] ?? 'Seller',
                     'sellerEmail' => $t['seller_email'] ?? '',
                     'sellerPhone' => $t['seller_phone'] ?? '',
@@ -154,6 +164,8 @@ class TicketController {
             'awbNumber' => $t['awb_number'] ?? '-',
             'subject' => $t['subject'],
             'status' => $t['status'],
+            'priority' => $t['priority'] ?? 'MEDIUM',
+            'category' => $t['category'] ?? 'General',
             'sellerName' => $t['seller_name'] ?? 'Seller',
             'sellerEmail' => $t['seller_email'] ?? '',
             'sellerPhone' => $t['seller_phone'] ?? '',
@@ -222,12 +234,23 @@ class TicketController {
             $trackingContext = self::fetchLiveTrackingForTicket($awb);
         }
 
+        $priority = in_array(strtoupper(trim($data['priority'] ?? '')), ['LOW', 'MEDIUM', 'HIGH', 'URGENT']) ? strtoupper(trim($data['priority'])) : 'MEDIUM';
+        $category = trim($data['category'] ?? 'General');
+
         $db->beginTransaction();
         try {
-            $db->prepare("
-                INSERT INTO support_tickets (id, user_id, order_id, courier_id, awb_number, subject, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'OPEN', NOW())
-            ")->execute([$ticketId, $auth['userId'], $cleanOrderId, $courierId, $awb, $subject]);
+            try {
+                $db->prepare("
+                    INSERT INTO support_tickets (id, user_id, order_id, courier_id, awb_number, subject, priority, category, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+                ")->execute([$ticketId, $auth['userId'], $cleanOrderId, $courierId, $awb, $subject, $priority, $category]);
+            } catch (Throwable $t) {
+                // Fallback if priority/category columns are not yet applied
+                $db->prepare("
+                    INSERT INTO support_tickets (id, user_id, order_id, courier_id, awb_number, subject, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 'OPEN', NOW())
+                ")->execute([$ticketId, $auth['userId'], $cleanOrderId, $courierId, $awb, $subject]);
+            }
 
             // User initial message
             $db->prepare("
@@ -296,6 +319,31 @@ class TicketController {
 
         if ($senderRole === 'ADMIN') {
             $db->prepare("UPDATE support_tickets SET status = 'IN_PROGRESS' WHERE id = ? AND status = 'OPEN'")->execute([$ticketId]);
+
+            // TASK-P3-01: Notify seller via email on admin reply
+            try {
+                $userStmt = $db->prepare("
+                    SELECT u.email, u.name, t.subject 
+                    FROM support_tickets t 
+                    JOIN users u ON t.user_id = u.id 
+                    WHERE t.id = ?
+                ");
+                $userStmt->execute([$ticketId]);
+                $seller = $userStmt->fetch();
+                if ($seller && !empty($seller['email'])) {
+                    require_once __DIR__ . '/../utils/sender.php';
+                    $subject = "Support Ticket Update: " . $seller['subject'];
+                    $body = "Hello " . htmlspecialchars($seller['name'] ?? 'Seller') . ",\n\n"
+                          . "Our operations support team has responded to your ticket.\n\n"
+                          . "Message:\n\"" . htmlspecialchars($message) . "\"\n\n"
+                          . "You can view and reply to the ticket directly in your HetEx dashboard:\n"
+                          . "https://hetex.in/tickets\n\n"
+                          . "Best regards,\nHetEx Logistics Support Team";
+                    Sender::sendEmail($seller['email'], $subject, $body);
+                }
+            } catch (Throwable $t) {
+                // Email sending error must not block saving the ticket message
+            }
         }
 
         // =================================================================

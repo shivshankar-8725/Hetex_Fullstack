@@ -272,6 +272,10 @@ class AuthController {
             Response::error('Invalid email/phone or password', 401);
         }
 
+        if (class_exists('RateLimiter')) {
+            RateLimiter::clear('login');
+        }
+
         $token = JWT::encode([
             'userId' => $user['id'],
             'name' => $user['name'],
@@ -345,8 +349,15 @@ class AuthController {
         $businessName = trim($data['businessName'] ?? $data['business_name'] ?? '');
 
         $db = Database::getConnection();
-        $db->prepare("UPDATE users SET name = COALESCE(NULLIF(?, ''), name), business_name = COALESCE(NULLIF(?, ''), business_name) WHERE id = ?")
-           ->execute([$name, $businessName, $auth['userId']]);
+        $currStmt = $db->prepare("SELECT name, business_name FROM users WHERE id = ?");
+        $currStmt->execute([$auth['userId']]);
+        $currUser = $currStmt->fetch() ?: [];
+
+        $finalName = !empty($name) ? $name : ($currUser['name'] ?? '');
+        $finalBiz  = !empty($businessName) ? $businessName : ($currUser['business_name'] ?? '');
+
+        $db->prepare("UPDATE users SET name = ?, business_name = ? WHERE id = ?")
+           ->execute([$finalName, $finalBiz, $auth['userId']]);
 
         self::getProfile();
     }
@@ -480,6 +491,27 @@ class AuthController {
             $db->prepare("UPDATE users SET gst_number = ?, kyc_status = 'VERIFIED' WHERE id = ?")->execute([$docNum, $auth['userId']]);
         } else {
             $db->prepare("UPDATE users SET kyc_status = 'VERIFIED' WHERE id = ?")->execute([$auth['userId']]);
+        }
+
+        // Optional: Link Bank Account if supplied during KYC step (TASK-P3-03)
+        if (!empty($data['accountNumber']) && !empty($data['ifscCode'])) {
+            try {
+                require_once __DIR__ . '/ExtraController.php';
+                ExtraController::ensureBankAccountsTable($db);
+                $bankId = Response::generateUuid();
+                $accountHolder = trim($data['accountHolder'] ?? 'Account Holder');
+                $accountNumber = trim($data['accountNumber']);
+                $ifscCode = strtoupper(trim($data['ifscCode']));
+                $bankName = trim($data['bankName'] ?? 'Bank');
+                
+                // Clear other defaults
+                $db->prepare("UPDATE bank_accounts SET is_default = 0 WHERE user_id = ?")->execute([$auth['userId']]);
+                
+                $db->prepare("
+                    INSERT INTO bank_accounts (id, user_id, account_holder, account_number, ifsc_code, bank_name, is_verified, is_default, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 1, 1, NOW())
+                ")->execute([$bankId, $auth['userId'], $accountHolder, $accountNumber, $ifscCode, $bankName]);
+            } catch (Throwable $ignore) {}
         }
 
         Response::json([

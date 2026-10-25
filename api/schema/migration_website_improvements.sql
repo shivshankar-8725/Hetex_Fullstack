@@ -146,4 +146,101 @@ VALUES
 
 DELETE FROM `couriers` WHERE `code` = 'SHIPMOZO_STD';
 
+-- 6. Audit Logs Table (TASK-P1-01)
+CREATE TABLE IF NOT EXISTS `audit_logs` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `admin_id` VARCHAR(36) NOT NULL,
+  `action` VARCHAR(100) NOT NULL,
+  `target_type` VARCHAR(50) NOT NULL,
+  `target_id` VARCHAR(36) NULL,
+  `details` JSON NULL,
+  `ip_address` VARCHAR(45) NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_audit_admin` (`admin_id`),
+  INDEX `idx_audit_action` (`action`),
+  INDEX `idx_audit_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. Notification Settings Table (TASK-P1-04)
+CREATE TABLE IF NOT EXISTS `notification_settings` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) NOT NULL UNIQUE,
+  `order_created_email` TINYINT(1) NOT NULL DEFAULT 1,
+  `order_created_sms` TINYINT(1) NOT NULL DEFAULT 0,
+  `shipped_email` TINYINT(1) NOT NULL DEFAULT 1,
+  `shipped_sms` TINYINT(1) NOT NULL DEFAULT 1,
+  `delivered_email` TINYINT(1) NOT NULL DEFAULT 1,
+  `delivered_sms` TINYINT(1) NOT NULL DEFAULT 1,
+  `ndr_email` TINYINT(1) NOT NULL DEFAULT 1,
+  `ndr_sms` TINYINT(1) NOT NULL DEFAULT 1,
+  `rto_email` TINYINT(1) NOT NULL DEFAULT 1,
+  `rto_sms` TINYINT(1) NOT NULL DEFAULT 0,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX `idx_notif_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8. Bank Accounts Table for COD Remittance (TASK-P2-05)
+CREATE TABLE IF NOT EXISTS `bank_accounts` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) NOT NULL,
+  `account_holder` VARCHAR(191) NOT NULL,
+  `account_number` VARCHAR(64) NOT NULL,
+  `ifsc_code` VARCHAR(20) NOT NULL,
+  `bank_name` VARCHAR(100) NOT NULL,
+  `is_verified` TINYINT(1) NOT NULL DEFAULT 0,
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_bank_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. API Keys Table (TASK-P2-07)
+CREATE TABLE IF NOT EXISTS `api_keys` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) NOT NULL,
+  `key_hash` VARCHAR(64) NOT NULL UNIQUE,
+  `key_prefix` VARCHAR(10) NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `last_used_at` DATETIME NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_apikey_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 10. Outbound Webhooks Table (TASK-P2-07)
+CREATE TABLE IF NOT EXISTS `webhooks` (
+  `id` VARCHAR(36) NOT NULL PRIMARY KEY,
+  `user_id` VARCHAR(36) NOT NULL,
+  `url` VARCHAR(500) NOT NULL,
+  `events` JSON NOT NULL,
+  `active` TINYINT(1) NOT NULL DEFAULT 1,
+  `secret` VARCHAR(64) NOT NULL,
+  `failure_count` INT NOT NULL DEFAULT 0,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_webhook_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 11. Reverse Shipments & Parent Linkage (TASK-P1-07)
+ALTER TABLE `shipments`
+  ADD COLUMN IF NOT EXISTS `shipment_type` ENUM('FORWARD','RETURN') NOT NULL DEFAULT 'FORWARD' AFTER `status`,
+  ADD COLUMN IF NOT EXISTS `parent_shipment_id` VARCHAR(36) NULL AFTER `shipment_type`,
+  ADD COLUMN IF NOT EXISTS `pod_image_url` VARCHAR(500) NULL AFTER `tracking_url`;
+
+-- 12. Courier Logo URL (TASK-P2-03)
+ALTER TABLE `couriers`
+  ADD COLUMN IF NOT EXISTS `logo_url` VARCHAR(255) NULL AFTER `logo_color`;
+
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/delhivery.png' WHERE `code` LIKE 'DELHIVERY%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/dtdc.png' WHERE `code` LIKE 'DTDC%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/bluedart.png' WHERE `code` LIKE 'BLUEDART%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/ekart.png' WHERE `code` LIKE 'EKART%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/shadowfax.png' WHERE `code` LIKE 'SHADOWFAX%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/xpressbees.png' WHERE `code` LIKE 'XPRESSBEES%';
+UPDATE `couriers` SET `logo_url` = 'https://assets.shipmozo.com/couriers/amazon.png' WHERE `code` LIKE 'AMAZON%';
+
+-- 13. Ticket Priority & Category (TASK-P3-01)
+ALTER TABLE `support_tickets`
+  ADD COLUMN IF NOT EXISTS `priority` ENUM('LOW','MEDIUM','HIGH','URGENT') NOT NULL DEFAULT 'MEDIUM' AFTER `status`,
+  ADD COLUMN IF NOT EXISTS `category` VARCHAR(100) NOT NULL DEFAULT 'General' AFTER `priority`;
+
 SET FOREIGN_KEY_CHECKS = 1;
+

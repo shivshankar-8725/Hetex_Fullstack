@@ -308,6 +308,7 @@ class ShipmozoClient {
     /**
      * Get Warehouses API
      * GET /get-warehouses
+     * Returns list of registered warehouses on this Shipmozo account.
      */
     public static function getWarehouses(): array {
         return self::get('/get-warehouses');
@@ -316,9 +317,81 @@ class ShipmozoClient {
     /**
      * Create Warehouse API
      * POST /create-warehouse
+     *
+     * Required fields (Shipmozo API):
+     *   name          - Warehouse display name (string)
+     *   email         - Contact email (string)
+     *   phone         - 10-digit mobile (string)
+     *   address       - Street address line (string)
+     *   city          - City name (string)
+     *   state         - State name (string)
+     *   country       - Country (string, default "India")
+     *   pin_code      - 6-digit pincode (string)
+     *   gst_number    - GSTIN (optional, string)
+     *
+     * @param array $warehouseData Raw Shipmozo payload
+     * @return array Standard response with data.warehouse_id on success
      */
     public static function createWarehouse(array $warehouseData): array {
         return self::post('/create-warehouse', $warehouseData);
+    }
+
+    /**
+     * Register a HetEx PICKUP address as a Shipmozo warehouse.
+     * Maps HetEx address fields to the exact Shipmozo /create-warehouse payload.
+     *
+     * @param array $address Row from HetEx `addresses` table
+     * @return array ['success' => bool, 'warehouse_id' => int|null, 'message' => string]
+     */
+    public static function registerWarehouse(array $address): array {
+        $payload = [
+            'name'       => trim($address['label'] ?? $address['contact_name'] ?? 'Warehouse'),
+            'email'      => trim($address['email'] ?? 'warehouse@hetex.in'),
+            'phone'      => preg_replace('/\D/', '', (string)($address['phone'] ?? '')),
+            'address'    => trim($address['address_line1'] ?? ''),
+            'city'       => trim($address['city'] ?? ''),
+            'state'      => trim($address['state'] ?? ''),
+            'country'    => trim($address['country'] ?? 'India'),
+            'pin_code'   => trim($address['pincode'] ?? ''),
+        ];
+
+        // Include GSTIN if available (optional but recommended)
+        if (!empty($address['gst_number'])) {
+            $payload['gst_number'] = trim($address['gst_number']);
+        }
+
+        // Validate minimum required fields before calling API
+        if (empty($payload['phone']) || strlen($payload['phone']) < 10) {
+            return ['success' => false, 'warehouse_id' => null, 'message' => 'Warehouse phone must be 10 digits'];
+        }
+        if (empty($payload['address'])) {
+            return ['success' => false, 'warehouse_id' => null, 'message' => 'Warehouse address is required'];
+        }
+        if (!preg_match('/^\d{6}$/', $payload['pin_code'])) {
+            return ['success' => false, 'warehouse_id' => null, 'message' => 'Warehouse pincode must be 6 digits'];
+        }
+
+        $result = self::post('/create-warehouse', $payload);
+
+        if ($result['success']) {
+            // Shipmozo returns warehouse_id in data
+            $warehouseId = $result['data']['warehouse_id']
+                        ?? $result['data']['id']
+                        ?? $result['data']['warehouse']['id']
+                        ?? null;
+
+            return [
+                'success'      => true,
+                'warehouse_id' => $warehouseId ? (int)$warehouseId : null,
+                'message'      => $result['message'] ?: 'Warehouse registered on Shipmozo',
+            ];
+        }
+
+        return [
+            'success'      => false,
+            'warehouse_id' => null,
+            'message'      => $result['message'] ?: 'Failed to register warehouse on Shipmozo',
+        ];
     }
 
     /**

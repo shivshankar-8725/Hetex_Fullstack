@@ -66,6 +66,53 @@ class Sender {
     }
 
     /**
+     * Send General / Transactional SMS Alert
+     */
+    public static function sendSms(string $phone, string $message): bool {
+        $apiKey = Credentials::get('SMS_API_KEY');
+        $provider = strtoupper(Credentials::get('SMS_PROVIDER', 'FAST2SMS'));
+
+        if (empty($apiKey) || str_contains($apiKey, 'YOUR_') || $provider === 'MOCK') {
+            error_log("[MOCK SMS] Sent to {$phone}: {$message}");
+            return true;
+        }
+
+        $cleanPhone = preg_replace('/[^\d]/', '', $phone);
+        if (strlen($cleanPhone) > 10) {
+            $cleanPhone = substr($cleanPhone, -10);
+        }
+
+        try {
+            if ($provider === 'FAST2SMS') {
+                $payload = [
+                    'route' => 'q',
+                    'message' => $message,
+                    'language' => 'english',
+                    'flash' => 0,
+                    'numbers' => $cleanPhone
+                ];
+                $ch = curl_init('https://www.fast2sms.com/dev/bulkV2');
+                curl_setopt_array($ch, [
+                    CURLOPT_HTTPHEADER => [
+                        "authorization: {$apiKey}",
+                        "Content-Type: application/json"
+                    ],
+                    CURLOPT_POST => true,
+                    CURLOPT_POSTFIELDS => json_encode($payload),
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_TIMEOUT => 8
+                ]);
+                $response = curl_exec($ch);
+                curl_close($ch);
+                return !empty($response);
+            }
+        } catch (Throwable $e) {
+            error_log("[SMS Send Error] " . $e->getMessage());
+        }
+        return false;
+    }
+
+    /**
      * Send Email (Verification, Reset Password, Alerts)
      */
     public static function sendEmail(string $toEmail, string $subject, string $htmlContent): bool {

@@ -269,6 +269,68 @@ class RateController {
         // Sort by total rate ascending
         usort($quotes, fn($a, $b) => $a['totalRate'] <=> $b['totalRate']);
 
+        // Tag each quote with serviceType (SURFACE / EXPRESS), logos, and AI badges (TASK-P2-06)
+        $minSurfaceIdx = null;
+        $minExpressIdx = null;
+        $fastestIdx = null;
+        $minEta = 999;
+
+        $logoMap = [
+            'DELHIVERY'  => 'https://assets.shipmozo.com/couriers/delhivery.png',
+            'DTDC'       => 'https://assets.shipmozo.com/couriers/dtdc.png',
+            'BLUEDART'   => 'https://assets.shipmozo.com/couriers/bluedart.png',
+            'EKART'      => 'https://assets.shipmozo.com/couriers/ekart.png',
+            'SHADOWFAX'  => 'https://assets.shipmozo.com/couriers/shadowfax.png',
+            'XPRESSBEES' => 'https://assets.shipmozo.com/couriers/xpressbees.png',
+            'AMAZON'     => 'https://assets.shipmozo.com/couriers/amazon.png',
+        ];
+
+        foreach ($quotes as $idx => &$q) {
+            $codeUpper = strtoupper($q['code'] ?? $q['name'] ?? '');
+            $isSurface = str_contains($codeUpper, 'SURFACE') || str_contains($codeUpper, 'GROUND') || str_contains($codeUpper, 'STANDARD');
+            $q['serviceType'] = $isSurface ? 'SURFACE' : 'EXPRESS';
+            $q['serviceTypeLabel'] = $isSurface ? 'Surface Economy' : 'Express Air';
+            $q['isBestValue'] = false;
+            $q['isFastest'] = false;
+            $q['recommendation'] = null;
+
+            foreach ($logoMap as $prefix => $logoUrl) {
+                if (str_contains($codeUpper, $prefix)) {
+                    $q['logoUrl'] = $logoUrl;
+                    break;
+                }
+            }
+
+            if ($isSurface && $minSurfaceIdx === null) {
+                $minSurfaceIdx = $idx;
+            }
+            if (!$isSurface && $minExpressIdx === null) {
+                $minExpressIdx = $idx;
+            }
+
+            $eta = (int)($q['etaMinDays'] ?? 5);
+            if ($eta < $minEta) {
+                $minEta = $eta;
+                $fastestIdx = $idx;
+            }
+        }
+        unset($q);
+
+        if ($minSurfaceIdx !== null) {
+            $quotes[$minSurfaceIdx]['isBestValue'] = true;
+            $quotes[$minSurfaceIdx]['recommendation'] = 'Best Value';
+        }
+        if ($minExpressIdx !== null) {
+            $quotes[$minExpressIdx]['isBestValue'] = true;
+            if (empty($quotes[$minExpressIdx]['recommendation'])) {
+                $quotes[$minExpressIdx]['recommendation'] = 'Best Value';
+            }
+        }
+        if ($fastestIdx !== null) {
+            $quotes[$fastestIdx]['isFastest'] = true;
+            $quotes[$fastestIdx]['recommendation'] = 'Fastest Delivery';
+        }
+
         if (!$isAdmin) {
             // Margin amount user should not be able to see, only admin can see from admin login
             foreach ($quotes as &$q) {

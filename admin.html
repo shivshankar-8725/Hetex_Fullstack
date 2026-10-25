@@ -553,19 +553,33 @@
           <span>Seller Portal</span>
         </a>
       </li>
+
+      <!-- Group 4: Account & Profile -->
+      <li class="sidebar-section-title" style="margin-top: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <span style="font-size: 0.8rem; color: #64748b;">⦿</span>
+          <span style="font-weight: 700; color: #64748b; text-transform: capitalize; font-size: 0.8125rem;">Account</span>
+        </div>
+      </li>
+      <li>
+        <button class="subnav-btn" id="admProfileNavTab" onclick="switchAdminTab('profile', this)">
+          <span class="subnav-bullet"></span>
+          <span>My Profile</span>
+        </button>
+      </li>
     </ul>
 
     <!-- Bottom Admin Status (Always Pinned at Left Bottom Screen, Independent of Scroll) -->
-    <div class="sidebar-footer">
+    <div class="sidebar-footer" onclick="switchAdminTab('profile')" style="cursor: pointer;" title="Open Admin Profile">
       <div style="padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
-          <div class="user-avatar-btn" style="width: 28px; height: 28px; font-size: 0.75rem; flex-shrink: 0; background: #b91c1c;">A</div>
+          <div class="user-avatar-btn" style="width: 28px; height: 28px; font-size: 0.75rem; flex-shrink: 0; background: #0f172a;" id="admSidebarAvatar">A</div>
           <div style="overflow: hidden;">
-            <div style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Super Admin</div>
-            <div style="font-size: 0.6875rem; color: var(--danger); font-weight: 600;">● Root Access</div>
+            <div id="admSidebarName" style="font-size: 0.8125rem; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Hetex Administrator</div>
+            <div style="font-size: 0.6875rem; color: #16a34a; font-weight: 700;">● Admin Active</div>
           </div>
         </div>
-        <button type="button" class="topbar-signout-btn" onclick="openHelplineModal()" title="HetEx Support Helpline" style="padding: 0.3rem 0.55rem; font-size: 0.8125rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.15s ease;">
+        <button type="button" class="topbar-signout-btn" onclick="event.stopPropagation(); openHelplineModal()" title="HetEx Support Helpline" style="padding: 0.3rem 0.55rem; font-size: 0.8125rem; background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; border-radius: 0.375rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: all 0.15s ease;">
           <span>📞</span>
         </button>
       </div>
@@ -696,6 +710,10 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+          <a href="javascript:void(0)" onclick="closeAdminProfileDropdown(); switchAdminTab('profile', this);" class="profile-menu-item">
+            <span>👤</span>
+            <span>My Profile</span>
+          </a>
           <a href="javascript:void(0)" onclick="closeAdminProfileDropdown(); switchAdminTab('recharges', this);" class="profile-menu-item">
             <span>💳</span>
             <span>UPI Recharges Review</span>
@@ -1285,6 +1303,312 @@
       </div>
     </div>
 
+    <!-- ================= TAB: MY PROFILE (SAME UNIFIED FORMAT) ================= -->
+    <div id="admin-tab-profile" class="admin-tab" style="display: none;">
+      <!-- Fluid Wave Hero Header Banner -->
+      <div style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 45%, #ede9fe 100%); border-radius: 12px; border: 1px solid #bae6fd; padding: 1.5rem 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(2,132,199,0.06);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 2;">
+          <!-- Left: Clickable Wallet Box -->
+          <div onclick="switchAdminTab('recharges')" style="display: inline-flex; align-items: center; gap: 0.75rem; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); padding: 0.6rem 1.15rem; border-radius: 9999px; cursor: pointer; border: 1.5px solid #bfdbfe; box-shadow: 0 2px 8px rgba(37,99,235,0.08); transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <span style="font-size: 1.35rem; line-height: 1;">💳</span>
+            <div>
+              <div style="font-size: 1.15rem; font-weight: 850; color: #0f172a; line-height: 1.2;" id="profHeroWallet">₹50,000.00</div>
+              <div style="font-size: 0.68rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.04em;">Platform Reserve</div>
+            </div>
+          </div>
+
+          <!-- Center: Avatar Circle & User Title (Real User Info) -->
+          <div style="text-align: center; margin: 0 auto;">
+            <div style="position: relative; display: inline-block;">
+              <div id="profHeroAvatarCircle" style="width: 76px; height: 76px; border-radius: 50%; background: #0f172a; border: 3px solid #ffffff; box-shadow: 0 4px 15px rgba(15,23,42,0.25); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 1.75rem; font-weight: 800; margin: 0 auto;">
+                <span id="profHeroAvatarInitial">A</span>
+              </div>
+            </div>
+            <h2 id="profHeroName" style="font-size: 1.2rem; font-weight: 850; color: #0f172a; margin: 0.5rem 0 0.15rem 0; text-transform: uppercase; letter-spacing: 0.02em;">Hetex Administrator</h2>
+            <div id="profHeroRole" style="font-size: 0.72rem; font-weight: 800; color: #64748b; letter-spacing: 0.08em; text-transform: uppercase;">ADMINISTRATOR ACCOUNT</div>
+          </div>
+
+          <!-- Right: Profile Status Badge -->
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.8125rem; font-weight: 600; color: #475569;">Profile Status:</span>
+            <span id="profHeroStatusBadge" class="badge" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.75rem; padding: 0.4rem 0.85rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem; box-shadow: 0 2px 6px rgba(16,185,129,0.25);">
+              <span>✓</span><span>Active Root</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unified Profile Content (2-Column Responsive Layout) -->
+      <div style="display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.5rem;" class="mobile-grid-1">
+        
+        <!-- LEFT COLUMN: Contact Details & Address Details -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Card 1: Contact Details -->
+          <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <span>👤</span> Contact Details
+              </h3>
+              <button type="button" id="btnEditContact" onclick="toggleEditContact()" style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem;" title="Edit Contact Details">
+                ✏️
+              </button>
+            </div>
+
+            <!-- Contact View Mode -->
+            <div id="contactViewMode">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem;" class="mobile-grid-1">
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Name:</span>
+                  <strong id="viewProfName" style="font-size: 0.875rem; color: var(--navy); text-transform: uppercase;">Hetex Administrator</strong>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Email:</span>
+                  <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                    <span id="viewProfEmail" style="font-size: 0.825rem; font-weight: 700; color: var(--navy);">admin@hetex.in</span>
+                    <span class="badge badge-success" style="font-size: 0.65rem;">✓ Verified</span>
+                  </div>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Phone:</span>
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <strong id="viewProfPhone" style="font-size: 0.875rem; color: var(--navy);">+919999999999</strong>
+                    <span style="color: #16a34a; font-size: 0.85rem;" title="Verified Phone">✅</span>
+                  </div>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">User type:</span>
+                  <span id="viewProfUserType" class="badge" style="background: #f1f5f9; color: var(--navy); font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 4px;">ADMINISTRATOR</span>
+                </div>
+                <div style="grid-column: 1/-1;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Joined:</span>
+                  <span id="viewProfJoined" style="font-size: 0.8125rem; color: #475569;">1 Jan 2026</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Edit Mode (Hidden by default) -->
+            <form id="contactEditForm" style="display: none;" onsubmit="saveContactDetails(event)">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;" class="mobile-grid-1">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Full Name *</label>
+                  <input type="text" id="editProfName" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Email Address *</label>
+                  <input type="email" id="editProfEmail" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Mobile Phone *</label>
+                  <input type="tel" id="editProfPhone" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Business / Entity Name</label>
+                  <input type="text" id="editProfBusiness" class="form-control" style="font-size: 0.8125rem;" />
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" onclick="toggleEditContact(false)" class="btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.85rem;">Cancel</button>
+                <button type="submit" class="btn-primary" style="font-size: 0.75rem; padding: 0.4rem 1.15rem;">💾 Save Changes</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card 2: Address Details -->
+          <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <span>📍</span> Address Details
+              </h3>
+              <button type="button" id="btnEditAddress" onclick="toggleEditAddress()" style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem;" title="Edit Address Details">
+                ✏️
+              </button>
+            </div>
+
+            <!-- Address View Mode -->
+            <div id="addressViewMode">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1rem;" class="mobile-grid-1">
+                <div style="grid-column: 1/-1;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Address Line 1:</span>
+                  <strong id="viewProfAddr1" style="font-size: 0.8125rem; color: var(--navy);">-</strong>
+                </div>
+                <div style="grid-column: 1/-1;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Address Line 2:</span>
+                  <strong id="viewProfAddr2" style="font-size: 0.8125rem; color: var(--navy);">-</strong>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">City:</span>
+                  <strong id="viewProfCity" style="font-size: 0.875rem; color: var(--navy);">-</strong>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">State:</span>
+                  <strong id="viewProfState" style="font-size: 0.875rem; color: var(--navy);">-</strong>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Country:</span>
+                  <strong id="viewProfCountry" style="font-size: 0.875rem; color: var(--navy);">India</strong>
+                </div>
+                <div>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 2px;">Pincode:</span>
+                  <strong id="viewProfPincode" style="font-size: 0.875rem; color: var(--brand); font-family: monospace;">-</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address Edit Mode (Hidden by default) -->
+            <form id="addressEditForm" style="display: none;" onsubmit="saveAddressDetails(event)">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;" class="mobile-grid-1">
+                <div class="form-group" style="grid-column: 1/-1; margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Address Line 1 *</label>
+                  <input type="text" id="editProfAddr1" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="grid-column: 1/-1; margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Address Line 2 (Landmark / Area)</label>
+                  <input type="text" id="editProfAddr2" class="form-control" style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">City *</label>
+                  <input type="text" id="editProfCity" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">State *</label>
+                  <input type="text" id="editProfState" class="form-control" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Country *</label>
+                  <input type="text" id="editProfCountry" class="form-control" value="India" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Pincode *</label>
+                  <input type="text" id="editProfPincode" class="form-control" maxlength="6" required style="font-size: 0.8125rem; font-family: monospace;" />
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button type="button" onclick="toggleEditAddress(false)" class="btn-secondary" style="font-size: 0.75rem; padding: 0.4rem 0.85rem;">Cancel</button>
+                <button type="submit" class="btn-primary" style="font-size: 0.75rem; padding: 0.4rem 1.15rem;">💾 Save Address</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Bank Details, Password Change via OTP, KYC Status -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          
+          <!-- Card 3: Bank Details (Editable for Settlement Accounts) -->
+          <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <span>🏦</span> Bank Details (Settlement / Remittances)
+              </h3>
+              <span class="badge badge-success" style="font-size: 0.7rem;">Verified Account</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+              Platform remittance and settlement payouts will be processed through this verified bank account.
+            </p>
+
+            <form onsubmit="saveBankDetails(event)">
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Account Holder Name *</label>
+                  <input type="text" id="profBankHolder" class="form-control" required style="font-size: 0.8125rem; text-transform: uppercase;" />
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Bank Name *</label>
+                    <input type="text" id="profBankName" class="form-control" placeholder="e.g. HDFC Bank" required style="font-size: 0.8125rem;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">IFSC Code *</label>
+                    <input type="text" id="profBankIfsc" class="form-control" placeholder="e.g. HDFC0000240" maxlength="11" required style="font-size: 0.8125rem; text-transform: uppercase; font-family: monospace;" />
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 0.75rem;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Account Number *</label>
+                    <input type="text" id="profBankAcc" class="form-control" placeholder="Enter bank account number" required style="font-size: 0.8125rem; font-family: monospace;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">Account Type</label>
+                    <select id="profBankAccountType" class="form-control" style="font-size: 0.8125rem;">
+                      <option value="Current">Current</option>
+                      <option value="Savings">Savings</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" id="btnSaveBank" class="btn-primary" style="padding: 0.45rem 1.25rem; font-size: 0.8125rem; font-weight: 750;">
+                  💾 Update Bank Details
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Card 4: Change Password via Email OTP -->
+          <div class="card" style="padding: 1.5rem; border-radius: 10px; border: 1.5px solid #e2e8f0; background: #ffffff;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                <span>🔒</span> Change Password via Email OTP
+              </h3>
+              <span class="badge badge-info" style="font-size: 0.7rem;">Email Verified</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+              To update your password, request an OTP verification code sent to your registered email: <strong id="pwdTargetEmailText" style="color: var(--navy);">-</strong>
+            </p>
+
+            <!-- Step A: Send OTP Button Strip -->
+            <div id="pwdOtpRequestView" style="margin-bottom: 1rem;">
+              <button type="button" id="btnSendPasswordOtp" onclick="sendPasswordChangeOtp()" class="btn-secondary" style="width: 100%; padding: 0.55rem; font-size: 0.8125rem; font-weight: 750; background: #f0f9ff; border: 1.5px solid #38bdf8; color: #0284c7; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <span>✉️</span>
+                <span id="btnSendPasswordOtpText">Send Verification Code to Email</span>
+              </button>
+            </div>
+
+            <!-- Step B: OTP + New Password Form -->
+            <form id="pwdOtpResetForm" onsubmit="handlePasswordUpdateWithOtp(event)">
+              <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                    <label style="font-size: 0.75rem; font-weight: 700;">6-Digit Email OTP *</label>
+                    <button type="button" onclick="sendPasswordChangeOtp()" style="background: none; border: none; font-size: 0.7rem; color: var(--brand); cursor: pointer; text-decoration: underline;">Resend OTP</button>
+                  </div>
+                  <input type="text" id="pwdEmailOtp" class="form-control" placeholder="Enter 6-digit code received on email" maxlength="6" required style="font-size: 0.875rem; font-family: monospace; letter-spacing: 2px; font-weight: 700; text-align: center;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">New Password *</label>
+                  <input type="password" id="pwdNewPassword" class="form-control" placeholder="Minimum 6 characters" minlength="6" required style="font-size: 0.8125rem;" />
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label style="font-size: 0.75rem; font-weight: 700;">Confirm New Password *</label>
+                  <input type="password" id="pwdConfirmPassword" class="form-control" placeholder="Re-enter new password" minlength="6" required style="font-size: 0.8125rem;" />
+                </div>
+              </div>
+              <button type="submit" id="btnSubmitPasswordUpdate" class="btn-primary" style="width: 100%; padding: 0.55rem; font-size: 0.8125rem; font-weight: 750;">
+                🔒 Verify OTP & Update Password
+              </button>
+            </form>
+          </div>
+
+          <!-- Card 5: KYC Verification Status -->
+          <div class="card" style="padding: 1.25rem 1.5rem; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.35rem;">🛡️</span>
+                <div>
+                  <h4 style="font-size: 0.85rem; font-weight: 750; color: var(--navy); margin: 0;">Government Verification & GSTIN</h4>
+                  <p style="font-size: 0.7rem; color: var(--text-muted); margin: 2px 0 0 0;">Verified Root Administrator credentials for HetEx Platform</p>
+                </div>
+              </div>
+              <span id="profKycBadgeRight" class="badge badge-success" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;">✓ Root Verified</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
   </main>
   </div>
 
@@ -1842,6 +2166,7 @@
       if (tab === 'shipments') loadAdminShipments();
       if (tab === 'tickets') loadAdminTickets();
       if (tab === 'settings') loadAdminSettings();
+      if (tab === 'profile') loadProfile();
     }
 
     async function loadAdminOverview() {
@@ -1901,7 +2226,7 @@
                 '</a>' +
               '</td>' +
               '<td><span class="badge" style="background: #e0e7ff; color: #3730a3; font-weight: 700; font-family: monospace;">' + uId + '</span></td>' +
-              '<td style="font-family: monospace; color: var(--brand);">' + (o.shipment?.awbNumber || '-') + '</td>' +
+              '<td style="font-family: monospace; color: var(--brand);">' + (o.shipment?.awbNumber || o.awbNumber || '-') + '</td>' +
               '<td><div style="display: inline-flex; align-items: center;">' + courierLogoHtml + subServiceHtml + '</div></td>' +
               '<td>' + (o.buyerAddress?.contactName || 'Buyer') + '</td>' +
               '<td>' + (o.buyerAddress?.city || 'India') + '</td>' +
@@ -3302,6 +3627,338 @@
       if (inp) {
         inp.value = text;
         inp.focus();
+      }
+    }
+
+    // ================= PROFILE MODULE (MATCHES DASHBOARD FORMAT) =================
+    var currentAdminProfile = null;
+
+    function showToast(msg, type = 'info') {
+      showAdminToast(msg, type);
+    }
+
+    async function loadProfile() {
+      try {
+        const authToken = token || localStorage.getItem('hetex_token') || '';
+        const res = await fetch('/api/profile', {
+          headers: authToken ? { 'Authorization': 'Bearer ' + authToken } : {}
+        });
+        const d = await res.json();
+        const p = d.profile || d.user || {
+          name: 'Hetex Administrator',
+          email: 'admin@hetex.in',
+          phone: '+919999999999',
+          userType: 'ADMINISTRATOR',
+          walletBalance: 50000.0,
+          profileStatus: 'Active Root',
+          joined: '1 Jan 2026',
+          address: {
+            line1: 'B-402, Logistics Park, Udyog Vihar Phase 4',
+            line2: 'Near Cyber City, NH-8',
+            city: 'Gurugram',
+            state: 'Haryana',
+            country: 'India',
+            pincode: '122015'
+          },
+          bank: {
+            holderName: 'Hetex Administrator',
+            bankName: 'HDFC Bank',
+            accountNumber: '50100234567890',
+            ifsc: 'HDFC0000240',
+            accountType: 'Current'
+          }
+        };
+        currentAdminProfile = p;
+
+        // Top Banner Bindings
+        const walletEl = document.getElementById('profHeroWallet');
+        if (walletEl) walletEl.textContent = '₹' + parseFloat(p.walletBalance || 50000).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+        const nameEl = document.getElementById('profHeroName');
+        if (nameEl) nameEl.textContent = p.name || 'Hetex Administrator';
+        const roleEl = document.getElementById('profHeroRole');
+        if (roleEl) roleEl.textContent = 'ADMINISTRATOR ACCOUNT';
+        const initialEl = document.getElementById('profHeroAvatarInitial');
+        if (initialEl) initialEl.textContent = (p.name ? p.name.charAt(0) : 'A').toUpperCase();
+        const statusBadge = document.getElementById('profHeroStatusBadge');
+        if (statusBadge) statusBadge.innerHTML = '<span>✓</span><span>' + (p.profileStatus || 'Active Root') + '</span>';
+
+        // Update left sidebar footer and topbar avatar
+        const sbName = document.getElementById('admSidebarName');
+        if (sbName) sbName.textContent = p.name || 'Hetex Administrator';
+        const sbAvatar = document.getElementById('admSidebarAvatar');
+        if (sbAvatar) sbAvatar.textContent = (p.name ? p.name.charAt(0) : 'A').toUpperCase();
+        const topAvatar = document.getElementById('topbarAdminAvatar');
+        if (topAvatar) topAvatar.textContent = (p.name ? p.name.charAt(0) : 'A').toUpperCase();
+
+        // Contact View
+        const vName = document.getElementById('viewProfName');
+        if (vName) vName.textContent = p.name || '-';
+        const vEmail = document.getElementById('viewProfEmail');
+        if (vEmail) vEmail.textContent = p.email || '-';
+        const vPhone = document.getElementById('viewProfPhone');
+        if (vPhone) vPhone.textContent = p.phone || '-';
+        const vType = document.getElementById('viewProfUserType');
+        if (vType) vType.textContent = p.userType || 'ADMINISTRATOR';
+        const vJoined = document.getElementById('viewProfJoined');
+        if (vJoined) vJoined.textContent = p.joined || '1 Jan 2026';
+
+        // Contact Edit Form
+        const eName = document.getElementById('editProfName');
+        if (eName) eName.value = p.name || '';
+        const eEmail = document.getElementById('editProfEmail');
+        if (eEmail) eEmail.value = p.email || '';
+        const ePhone = document.getElementById('editProfPhone');
+        if (ePhone) ePhone.value = p.phone || '';
+        const eBiz = document.getElementById('editProfBusiness');
+        if (eBiz) eBiz.value = p.businessName || 'Hetex Logistics Corp';
+
+        // Address View
+        const addr = p.address || {};
+        const vA1 = document.getElementById('viewProfAddr1');
+        if (vA1) vA1.textContent = addr.line1 || '-';
+        const vA2 = document.getElementById('viewProfAddr2');
+        if (vA2) vA2.textContent = addr.line2 || '-';
+        const vCity = document.getElementById('viewProfCity');
+        if (vCity) vCity.textContent = addr.city || '-';
+        const vState = document.getElementById('viewProfState');
+        if (vState) vState.textContent = addr.state || '-';
+        const vCountry = document.getElementById('viewProfCountry');
+        if (vCountry) vCountry.textContent = addr.country || 'India';
+        const vPin = document.getElementById('viewProfPincode');
+        if (vPin) vPin.textContent = addr.pincode || '-';
+
+        // Address Edit Form
+        const eA1 = document.getElementById('editProfAddr1');
+        if (eA1) eA1.value = addr.line1 || '';
+        const eA2 = document.getElementById('editProfAddr2');
+        if (eA2) eA2.value = addr.line2 || '';
+        const eCity = document.getElementById('editProfCity');
+        if (eCity) eCity.value = addr.city || '';
+        const eState = document.getElementById('editProfState');
+        if (eState) eState.value = addr.state || '';
+        const eCountry = document.getElementById('editProfCountry');
+        if (eCountry) eCountry.value = addr.country || 'India';
+        const ePin = document.getElementById('editProfPincode');
+        if (ePin) ePin.value = addr.pincode || '';
+
+        // Bank Details Form
+        const bank = p.bank || {};
+        const bHolder = document.getElementById('profBankHolder');
+        if (bHolder) bHolder.value = bank.holderName || p.name || 'Hetex Administrator';
+        const bName = document.getElementById('profBankName');
+        if (bName) bName.value = bank.bankName || 'HDFC Bank';
+        const bIfsc = document.getElementById('profBankIfsc');
+        if (bIfsc) bIfsc.value = bank.ifsc || 'HDFC0000240';
+        const bAcc = document.getElementById('profBankAcc');
+        if (bAcc) bAcc.value = bank.accountNumber || '';
+        const bType = document.getElementById('profBankAccountType');
+        if (bType) bType.value = bank.accountType || 'Current';
+
+        // Password Reset Email Hint
+        const pwdEmail = document.getElementById('pwdTargetEmailText');
+        if (pwdEmail) pwdEmail.textContent = p.email || 'admin@hetex.in';
+      } catch (err) {
+        console.error('Failed to load admin profile:', err);
+      }
+    }
+
+    function toggleEditContact(show) {
+      const view = document.getElementById('contactViewMode');
+      const form = document.getElementById('contactEditForm');
+      if (!view || !form) return;
+      const willShow = (show !== undefined) ? show : (form.style.display === 'none');
+      view.style.display = willShow ? 'none' : 'block';
+      form.style.display = willShow ? 'block' : 'none';
+    }
+
+    async function saveContactDetails(e) {
+      if (e) e.preventDefault();
+      const authToken = token || localStorage.getItem('hetex_token') || '';
+      const payload = {
+        name: document.getElementById('editProfName').value.trim(),
+        email: document.getElementById('editProfEmail').value.trim(),
+        phone: document.getElementById('editProfPhone').value.trim(),
+        businessName: document.getElementById('editProfBusiness').value.trim()
+      };
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminToast('Contact details updated successfully!', 'success');
+          toggleEditContact(false);
+          await loadProfile();
+        } else {
+          showAdminToast(data.error || 'Failed to update contact details', 'error');
+        }
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    function toggleEditAddress(show) {
+      const view = document.getElementById('addressViewMode');
+      const form = document.getElementById('addressEditForm');
+      if (!view || !form) return;
+      const willShow = (show !== undefined) ? show : (form.style.display === 'none');
+      view.style.display = willShow ? 'none' : 'block';
+      form.style.display = willShow ? 'block' : 'none';
+    }
+
+    async function saveAddressDetails(e) {
+      if (e) e.preventDefault();
+      const authToken = token || localStorage.getItem('hetex_token') || '';
+      const address = {
+        line1: document.getElementById('editProfAddr1').value.trim(),
+        line2: document.getElementById('editProfAddr2').value.trim(),
+        city: document.getElementById('editProfCity').value.trim(),
+        state: document.getElementById('editProfState').value.trim(),
+        country: document.getElementById('editProfCountry').value.trim() || 'India',
+        pincode: document.getElementById('editProfPincode').value.trim()
+      };
+      try {
+        const res = await fetch('/api/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+          },
+          body: JSON.stringify({ address })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminToast('Registered address updated successfully!', 'success');
+          toggleEditAddress(false);
+          await loadProfile();
+        } else {
+          showAdminToast(data.error || 'Failed to update address', 'error');
+        }
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      }
+    }
+
+    async function saveBankDetails(e) {
+      if (e) e.preventDefault();
+      const authToken = token || localStorage.getItem('hetex_token') || '';
+      const btn = document.getElementById('btnSaveBank');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+      const payload = {
+        holderName: document.getElementById('profBankHolder').value.trim(),
+        bankName: document.getElementById('profBankName').value.trim(),
+        ifsc: document.getElementById('profBankIfsc').value.trim(),
+        accountNumber: document.getElementById('profBankAcc').value.trim(),
+        accountType: document.getElementById('profBankAccountType').value
+      };
+      try {
+        const res = await fetch('/api/profile/bank', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminToast(data.message || 'Settlement bank details updated successfully!', 'success');
+        } else {
+          showAdminToast(data.error || 'Failed to save bank details', 'error');
+        }
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Update Bank Details'; }
+      }
+    }
+
+    async function sendPasswordChangeOtp() {
+      const authToken = token || localStorage.getItem('hetex_token') || '';
+      const btn = document.getElementById('btnSendPasswordOtp');
+      const text = document.getElementById('btnSendPasswordOtpText');
+      if (btn) btn.disabled = true;
+      if (text) text.textContent = 'Sending Verification Code to Email...';
+
+      const targetEmail = (currentAdminProfile && currentAdminProfile.email) ? currentAdminProfile.email : 'admin@hetex.in';
+
+      try {
+        const res = await fetch('/api/profile/send-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+          },
+          body: JSON.stringify({ email: targetEmail })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminToast(data.message || 'Verification OTP sent to your email!', 'success');
+          if (data.otp) {
+            const otpInp = document.getElementById('pwdEmailOtp');
+            if (otpInp) otpInp.value = data.otp;
+          }
+          if (text) text.textContent = '✓ Code Sent! Check Inbox / Resend';
+        } else {
+          showAdminToast(data.error || 'Failed to send verification code', 'error');
+          if (text) text.textContent = 'Send Verification Code to Email';
+        }
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+        if (text) text.textContent = 'Send Verification Code to Email';
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function handlePasswordUpdateWithOtp(e) {
+      if (e) e.preventDefault();
+      const authToken = token || localStorage.getItem('hetex_token') || '';
+      const otp = document.getElementById('pwdEmailOtp').value.trim();
+      const newPassword = document.getElementById('pwdNewPassword').value.trim();
+      const confirmPassword = document.getElementById('pwdConfirmPassword').value.trim();
+
+      if (newPassword !== confirmPassword) {
+        showAdminToast('Passwords do not match. Please verify confirmation password.', 'error');
+        return;
+      }
+      if (newPassword.length < 6) {
+        showAdminToast('Password must be at least 6 characters long.', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('btnSubmitPasswordUpdate');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying & Updating...'; }
+
+      const targetEmail = (currentAdminProfile && currentAdminProfile.email) ? currentAdminProfile.email : 'admin@hetex.in';
+
+      try {
+        const res = await fetch('/api/profile/change-password-otp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': 'Bearer ' + authToken } : {})
+          },
+          body: JSON.stringify({ email: targetEmail, otp, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAdminToast(data.message || 'Password updated successfully!', 'success');
+          document.getElementById('pwdOtpResetForm').reset();
+          const text = document.getElementById('btnSendPasswordOtpText');
+          if (text) text.textContent = 'Send Verification Code to Email';
+        } else {
+          showAdminToast(data.error || 'Failed to update password', 'error');
+        }
+      } catch (err) {
+        showAdminToast(err.message, 'error');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '🔒 Verify OTP & Update Password'; }
       }
     }
 

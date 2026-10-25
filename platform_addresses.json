@@ -1,27 +1,34 @@
 [
   {
-    "id": "addr_cust1",
-    "label": "Customer",
-    "contactName": "Amit Sharma",
+    "id": "addr_1792935334793",
+    "label": "Main Central Hub",
+    "contactName": "Rajesh Sharma",
     "phone": "9876543210",
-    "addressLine1": "Flat 402, Green Heights, Sector 12",
-    "city": "Mumbai",
-    "state": "Maharashtra",
-    "pincode": "400001",
-    "isDefault": false,
-    "type": "BUYER"
+    "addressLine1": "Plot 42, Sector 18, Industrial Estate",
+    "city": "Gurugram",
+    "state": "Haryana",
+    "pincode": "122015",
+    "isDefault": true,
+    "type": "PICKUP",
+    "altPhone": "9811122233",
+    "email": "hub.dispatch@hetex.in",
+    "gstNumber": "27AABCH1234F1Z5",
+    "addressLine2": "Opposite DLF Cyber Tower, Phase 4"
   },
   {
-    "id": "addr_1792476591829",
-    "label": "Samarth Gold",
+    "id": "addr_1792927425922",
+    "label": "Primary Warehouse",
     "contactName": "Samarth Gold",
     "phone": "9516474537",
     "addressLine1": "Shop 102, Gold Palace Market, Zaveri Bazaar",
-    "city": "Mumbai",
-    "state": "Maharashtra",
+    "city": "Indore",
+    "state": "Madhya Pradesh",
     "pincode": "400002",
     "isDefault": false,
-    "type": "BUYER"
+    "type": "BUYER",
+    "altPhone": "",
+    "email": "",
+    "addressLine2": ""
   },
   {
     "id": "addr_cust1",
@@ -50,13 +57,28 @@
   {
     "id": "addr_cust3",
     "label": "Customer",
-    "contactName": "Vikram Singh",
+    "contactName": "Aakash Verma",
     "phone": "9988776655",
-    "addressLine1": "Shop 12, Connaught Place, Block B",
-    "city": "New Delhi",
-    "state": "Delhi",
-    "pincode": "110001",
+    "addressLine1": "Flat 402, Sunshine Heights",
+    "city": "Mumbai",
+    "state": "Maharashtra",
+    "pincode": "400070",
     "isDefault": false,
-    "type": "BUYER"
+    "type": "BUYER",
+    "altPhone": "9988776600",
+    "email": "aakash.verma@example.com",
+    "addressLine2": "Near Phoenix Market City, Kurla West"
+  },
+  {
+    "id": "addr_1792604944617",
+    "label": "Primary Warehouse",
+    "contactName": "test",
+    "phone": "5654565677",
+    "addressLine1": "p34, fasdrh",
+    "city": "Indore",
+    "state": "Madhya Pradesh",
+    "pincode": "453112",
+    "type": "BUYER",
+    "isDefault": false
   }
 ]

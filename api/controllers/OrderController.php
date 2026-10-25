@@ -147,7 +147,10 @@ class OrderController {
             $buyerName = trim($data['buyerName'] ?? $data['contactName'] ?? $data['name'] ?? 'Recipient Customer');
             $buyerPhone = preg_replace('/\D/', '', (string)($data['buyerPhone'] ?? $data['phone'] ?? $data['mobile'] ?? '9876543210'));
             if (strlen($buyerPhone) < 10) $buyerPhone = '9876543210';
+            $buyerAltPhone = preg_replace('/\D/', '', (string)($data['buyerAltPhone'] ?? $data['alternatePhone'] ?? ''));
+            $buyerEmail = trim($data['buyerEmail'] ?? $data['email'] ?? '');
             $buyerAddress = trim($data['buyerAddress'] ?? $data['addressLine1'] ?? $data['address'] ?? 'Delivery Address');
+            $buyerAddress2 = trim($data['buyerAddress2'] ?? $data['addressLine2'] ?? '');
             $buyerCity = trim($data['buyerCity'] ?? $data['city'] ?? 'New Delhi');
             $buyerState = trim($data['buyerState'] ?? $data['state'] ?? 'Delhi');
             $buyerPincode = trim($data['buyerPincode'] ?? $data['pincode'] ?? '110001');
@@ -155,13 +158,14 @@ class OrderController {
             $buyerAddressId = Response::generateUuid();
             try {
                 $db->prepare("
-                    INSERT INTO addresses (id, user_id, type, label, contact_name, phone, address_line1, city, state, pincode, is_default, created_at)
-                    VALUES (?, ?, 'DELIVERY', 'Customer', ?, ?, ?, ?, ?, ?, 0, NOW())
+                    INSERT INTO addresses (id, user_id, type, label, contact_name, phone, address_line1, address_line2, city, state, pincode, is_default, created_at)
+                    VALUES (?, ?, 'DELIVERY', 'Customer', ?, ?, ?, ?, ?, ?, ?, 0, NOW())
                 ")->execute([
                     $buyerAddressId, $auth['userId'],
                     $buyerName ?: 'Recipient Customer',
                     $buyerPhone,
                     $buyerAddress ?: 'Delivery Address',
+                    $buyerAddress2,
                     $buyerCity ?: 'New Delhi',
                     $buyerState ?: 'Delhi',
                     $buyerPincode ?: '110001'
@@ -177,9 +181,13 @@ class OrderController {
             foreach ($rawItems as $it) {
                 $items[] = [
                     'name' => trim($it['name'] ?? $it['itemDescription'] ?? 'Item'),
+                    'sku' => trim($it['sku'] ?? $it['sku_number'] ?? ''),
+                    'hsn' => trim($it['hsn'] ?? $it['hsn_code'] ?? ''),
                     'category' => trim($it['category'] ?? 'General Merchandise'),
                     'quantity' => max(1, (int)($it['quantity'] ?? 1)),
-                    'declaredValue' => (float)($it['declaredValue'] ?? 500),
+                    'declaredValue' => (float)($it['declaredValue'] ?? $it['unitPrice'] ?? $it['price'] ?? 500),
+                    'discount' => (float)($it['discount'] ?? 0),
+                    'taxRate' => (float)($it['taxRate'] ?? $it['gstRate'] ?? 0),
                     'weight' => max(0.01, (float)($it['weight'] ?? 0.5)),
                     'length' => max(1, (float)($it['length'] ?? 10)),
                     'width' => max(1, (float)($it['width'] ?? 10)),
@@ -189,9 +197,13 @@ class OrderController {
         } else {
             $items[] = [
                 'name' => $itemDesc,
+                'sku' => '',
+                'hsn' => '',
                 'category' => trim($data['itemCategory'] ?? 'General Merchandise'),
                 'quantity' => 1,
                 'declaredValue' => $declaredValue,
+                'discount' => 0,
+                'taxRate' => 0,
                 'weight' => $weight,
                 'length' => $length,
                 'width' => $width,
@@ -448,7 +460,7 @@ class OrderController {
                 $shipmozoResult = self::pushToShipmozo(
                     $orderId, $orderNum, $data, $items,
                     $paymentMode, $codAmount, $weight, $length, $width, $height,
-                    $declaredValue
+                    $declaredValue, $pickupAddressId  // pass pickup addr so we can look up warehouse_id
                 );
 
                 if ($shipmozoResult !== null) {
@@ -486,18 +498,25 @@ class OrderController {
                 }
             }
 
-            // Create Shipment & AWB (use Shipmozo AWB if available, else generate local)
-            $shipmentId = Response::generateUuid();
-            $awb = $shipmozoAwb ?? ('AWB' . random_int(1000000000, 9999999999));
-            $shipmentStatus = $shipmozoOrderPushed ? 'MANIFESTED' : 'READY_TO_SHIP';
+            // ================================================================
+            // AWB Assignment: Only use real Shipmozo AWB.
+            // If Shipmozo could not provide an AWB, save order as CONFIRMED
+            // (awaiting pickup/dispatch) WITHOUT a shipment record.
+            // This avoids the silent fake AWB problem (ISS-003).
+            // ================================================================
 
-            $db->prepare("
-                INSERT INTO shipments (id, order_id, courier_id, awb_number, rate_charged, margin_earned, status, current_location, label_generated, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 'Origin Hub', 1, NOW(), NOW())
-            ")->execute([$shipmentId, $orderId, $courierId, $awb, $totalShippingCost, $margin, $shipmentStatus]);
+            if ($shipmozoOrderPushed && !empty($shipmozoAwb)) {
+                // Real AWB received — create shipment record
+                $shipmentId = Response::generateUuid();
+                $awb = $shipmozoAwb;
+                $shipmentStatus = 'MANIFESTED';
 
-            // Store Shipmozo reference ID for future API calls
-            if ($shipmozoReferenceId) {
+                $db->prepare("
+                    INSERT INTO shipments (id, order_id, courier_id, awb_number, rate_charged, margin_earned, status, current_location, label_generated, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, 'MANIFESTED', 'Origin Hub', 1, NOW(), NOW())
+                ")->execute([$shipmentId, $orderId, $courierId, $awb, $totalShippingCost, $margin]);
+
+                // Store Shipmozo reference
                 try {
                     $db->prepare("
                         INSERT INTO shipmozo_references (id, order_id, shipment_id, shipmozo_order_id, shipmozo_reference_id, shipmozo_awb, shipmozo_courier, created_at)
@@ -509,6 +528,36 @@ class OrderController {
                 } catch (Throwable $refErr) {
                     error_log("[OrderCreate] Non-fatal: failed to store Shipmozo reference: " . $refErr->getMessage());
                 }
+
+                // Initial tracking event
+                $db->prepare("
+                    INSERT INTO tracking_events (id, shipment_id, status, description, location, timestamp)
+                    VALUES (?, ?, 'MANIFESTED', 'Shipment manifested with Shipmozo courier network', 'Origin Hub', NOW())
+                ")->execute([Response::generateUuid(), $shipmentId]);
+
+            } elseif ($shipmozoOrderPushed && empty($shipmozoAwb)) {
+                // Order pushed to Shipmozo but AWB not yet assigned (async courier assignment)
+                // Save Shipmozo reference for later AWB retrieval — do NOT create fake AWB
+                $shipmentId = null;
+                $awb = null;
+                try {
+                    $db->prepare("
+                        INSERT INTO shipmozo_references (id, order_id, shipment_id, shipmozo_order_id, shipmozo_reference_id, shipmozo_awb, shipmozo_courier, created_at)
+                        VALUES (?, ?, NULL, ?, ?, NULL, ?, NOW())
+                    ")->execute([
+                        Response::generateUuid(), $orderId,
+                        $orderNum, $shipmozoReferenceId, $shipmozoCourier
+                    ]);
+                } catch (Throwable $refErr) {
+                    error_log("[OrderCreate] Non-fatal: failed to store pending Shipmozo reference: " . $refErr->getMessage());
+                }
+
+            } else {
+                // Shipmozo API not configured or push failed entirely
+                // Order saved as CONFIRMED — seller must retry booking or contact support
+                $shipmentId = null;
+                $awb = null;
+                error_log("[OrderCreate] Shipmozo push failed or not configured for order {$orderNum} — no shipment record created");
             }
 
             // Wallet Debit Transaction
@@ -517,34 +566,43 @@ class OrderController {
                 VALUES (?, ?, ?, 'DEBIT', ?, ?, ?, ?, ?, NOW())
             ")->execute([Response::generateUuid(), $wallet['id'], $auth['userId'], $totalShippingCost, $balBefore, $balAfter, 'Shipping Fee for Order ' . $orderNum, $orderId]);
 
-            // Initial Tracking Event
-            $trackingDesc = $shipmozoOrderPushed
-                ? 'Shipment manifested with Shipmozo courier network'
-                : 'Shipment booked and label generated';
-            $db->prepare("
-                INSERT INTO tracking_events (id, shipment_id, status, description, location, timestamp)
-                VALUES (?, ?, ?, ?, 'Origin Hub', NOW())
-            ")->execute([Response::generateUuid(), $shipmentId, $shipmentStatus, $trackingDesc]);
-
             if ($db->inTransaction()) {
                 $db->commit();
             }
 
+            // Trigger Notification Event (TASK-P1-04)
+            try {
+                require_once __DIR__ . '/../utils/notification_service.php';
+                NotificationService::sendOrderEvent($orderId, 'ORDER_CREATED', $db);
+            } catch (Throwable $notifErr) {
+                error_log("[OrderCreate] Non-fatal notification error: " . $notifErr->getMessage());
+            }
+
             $responseData = [
-                'success' => true,
-                'orderId' => $orderId,
-                'orderNumber' => $orderNum,
-                'awbNumber' => $awb,
-                'status' => 'CONFIRMED',
-                'rateCharged' => $totalShippingCost
+                'success'      => true,
+                'orderId'      => $orderId,
+                'orderNumber'  => $orderNum,
+                'rateCharged'  => $totalShippingCost,
+                'awbPending'   => empty($awb),
             ];
 
-            if ($shipmozoOrderPushed) {
-                $responseData['shipmozoStatus'] = 'pushed';
-                $responseData['shipmozoReferenceId'] = $shipmozoReferenceId;
+            if (!empty($awb)) {
+                $responseData['awbNumber'] = $awb;
+                $responseData['status'] = 'CONFIRMED';
+                $responseData['shipmozoStatus'] = 'pushed_and_assigned';
                 if ($shipmozoCourier) {
                     $responseData['shipmozoCourier'] = $shipmozoCourier;
                 }
+            } elseif ($shipmozoOrderPushed) {
+                // Pushed to Shipmozo but AWB pending async assignment
+                $responseData['status'] = 'CONFIRMED';
+                $responseData['shipmozoStatus'] = 'pushed_awaiting_awb';
+                $responseData['message'] = 'Order placed with courier. AWB will be assigned shortly — refresh order details in a few minutes.';
+            } else {
+                // Shipmozo unreachable — order saved locally, manual dispatch needed
+                $responseData['status'] = 'CONFIRMED';
+                $responseData['shipmozoStatus'] = 'unavailable';
+                $responseData['message'] = 'Order saved. Courier API was unavailable — please retry booking from the order detail page or contact support.';
             }
 
             Response::json($responseData, 201);
@@ -569,80 +627,134 @@ class OrderController {
     private static function pushToShipmozo(
         string $orderId, string $orderNum, array $requestData, array $items,
         string $paymentMode, float $codAmount, float $weight,
-        float $length, float $width, float $height, float $declaredValue
+        float $length, float $width, float $height, float $declaredValue,
+        string $pickupAddressId = ''
     ): ?array {
         try {
             // Build product_detail array per Shipmozo API docs
             $productDetail = [];
             foreach ($items as $item) {
+                $sku = !empty($item['sku']) ? $item['sku'] : substr(md5($item['name'] ?? ''), 0, 8);
                 $productDetail[] = [
-                    'name' => $item['name'] ?? 'Product',
-                    'sku_number' => substr(md5($item['name'] ?? ''), 0, 8),
-                    'quantity' => (int)($item['quantity'] ?? 1),
-                    'discount' => '',
-                    'hsn' => '',
-                    'unit_price' => (int)($item['declaredValue'] ?? 500),
-                    'product_category' => $item['category'] ?? 'Other'
+                    'name'             => $item['name'] ?? 'Product',
+                    'sku_number'       => $sku,
+                    'quantity'         => (int)($item['quantity'] ?? 1),
+                    'discount'         => !empty($item['discount']) ? (string)$item['discount'] : '',
+                    'hsn'              => $item['hsn'] ?? '',
+                    'unit_price'       => (int)($item['declaredValue'] ?? 500),
+                    'product_category' => $item['category'] ?? 'Other',
                 ];
             }
 
-            // Get warehouse ID - try to fetch from Shipmozo, or use default
-            $warehouseId = self::getShipmozoWarehouseId();
+            // ── Warehouse ID resolution (DB-first, API fallback) ──────────────
+            // Priority 1: cached shipmozo_warehouse_id on the pickup address row
+            $warehouseId = null;
+            if (!empty($pickupAddressId)) {
+                try {
+                    $db = Database::getConnection();
+                    $wStmt = $db->prepare("
+                        SELECT shipmozo_warehouse_id FROM addresses
+                        WHERE id = ? AND shipmozo_warehouse_id IS NOT NULL
+                        LIMIT 1
+                    ");
+                    $wStmt->execute([$pickupAddressId]);
+                    $cached = $wStmt->fetchColumn();
+                    if ($cached) {
+                        $warehouseId = (string)$cached;
+                        error_log("[ShipmozoPushOrder] Using cached warehouse_id={$warehouseId} for address {$pickupAddressId}");
+                    }
+                } catch (Throwable $e) {
+                    error_log("[ShipmozoPushOrder] DB warehouse lookup failed: " . $e->getMessage());
+                }
+            }
 
-            // Build consignee details from request data
-            $consigneeName = trim($requestData['buyerName'] ?? 'Customer');
-            $consigneePhone = trim($requestData['buyerPhone'] ?? '');
+            // Priority 2: live Shipmozo API (only if no cached ID)
+            if (empty($warehouseId)) {
+                $warehouseId = self::getShipmozoWarehouseId();
+                if (!empty($warehouseId) && !empty($pickupAddressId)) {
+                    // Cache it for next time
+                    try {
+                        $db = Database::getConnection();
+                        $db->prepare("UPDATE addresses SET shipmozo_warehouse_id = ? WHERE id = ?")
+                           ->execute([$warehouseId, $pickupAddressId]);
+                        error_log("[ShipmozoPushOrder] Cached warehouse_id={$warehouseId} to address {$pickupAddressId}");
+                    } catch (Throwable $e) { /* non-fatal */ }
+                }
+            }
+
+            // ── Build consignee details ───────────────────────────────────────
+            $consigneeName    = trim($requestData['buyerName'] ?? 'Customer');
+            $consigneePhone   = trim($requestData['buyerPhone'] ?? '');
             $consigneeAddress = trim($requestData['buyerAddress'] ?? '');
             $consigneePincode = trim($requestData['buyerPincode'] ?? '');
-            $consigneeCity = trim($requestData['buyerCity'] ?? '');
-            $consigneeState = trim($requestData['buyerState'] ?? '');
-            $consigneeEmail = trim($requestData['buyerEmail'] ?? '');
+            $consigneeCity    = trim($requestData['buyerCity'] ?? '');
+            $consigneeState   = trim($requestData['buyerState'] ?? '');
+            $consigneeEmail   = trim($requestData['buyerEmail'] ?? '');
 
             $payload = [
-                'order_id' => $orderNum,
-                'order_date' => date('Y-m-d'),
-                'consignee_name' => $consigneeName,
-                'consignee_phone' => $consigneePhone,
+                'order_id'                   => $orderNum,
+                'order_date'                 => date('Y-m-d'),
+                'consignee_name'             => $consigneeName,
+                'consignee_phone'            => $consigneePhone,
                 'consignee_address_line_one' => $consigneeAddress,
-                'consignee_pin_code' => $consigneePincode,
-                'consignee_city' => $consigneeCity,
-                'consignee_state' => $consigneeState,
-                'product_detail' => $productDetail,
-                'payment_type' => ($paymentMode === 'COD') ? 'COD' : 'PREPAID',
-                'weight' => max(0.1, $weight),
-                'length' => max(1, (int)$length),
-                'width' => max(1, (int)$width),
-                'height' => max(1, (int)$height)
+                'consignee_pin_code'         => $consigneePincode,
+                'consignee_city'             => $consigneeCity,
+                'consignee_state'            => $consigneeState,
+                'product_detail'             => $productDetail,
+                'payment_type'               => ($paymentMode === 'COD') ? 'COD' : 'PREPAID',
+                'weight'                     => max(0.1, $weight),
+                'length'                     => max(1, (int)$length),
+                'width'                      => max(1, (int)$width),
+                'height'                     => max(1, (int)$height),
             ];
 
-            // Add warehouse_id if available
+            // Add warehouse_id if resolved
             if (!empty($warehouseId)) {
-                $payload['warehouse_id'] = $warehouseId;
+                $payload['warehouse_id'] = (int)$warehouseId;
             }
 
             // Optional fields
             if (!empty($consigneeEmail)) {
                 $payload['consignee_email'] = $consigneeEmail;
             }
+            if (!empty($requestData['buyerAltPhone'])) {
+                $payload['consignee_alternate_phone'] = $requestData['buyerAltPhone'];
+            }
+            if (!empty($requestData['buyerAddress2'])) {
+                $payload['consignee_address_line_two'] = $requestData['buyerAddress2'];
+            }
             if ($paymentMode === 'COD' && $codAmount > 0) {
                 $payload['cod_amount'] = $codAmount;
             }
+            if (!empty($requestData['ewayBillNumber'])) {
+                $payload['eway_bill_number'] = $requestData['ewayBillNumber'];
+            }
+            if (!empty($requestData['gstNumber'])) {
+                $payload['consignee_gst_number'] = $requestData['gstNumber'];
+            }
+            if (!empty($requestData['invoiceNumber'])) {
+                $payload['invoice_number'] = $requestData['invoiceNumber'];
+            }
+            if (!empty($requestData['invoiceDate'])) {
+                $payload['invoice_date'] = $requestData['invoiceDate'];
+            }
+            if (!empty($requestData['rovType'])) {
+                $payload['rov_type'] = $requestData['rovType'];
+            }
 
-            error_log("[ShipmozoPushOrder] Pushing order {$orderNum} to Shipmozo");
+            error_log("[ShipmozoPushOrder] Pushing order {$orderNum} to Shipmozo (warehouse_id=" . ($warehouseId ?? 'none') . ")");
 
             $response = ShipmozoClient::pushOrder($payload);
 
             if ($response['success'] && !empty($response['data'])) {
-                $data = $response['data'];
-                $resultOrderId = $data['order_id'] ?? $orderNum;
-                $resultRefId = $data['reference_id'] ?? null;
-
+                $resData = $response['data'];
+                $resultOrderId = $resData['order_id'] ?? $orderNum;
+                $resultRefId   = $resData['reference_id'] ?? null;
                 error_log("[ShipmozoPushOrder] SUCCESS - order_id={$resultOrderId}, reference_id={$resultRefId}");
-
                 return [
-                    'orderId' => $resultOrderId,
+                    'orderId'     => $resultOrderId,
                     'referenceId' => $resultRefId,
-                    'info' => $data['Info'] ?? null
+                    'info'        => $resData['Info'] ?? null,
                 ];
             }
 
@@ -1031,7 +1143,24 @@ class OrderController {
                 }
 
                 $courierTitle = $d['courier'] ?? $shipment['courier_name'] ?? 'Delhivery Express';
-                error_log("[Tracking] Shipmozo SUCCESS - AWB={$awb}, Status={$d['current_status']}");
+                $podImageUrl = $d['pod_image'] ?? $d['pod_image_url'] ?? $d['pod'] ?? $shipment['pod_image_url'] ?? null;
+                $currentStatus = strtoupper($d['current_status'] ?? 'IN_TRANSIT');
+                $publicTrackingUrl = "https://hetex.in/track/" . ($d['awb_number'] ?? $awb);
+
+                // If status changed and we have a local shipment, sync it
+                if ($shipment && !empty($shipment['id']) && $shipment['status'] !== $currentStatus) {
+                    try {
+                        $db->prepare("UPDATE shipments SET status = ?, pod_image_url = COALESCE(?, pod_image_url), updated_at = NOW() WHERE id = ?")
+                           ->execute([$currentStatus, $podImageUrl, $shipment['id']]);
+
+                        require_once __DIR__ . '/../utils/notification_service.php';
+                        if (in_array($currentStatus, ['SHIPPED', 'DELIVERED', 'NDR', 'RTO'])) {
+                            NotificationService::sendOrderEvent($shipment['order_id'], $currentStatus, $db);
+                        }
+                    } catch (Throwable $syncErr) {}
+                }
+
+                error_log("[Tracking] Shipmozo SUCCESS - AWB={$awb}, Status={$currentStatus}");
 
                 Response::json([
                     'awbNumber' => $d['awb_number'] ?? $awb,
@@ -1040,11 +1169,13 @@ class OrderController {
                     'orderNumber' => $shipment['order_number'] ?? $d['order_id'] ?? null,
                     'courier' => $courierTitle,
                     'courierName' => $courierTitle,
-                    'status' => $d['current_status'] ?? 'UNKNOWN',
+                    'status' => $currentStatus,
                     'statusTime' => $d['status_time'] ?? null,
                     'currentLocation' => !empty($events) ? $events[0]['location'] : 'Transit Hub',
                     'expectedDeliveryDate' => $d['expected_delivery_date'] ?? null,
                     'destinationCity' => $shipment['buyer_city'] ?? 'India',
+                    'podImageUrl' => $podImageUrl,
+                    'publicTrackingUrl' => $publicTrackingUrl,
                     'branding' => [
                         'brandName' => $courierTitle,
                         'primaryColor' => '#2563eb',
@@ -1083,6 +1214,8 @@ class OrderController {
             'status' => $shipment['status'],
             'currentLocation' => $shipment['current_location'] ?? 'In Transit Hub',
             'destinationCity' => $shipment['buyer_city'] ?? 'India',
+            'podImageUrl' => $shipment['pod_image_url'] ?? null,
+            'publicTrackingUrl' => 'https://hetex.in/track/' . $shipment['awb_number'],
             'branding' => [
                 'brandName' => $shipment['courier_name'],
                 'primaryColor' => '#2563eb',
@@ -1390,16 +1523,27 @@ HTML;
 
         if ($order['buyer_address_id'] && (!empty($buyerName) || !empty($buyerPhone) || !empty($buyerAddress))) {
             try {
+                $curAddrStmt = $db->prepare("SELECT * FROM addresses WHERE id = ?");
+                $curAddrStmt->execute([$order['buyer_address_id']]);
+                $curAddr = $curAddrStmt->fetch();
+
+                $upContact = !empty($buyerName) ? $buyerName : ($curAddr['contact_name'] ?? '');
+                $upPhone = !empty($buyerPhone) ? $buyerPhone : ($curAddr['phone'] ?? '');
+                $upAddr1 = !empty($buyerAddress) ? $buyerAddress : ($curAddr['address_line1'] ?? '');
+                $upCity = !empty($buyerCity) ? $buyerCity : ($curAddr['city'] ?? '');
+                $upState = !empty($buyerState) ? $buyerState : ($curAddr['state'] ?? '');
+                $upPin = !empty($buyerPincode) ? $buyerPincode : ($curAddr['pincode'] ?? '');
+
                 $db->prepare("
                     UPDATE addresses 
-                    SET contact_name = COALESCE(NULLIF(?, ''), contact_name),
-                        phone = COALESCE(NULLIF(?, ''), phone),
-                        address_line1 = COALESCE(NULLIF(?, ''), address_line1),
-                        city = COALESCE(NULLIF(?, ''), city),
-                        state = COALESCE(NULLIF(?, ''), state),
-                        pincode = COALESCE(NULLIF(?, ''), pincode)
+                    SET contact_name = ?,
+                        phone = ?,
+                        address_line1 = ?,
+                        city = ?,
+                        state = ?,
+                        pincode = ?
                     WHERE id = ?
-                ")->execute([$buyerName, $buyerPhone, $buyerAddress, $buyerCity, $buyerState, $buyerPincode, $order['buyer_address_id']]);
+                ")->execute([$upContact, $upPhone, $upAddr1, $upCity, $upState, $upPin, $order['buyer_address_id']]);
             } catch (Throwable $e) {}
         }
 
@@ -1450,11 +1594,12 @@ HTML;
         $codAmount = ($paymentMode === 'COD') ? (float)($data['codAmount'] ?? $order['cod_amount']) : 0;
         $packageType = $data['packageType'] ?? $order['package_type'];
         $shippingCharges = (float)($data['shippingCharges'] ?? $data['sellerPrice'] ?? $order['shipping_charges']);
+        $effectivePickupAddressId = !empty($pickupAddressId) ? $pickupAddressId : $order['pickup_address_id'];
 
         try {
             $db->prepare("
                 UPDATE orders SET
-                    pickup_address_id = COALESCE(NULLIF(?, ''), pickup_address_id),
+                    pickup_address_id = ?,
                     payment_mode = ?,
                     cod_amount = ?,
                     declared_value = ?,
@@ -1465,7 +1610,7 @@ HTML;
                     shipping_charges = ?
                 WHERE id = ?
             ")->execute([
-                $pickupAddressId, $paymentMode, $codAmount, $totalDeclaredValue,
+                $effectivePickupAddressId, $paymentMode, $codAmount, $totalDeclaredValue,
                 $totalWeight, $billableWeight, $itemDesc, $packageType,
                 $shippingCharges, $realOrderId
             ]);
@@ -2224,6 +2369,420 @@ HTML;
     public static function getInvoicePdf(string $shipmentId): void {
         $_GET['ids'] = $shipmentId;
         self::getBulkInvoicesPdf();
+    }
+
+    // =========================================================================
+    // PICKUP SCHEDULING (TASK-P1-02)
+    // POST /schedule-pickup — Triggers Shipmozo courier pickup request
+    // =========================================================================
+    public static function schedulePickup(?string $orderIdParam = null): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $orderId = trim($orderIdParam ?? $data['orderId'] ?? '');
+
+        if (empty($orderId)) {
+            Response::error('orderId is required', 400);
+        }
+
+        $db = Database::getConnection();
+
+        // Verify order belongs to this seller and has a shipment
+        $stmt = $db->prepare("
+            SELECT o.id, o.order_number, s.awb_number, s.id as shipment_id
+            FROM orders o
+            LEFT JOIN shipments s ON s.order_id = o.id
+            WHERE o.id = ? AND o.user_id = ?
+        ");
+        $stmt->execute([$orderId, $auth['userId']]);
+        $row = $stmt->fetch();
+
+        if (!$row) {
+            Response::error('Order not found', 404);
+        }
+        if (empty($row['awb_number'])) {
+            Response::error('This order has no AWB assigned yet. Please wait for courier assignment before scheduling pickup.', 400);
+        }
+
+        // Try to get Shipmozo order ID from references table
+        $refStmt = $db->prepare("SELECT shipmozo_order_id FROM shipmozo_references WHERE order_id = ? LIMIT 1");
+        $refStmt->execute([$orderId]);
+        $shipmozoOrderId = $refStmt->fetchColumn() ?: $row['order_number'];
+
+        $result = ShipmozoClient::schedulePickup($shipmozoOrderId);
+
+        if ($result['success']) {
+            Response::json([
+                'success' => true,
+                'message' => $result['message'] ?: 'Pickup scheduled successfully',
+                'pickupReference' => $result['data']['pickup_id'] ?? $result['data']['reference'] ?? null,
+                'awbNumber' => $row['awb_number'],
+            ]);
+        } else {
+            $errMsg = $result['message'] ?: 'Unable to schedule pickup at this time. Please contact support.';
+            Response::error($errMsg, ($result['httpCode'] >= 400 && $result['httpCode'] < 600) ? $result['httpCode'] : 502);
+        }
+    }
+
+    // =========================================================================
+    // REVERSE / RETURN SHIPMENT (TASK-P1-07)
+    // POST /push-return-order — Creates a reverse pickup shipment
+    // =========================================================================
+    public static function pushReturnOrder(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $shipmentId = trim($data['shipmentId'] ?? '');
+
+        if (empty($shipmentId)) {
+            Response::error('shipmentId is required', 400);
+        }
+
+        $db = Database::getConnection();
+
+        $stmt = $db->prepare("
+            SELECT s.*, o.order_number, o.item_description, o.declared_value,
+                   o.payment_mode, o.cod_amount, o.weight, o.length, o.width, o.height,
+                   pa.contact_name as pickup_name, pa.phone as pickup_phone,
+                   pa.address_line1 as pickup_address, pa.city as pickup_city,
+                   pa.state as pickup_state, pa.pincode as pickup_pincode,
+                   da.contact_name as delivery_name, da.phone as delivery_phone,
+                   da.address_line1 as delivery_address, da.city as delivery_city,
+                   da.state as delivery_state, da.pincode as delivery_pincode
+            FROM shipments s
+            JOIN orders o ON s.order_id = o.id
+            JOIN addresses pa ON o.pickup_address_id = pa.id
+            JOIN addresses da ON o.buyer_address_id = da.id
+            WHERE s.id = ? AND o.user_id = ?
+        ");
+        $stmt->execute([$shipmentId, $auth['userId']]);
+        $shipment = $stmt->fetch();
+
+        if (!$shipment) {
+            Response::error('Shipment not found', 404);
+        }
+        if (empty($shipment['awb_number'])) {
+            Response::error('Cannot initiate return — no AWB assigned to this shipment', 400);
+        }
+
+        // Build return order payload — consignee becomes pickup, pickup becomes delivery
+        $returnOrderId = 'RTN-' . $shipment['order_number'];
+        $returnPayload = [
+            'order_id'                   => $returnOrderId,
+            'order_date'                 => date('Y-m-d'),
+            'consignee_name'             => $shipment['pickup_name'],
+            'consignee_phone'            => $shipment['pickup_phone'],
+            'consignee_address_line_one' => $shipment['pickup_address'],
+            'consignee_pin_code'         => $shipment['pickup_pincode'],
+            'consignee_city'             => $shipment['pickup_city'],
+            'consignee_state'            => $shipment['pickup_state'],
+            'pickup_name'                => $shipment['delivery_name'],
+            'pickup_phone'               => $shipment['delivery_phone'],
+            'pickup_address'             => $shipment['delivery_address'],
+            'pickup_pincode'             => $shipment['delivery_pincode'],
+            'pickup_city'                => $shipment['delivery_city'],
+            'pickup_state'               => $shipment['delivery_state'],
+            'product_detail'             => [['name' => $shipment['item_description'], 'quantity' => 1, 'unit_price' => (int)$shipment['declared_value']]],
+            'payment_type'               => 'PREPAID',
+            'weight'                     => $shipment['weight'],
+            'length'                     => $shipment['length'],
+            'width'                      => $shipment['width'],
+            'height'                     => $shipment['height'],
+            'original_awb'               => $shipment['awb_number'],
+        ];
+
+        $result = ShipmozoClient::pushReturnOrder($returnPayload);
+
+        if ($result['success']) {
+            // Log return NDR action
+            try {
+                $db->prepare("
+                    INSERT INTO ndr_records (id, shipment_id, attempt_number, reason, action, notes, created_at)
+                    VALUES (?, ?, 0, 'Return Initiated', 'RETURN', ?, NOW())
+                ")->execute([Response::generateUuid(), $shipmentId, 'Return order created via Shipmozo: ' . ($result['data']['order_id'] ?? $returnOrderId)]);
+            } catch (Throwable $t) {}
+
+            Response::json([
+                'success'         => true,
+                'message'         => 'Return shipment created successfully',
+                'returnOrderId'   => $result['data']['order_id'] ?? $returnOrderId,
+                'returnAwb'       => $result['data']['awb_number'] ?? null,
+            ]);
+        } else {
+            Response::error($result['message'] ?: 'Failed to create return shipment. Please contact support.', 502);
+        }
+    }
+
+    // =========================================================================
+    // MANIFEST PDF (TASK-P1-03)
+    // GET /manifest?date=YYYY-MM-DD
+    // Returns a dispatch manifest PDF for all that day's shipments
+    // =========================================================================
+    public static function getManifestPdf(): void {
+        $auth = AuthMiddleware::authenticate();
+        $db   = Database::getConnection();
+
+        $targetDate = $_GET['date'] ?? date('Y-m-d');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $targetDate)) {
+            $targetDate = date('Y-m-d');
+        }
+
+        $isAdmin = false;
+        try {
+            AuthMiddleware::requireAdmin();
+            $isAdmin = true;
+        } catch (Throwable $t) {}
+
+        // Build query — admin sees all, seller sees own
+        if ($isAdmin && !empty($_GET['userId'])) {
+            $stmt = $db->prepare("
+                SELECT s.awb_number, o.order_number, o.item_description, o.payment_mode,
+                       o.cod_amount, o.billable_weight, c.name as courier_name,
+                       da.contact_name as buyer_name, da.city as buyer_city, da.pincode as buyer_pincode,
+                       pa.contact_name as pickup_name, pa.city as pickup_city,
+                       s.created_at
+                FROM shipments s
+                JOIN orders o ON s.order_id = o.id
+                JOIN couriers c ON s.courier_id = c.id
+                JOIN addresses da ON o.buyer_address_id = da.id
+                JOIN addresses pa ON o.pickup_address_id = pa.id
+                WHERE o.user_id = ? AND DATE(s.created_at) = ?
+                ORDER BY s.created_at ASC
+            ");
+            $stmt->execute([$_GET['userId'], $targetDate]);
+        } else {
+            $stmt = $db->prepare("
+                SELECT s.awb_number, o.order_number, o.item_description, o.payment_mode,
+                       o.cod_amount, o.billable_weight, c.name as courier_name,
+                       da.contact_name as buyer_name, da.city as buyer_city, da.pincode as buyer_pincode,
+                       pa.contact_name as pickup_name, pa.city as pickup_city,
+                       s.created_at
+                FROM shipments s
+                JOIN orders o ON s.order_id = o.id
+                JOIN couriers c ON s.courier_id = c.id
+                JOIN addresses da ON o.buyer_address_id = da.id
+                JOIN addresses pa ON o.pickup_address_id = pa.id
+                WHERE o.user_id = ? AND DATE(s.created_at) = ?
+                ORDER BY s.created_at ASC
+            ");
+            $stmt->execute([$auth['userId'], $targetDate]);
+        }
+
+        $rows = $stmt->fetchAll();
+        $count = count($rows);
+
+        $dateLabel = date('d M Y', strtotime($targetDate));
+
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Dispatch Manifest — ' . htmlspecialchars($dateLabel) . '</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #111; padding: 20px; }
+  h1 { font-size: 16px; margin-bottom: 4px; }
+  .meta { font-size: 10px; color: #555; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #1e293b; color: #fff; padding: 6px 8px; text-align: left; font-size: 10px; text-transform: uppercase; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .awb { font-family: monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px; }
+  .footer { margin-top: 24px; font-size: 9.5px; color: #64748b; text-align: center; }
+  @media print { body { padding: 8mm; } }
+</style>
+</head><body>
+<h1>HetEx Express — Dispatch Manifest</h1>
+<div class="meta">Date: <strong>' . htmlspecialchars($dateLabel) . '</strong> &nbsp;|&nbsp; Total Shipments: <strong>' . $count . '</strong> &nbsp;|&nbsp; Generated: ' . date('d M Y H:i') . '</div>';
+
+        if ($count === 0) {
+            echo '<p style="color:#64748b; padding: 20px 0;">No shipments manifested on this date.</p>';
+        } else {
+            echo '<table>
+<thead><tr>
+  <th>#</th><th>AWB Number</th><th>Order #</th><th>Consignee</th><th>Destination</th>
+  <th>Courier</th><th>Wt (kg)</th><th>Mode</th><th>COD Amount</th><th>Item</th>
+</tr></thead><tbody>';
+
+            foreach ($rows as $i => $r) {
+                $cod = $r['payment_mode'] === 'COD' ? '₹' . number_format((float)$r['cod_amount'], 2) : '—';
+                echo '<tr>
+  <td style="text-align:center">' . ($i + 1) . '</td>
+  <td class="awb">' . htmlspecialchars($r['awb_number']) . '</td>
+  <td>' . htmlspecialchars($r['order_number']) . '</td>
+  <td>' . htmlspecialchars($r['buyer_name']) . '</td>
+  <td>' . htmlspecialchars($r['buyer_city']) . ' — ' . htmlspecialchars($r['buyer_pincode']) . '</td>
+  <td>' . htmlspecialchars($r['courier_name']) . '</td>
+  <td>' . number_format((float)$r['billable_weight'], 2) . '</td>
+  <td>' . htmlspecialchars($r['payment_mode']) . '</td>
+  <td>' . $cod . '</td>
+  <td style="max-width:120px; overflow:hidden">' . htmlspecialchars(substr($r['item_description'], 0, 50)) . '</td>
+</tr>';
+            }
+
+            echo '</tbody></table>';
+        }
+
+        echo '<div class="footer">HetEx Express Logistics · support@hetex.in · This is a system-generated manifest</div>
+</body></html>';
+        exit;
+    }
+
+    // =========================================================================
+    // BULK ORDER IMPORT (TASK-P1-05)
+    // POST /orders/bulk — Accepts multipart CSV, validates rows, creates orders
+    // =========================================================================
+    public static function bulkImport(): void {
+        $auth = AuthMiddleware::authenticate();
+        $db = Database::getConnection();
+
+        // Handle CSV template download
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' || !empty($_GET['template'])) {
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="hetex_bulk_order_template.csv"');
+            echo "order_ref,consignee_name,consignee_phone,consignee_address,consignee_city,consignee_state,consignee_pincode,weight_kg,length_cm,width_cm,height_cm,declared_value,payment_mode,cod_amount,item_description\n";
+            echo "ORD-001,John Doe,9876543210,\"123 Main St\",Mumbai,Maharashtra,400001,0.5,15,10,5,500,PREPAID,0,Cotton T-Shirt\n";
+            exit;
+        }
+
+        if (empty($_FILES['file'])) {
+            Response::error('CSV file is required. Upload with field name "file".', 400);
+        }
+
+        $file = $_FILES['file'];
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            Response::error('File upload failed.', 400);
+        }
+
+        $tmpPath = $file['tmp_name'];
+        $handle = fopen($tmpPath, 'r');
+        if (!$handle) {
+            Response::error('Cannot read uploaded file.', 500);
+        }
+
+        // Read header row
+        $headers = fgetcsv($handle);
+        $headers = array_map('strtolower', array_map('trim', $headers ?? []));
+
+        $required = ['consignee_name', 'consignee_phone', 'consignee_pincode', 'weight_kg', 'declared_value', 'payment_mode'];
+        $fieldMap = [
+            'consignee_name'    => ['consignee_name', 'buyer_name', 'name'],
+            'consignee_phone'   => ['consignee_phone', 'phone', 'mobile'],
+            'consignee_address' => ['consignee_address', 'address', 'address_line1'],
+            'consignee_city'    => ['consignee_city', 'city'],
+            'consignee_state'   => ['consignee_state', 'state'],
+            'consignee_pincode' => ['consignee_pincode', 'pincode', 'pin_code'],
+            'weight_kg'         => ['weight_kg', 'weight'],
+            'length_cm'         => ['length_cm', 'length'],
+            'width_cm'          => ['width_cm', 'width'],
+            'height_cm'         => ['height_cm', 'height'],
+            'declared_value'    => ['declared_value', 'value'],
+            'payment_mode'      => ['payment_mode', 'payment_type'],
+            'cod_amount'        => ['cod_amount', 'cod'],
+            'item_description'  => ['item_description', 'items', 'description'],
+            'order_ref'         => ['order_ref', 'order_id', 'external_id'],
+        ];
+
+        // Resolve column indices
+        $colIdx = [];
+        foreach ($fieldMap as $field => $aliases) {
+            foreach ($aliases as $alias) {
+                $idx = array_search($alias, $headers);
+                if ($idx !== false) {
+                    $colIdx[$field] = $idx;
+                    break;
+                }
+            }
+        }
+
+        $successRows = [];
+        $errorRows   = [];
+        $rowNumber   = 1; // header was row 0
+
+        // Get seller's default pickup address
+        $pickupStmt = $db->prepare("SELECT id FROM addresses WHERE user_id = ? AND type = 'PICKUP' ORDER BY is_default DESC LIMIT 1");
+        $pickupStmt->execute([$auth['userId']]);
+        $defaultPickupId = $pickupStmt->fetchColumn();
+
+        $uCodeStmt = $db->prepare("SELECT user_code FROM users WHERE id = ?");
+        $uCodeStmt->execute([$auth['userId']]);
+        $userCode = $uCodeStmt->fetchColumn() ?: 'HET000002';
+
+        while (($row = fgetcsv($handle)) !== false) {
+            $rowNumber++;
+            $errors = [];
+
+            $get = function(string $field) use ($row, $colIdx): string {
+                $idx = $colIdx[$field] ?? -1;
+                return $idx >= 0 ? trim($row[$idx] ?? '') : '';
+            };
+
+            $name    = $get('consignee_name');
+            $phone   = preg_replace('/\D/', '', $get('consignee_phone'));
+            $address = $get('consignee_address') ?: '—';
+            $city    = $get('consignee_city') ?: 'Unknown';
+            $state   = $get('consignee_state') ?: 'Unknown';
+            $pincode = preg_replace('/\D/', '', $get('consignee_pincode'));
+            $weight  = (float)$get('weight_kg') ?: 0;
+            $length  = (float)($get('length_cm') ?: 10);
+            $width   = (float)($get('width_cm') ?: 10);
+            $height  = (float)($get('height_cm') ?: 10);
+            $value   = (float)$get('declared_value') ?: 0;
+            $pm      = strtoupper($get('payment_mode')) ?: 'PREPAID';
+            $cod     = (float)$get('cod_amount') ?: 0;
+            $desc    = $get('item_description') ?: 'Merchandise';
+            $ref     = $get('order_ref');
+
+            if (empty($name))                         $errors[] = 'consignee_name is required';
+            if (strlen($phone) < 10)                  $errors[] = 'consignee_phone must be 10 digits';
+            if (!preg_match('/^\d{6}$/', $pincode))   $errors[] = 'consignee_pincode must be 6 digits';
+            if ($weight <= 0 || $weight > 500)        $errors[] = 'weight_kg must be between 0.01 and 500';
+            if ($value <= 0)                          $errors[] = 'declared_value must be positive';
+            if (!in_array($pm, ['PREPAID', 'COD']))   $errors[] = 'payment_mode must be PREPAID or COD';
+            if ($pm === 'COD' && $cod <= 0)           $errors[] = 'cod_amount required when payment_mode is COD';
+
+            if (!empty($errors)) {
+                $errorRows[] = ['row' => $rowNumber, 'errors' => $errors, 'data' => array_slice($row, 0, 5)];
+                continue;
+            }
+
+            // Create buyer address
+            $buyerAddrId = Response::generateUuid();
+            try {
+                $db->prepare("
+                    INSERT INTO addresses (id, user_id, type, label, contact_name, phone, address_line1, city, state, pincode, is_default, created_at)
+                    VALUES (?, ?, 'DELIVERY', 'Buyer', ?, ?, ?, ?, ?, ?, 0, NOW())
+                ")->execute([$buyerAddrId, $auth['userId'], $name, $phone, $address, $city, $state, $pincode]);
+            } catch (Throwable $t) {
+                $errorRows[] = ['row' => $rowNumber, 'errors' => ['Failed to create address: ' . $t->getMessage()]];
+                continue;
+            }
+
+            // Create order as DRAFT (to be reviewed/shipped)
+            $orderId  = Response::generateUuid();
+            $orderNum = !empty($ref) ? 'HTX-' . strtoupper($ref) : 'HTX' . strtoupper(substr(md5(uniqid('', true)), 0, 8));
+            $volWeight = ($length * $width * $height) / 5000.0;
+            $billable  = max($weight, $volWeight);
+
+            try {
+                $db->prepare("
+                    INSERT INTO orders (id, user_code, order_number, user_id, pickup_address_id, buyer_address_id, item_description, declared_value, weight, length, width, height, volumetric_weight, billable_weight, payment_mode, cod_amount, status, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT', NOW())
+                ")->execute([$orderId, $userCode, $orderNum, $auth['userId'], $defaultPickupId ?: $buyerAddrId, $buyerAddrId, $desc, $value, $weight, $length, $width, $height, $volWeight, $billable, $pm, $cod]);
+
+                $successRows[] = ['row' => $rowNumber, 'orderId' => $orderId, 'orderNumber' => $orderNum, 'consignee' => $name];
+            } catch (Throwable $t) {
+                $errorRows[] = ['row' => $rowNumber, 'errors' => ['Failed to create order: ' . $t->getMessage()]];
+            }
+        }
+
+        fclose($handle);
+
+        Response::json([
+            'success'      => true,
+            'imported'     => count($successRows),
+            'failed'       => count($errorRows),
+            'successRows'  => $successRows,
+            'errorRows'    => $errorRows,
+            'message'      => count($successRows) . ' orders created as DRAFT. Review and book them from the Orders page.',
+        ], 201);
     }
 }
 

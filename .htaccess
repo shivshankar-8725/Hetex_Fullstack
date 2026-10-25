@@ -1,3 +1,12 @@
+<IfModule mod_mime.c>
+    AddType image/svg+xml .svg .svgz
+    AddType image/webp .webp
+    AddType image/jpeg .jpeg .jpg
+    AddType image/png .png
+    AddType text/javascript .js
+    AddType text/css .css
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
@@ -6,6 +15,9 @@
     SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # 0. Direct access to all static assets by extension (bypass all rewrite rules)
+    RewriteRule \.(css|js|jpe?g|png|gif|svg|webp|ico|woff2?|ttf|eot|pdf|json)$ - [L]
 
     # 1. Forward all /api/* requests directly to PHP front controller
     RewriteRule ^api/(.*)$ api/index.php [QSA,L]
@@ -23,6 +35,7 @@
 
     # 4. Clean URLs for main pages
     RewriteRule ^login/?$ login.html [L]
+    RewriteRule ^(adminlogin|admin-login)/?$ login.html [L]
     RewriteRule ^register/?$ register.html [L]
     RewriteRule ^forgot-password/?$ forgot-password.html [L]
     RewriteRule ^track-public/?$ track-public.html [L]

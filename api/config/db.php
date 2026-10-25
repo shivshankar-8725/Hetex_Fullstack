@@ -14,7 +14,7 @@ class Database {
             $port = Credentials::get('DB_PORT', '3306');
             $db   = Credentials::get('DB_NAME', 'u969244453_hetex');
             $user = Credentials::get('DB_USER', 'u969244453_hetexuser');
-            $pass = Credentials::get('DB_PASS', 'Piyush@1197');
+            $pass = Credentials::get('DB_PASS', '');
             $charset = 'utf8mb4';
 
             $dsn = "mysql:host={$host};port={$port};dbname={$db};charset={$charset}";
@@ -26,6 +26,7 @@ class Database {
 
             try {
                 self::$instance = new PDO($dsn, $user, $pass, $options);
+                self::$instance->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
 
                 // Auto self-heal: Ensure essential tables exist so no query ever fails
                 try {
