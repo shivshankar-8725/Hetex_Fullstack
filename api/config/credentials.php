@@ -52,7 +52,7 @@ class Credentials {
     public const DB_PORT = '3306';
     public const DB_NAME = 'u969244453_hetex';
     public const DB_USER = 'u969244453_hetexuser';
-    public const DB_PASS = '';
+    public const DB_PASS = 'Piyush@1197';
 
     public const DELHIVERY_ENV = 'production';
     public const DELHIVERY_API_KEY = '';
@@ -60,8 +60,8 @@ class Credentials {
     public const DELHIVERY_BASE_URL = 'https://track.delhivery.com'; 
 
     public const SHIPMOZO_BASE_URL = 'https://shipping-api.com/app/api/v1';
-    public const SHIPMOZO_PUBLIC_KEY = '';
-    public const SHIPMOZO_PRIVATE_KEY = '';
+    public const SHIPMOZO_PUBLIC_KEY = 'flGJQHjkPTpIZq7AwL2h';
+    public const SHIPMOZO_PRIVATE_KEY = 'sZ4u1x2ESph5DUfT8L7l';
 
     public const RAZORPAY_KEY_ID = '';
     public const RAZORPAY_KEY_SECRET = '';
@@ -79,10 +79,12 @@ class Credentials {
     public const SMTP_FROM_EMAIL = 'support@hetex.in';
     public const SMTP_FROM_NAME = 'HetEx Express Support';
 
-    public const EMAILJS_PUBLIC_KEY = '';
-    public const EMAILJS_PRIVATE_KEY = '';
-    public const EMAILJS_SERVICE_ID = '';
-    public const EMAILJS_TEMPLATE_ID = '';
+    public const EMAILJS_PUBLIC_KEY = 'tPp2P8788nOc1d6UT';
+    public const EMAILJS_PRIVATE_KEY = 'qZZrt4o-94wYzB2LI956M';
+    public const EMAILJS_SERVICE_ID = 'service_dlndjrd';
+    public const EMAILJS_TEMPLATE_ID = 'template_7gomg2f';
+
+    public const JWT_SECRET = 'hetex_jwt_super_secret_key_2026_hostinger_secure';
 
     /**
      * Reads environment variable or fallback from .env or constants

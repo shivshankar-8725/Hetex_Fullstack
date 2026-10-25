@@ -111,7 +111,7 @@ with zipfile.ZipFile(zip_path, 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
                 add_dir(zipf, rel_dir)
 
                 for filename in filenames:
-                    if filename.startswith('.') and filename != '.htaccess':
+                    if filename.startswith('.') and filename not in ('.htaccess', '.env'):
                         continue
                     file_full = os.path.join(dirpath, filename)
                     rel_file = os.path.relpath(file_full, root_dir)
