@@ -345,14 +345,17 @@ class ShipmozoClient {
      */
     public static function registerWarehouse(array $address): array {
         $payload = [
-            'name'       => trim($address['label'] ?? $address['contact_name'] ?? 'Warehouse'),
-            'email'      => trim($address['email'] ?? 'warehouse@hetex.in'),
-            'phone'      => preg_replace('/\D/', '', (string)($address['phone'] ?? '')),
-            'address'    => trim($address['address_line1'] ?? ''),
-            'city'       => trim($address['city'] ?? ''),
-            'state'      => trim($address['state'] ?? ''),
-            'country'    => trim($address['country'] ?? 'India'),
-            'pin_code'   => trim($address['pincode'] ?? ''),
+            'name'             => trim($address['label'] ?? $address['contact_name'] ?? 'Warehouse'),
+            'email'            => trim($address['email'] ?? 'warehouse@hetex.in'),
+            'phone'            => preg_replace('/\D/', '', (string)($address['phone'] ?? '')),
+            'address'          => trim($address['address_line1'] ?? $address['address'] ?? ''),
+            'city'             => trim($address['city'] ?? ''),
+            'state'            => trim($address['state'] ?? ''),
+            'country'          => trim($address['country'] ?? 'India'),
+            'pin_code'         => trim($address['pincode'] ?? $address['pin_code'] ?? ''),
+            'address_title'    => trim($address['label'] ?? 'Warehouse'),
+            'address_line_one' => trim($address['address_line1'] ?? $address['address'] ?? ''),
+            'address_line_two' => trim($address['address_line2'] ?? ''),
         ];
 
         // Include GSTIN if available (optional but recommended)

@@ -2487,7 +2487,7 @@
                   </div>
                   <div class="form-group" style="margin-bottom: 0;">
                     <label style="font-size: 0.75rem; font-weight: 700;">Pincode *</label>
-                    <input type="text" id="editProfPincode" class="form-control" maxlength="6" required style="font-size: 0.8125rem; font-family: monospace;" />
+                    <input type="text" id="editProfPincode" class="form-control" maxlength="6" oninput="lookupPincode(this.value, 'editProfCity', 'editProfState')" required style="font-size: 0.8125rem; font-family: monospace;" />
                   </div>
                 </div>
                 <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
@@ -3074,7 +3074,10 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
           <div class="form-group">
             <label>Pincode *</label>
-            <input type="text" id="newAddrPincode" class="form-control" placeholder="6-digit PIN code" maxlength="6" required />
+            <div style="position: relative;">
+              <input type="text" id="newAddrPincode" class="form-control" placeholder="6-digit PIN code" maxlength="6" oninput="lookupPincode(this.value, 'newAddrCity', 'newAddrState', 'newAddrPincodeSpinner')" required />
+              <span id="newAddrPincodeSpinner" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: none; font-size: 0.75rem;">⏳</span>
+            </div>
           </div>
           <div class="form-group">
             <label>City *</label>
@@ -3085,13 +3088,38 @@
             <input type="text" id="newAddrState" class="form-control" placeholder="State" required />
           </div>
         </div>
+
+        <!-- OTP Verification Section for Warehouse Address Registration (Shipmozo Integration) -->
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 0.85rem; margin: 0.85rem 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <div style="display: flex; align-items: center; gap: 0.4rem;">
+              <span style="font-size: 0.95rem;">🔐</span>
+              <strong style="font-size: 0.8125rem; color: #166534;">Mobile Verification via OTP (Shipmozo Network)</strong>
+            </div>
+            <span id="whOtpBadge" class="badge badge-warning" style="font-size: 0.65rem;">OTP REQUIRED</span>
+          </div>
+          <p style="font-size: 0.725rem; color: #15803d; margin-bottom: 0.6rem;">
+            A 6-digit OTP will authenticate facility ownership before registering origin warehouse directly on Shipmozo.
+          </p>
+          <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div style="flex: 1;">
+              <label style="font-size: 0.72rem; font-weight: 700; color: #14532d;">Enter 6-Digit OTP *</label>
+              <input type="text" id="newAddrOtp" class="form-control" placeholder="6-digit OTP" maxlength="6" style="letter-spacing: 0.2em; font-weight: 800; font-family: monospace;" />
+            </div>
+            <button type="button" id="sendWhOtpBtn" class="btn-secondary" onclick="sendWarehouseOtp()" style="padding: 0.55rem 0.85rem; font-size: 0.75rem; white-space: nowrap; border-color: #16a34a; color: #16a34a; background: #fff;">
+              📲 Send OTP
+            </button>
+          </div>
+          <p id="whOtpStatusText" style="font-size: 0.72rem; color: #166534; margin-top: 0.35rem; display: none;"></p>
+        </div>
+
         <div style="margin: 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
           <input type="checkbox" id="newAddrDefault" style="width: 16px; height: 16px; cursor: pointer;" checked />
           <label for="newAddrDefault" style="font-size: 0.8125rem; font-weight: 600; cursor: pointer; margin: 0;">Set as default origin warehouse for new order bookings</label>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
           <button type="button" class="btn-secondary" onclick="closeAddAddressModal()">Cancel</button>
-          <button type="submit" class="btn-primary" id="saveAddressSubmitBtn">Save & Register Warehouse</button>
+          <button type="submit" class="btn-primary" id="saveAddressSubmitBtn">✓ Verify OTP & Register Warehouse</button>
         </div>
       </form>
     </div>
@@ -4037,12 +4065,140 @@
     // ==========================================
     // 2. ADDRESS BOOK LOGIC
     // ==========================================
+    // ==========================================
+    // 2. ADDRESS BOOK & PINCODE AUTOLOOKUP LOGIC
+    // ==========================================
+    async function lookupPincode(rawPin, cityInputId, stateInputId, spinnerId = null, onDone = null) {
+      const pin = (rawPin || '').toString().replace(/\D/g, '').trim();
+      if (pin.length !== 6) return;
+
+      const spinner = spinnerId ? document.getElementById(spinnerId) : null;
+      if (spinner) spinner.style.display = 'inline-block';
+
+      try {
+        const res = await fetch('/api/pincode-lookup/' + pin);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && (data.found || data.city)) {
+            const cityInput = document.getElementById(cityInputId);
+            const stateInput = document.getElementById(stateInputId);
+            if (cityInput && data.city) {
+              cityInput.value = data.city;
+              cityInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (stateInput && data.state) {
+              stateInput.value = data.state;
+              stateInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            showToast('📍 Location identified: ' + data.city + ', ' + data.state, 'info');
+            if (typeof onDone === 'function') onDone(data);
+          }
+        }
+      } catch (e) {
+        console.warn('Pincode lookup network error:', e);
+      } finally {
+        if (spinner) spinner.style.display = 'none';
+      }
+    }
+
+    let whOtpTimer = null;
+    async function sendWarehouseOtp() {
+      const phoneInput = document.getElementById('newAddrPhone');
+      const phone = (phoneInput?.value || '').replace(/\D/g, '').slice(-10);
+      if (!phone || phone.length < 10) {
+        showToast('Please enter a valid 10-digit primary mobile number first', 'warning');
+        phoneInput?.focus();
+        return;
+      }
+
+      const btn = document.getElementById('sendWhOtpBtn');
+      const statusEl = document.getElementById('whOtpStatusText');
+      const badge = document.getElementById('whOtpBadge');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+      }
+
+      try {
+        const res = await fetch('/api/addresses/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            phone: phone,
+            email: document.getElementById('newAddrEmail')?.value || '',
+            label: document.getElementById('newAddrLabel')?.value || ''
+          })
+        });
+        const d = await res.json();
+        if (res.ok && d.success) {
+          showToast(d.message || 'OTP sent successfully!', 'success');
+          if (badge) {
+            badge.className = 'badge badge-info';
+            badge.textContent = 'OTP SENT';
+          }
+          if (statusEl) {
+            statusEl.style.display = 'block';
+            statusEl.innerHTML = '✓ ' + (d.message || 'OTP sent.') + (d.dev_otp ? ' <span style="font-family:monospace; background:#bbf7d0; padding:2px 6px; border-radius:4px; font-weight:800; color:#14532d;">Code: ' + d.dev_otp + '</span>' : '');
+          }
+          const otpInput = document.getElementById('newAddrOtp');
+          if (otpInput) {
+            if (d.dev_otp && !otpInput.value) otpInput.value = d.dev_otp;
+            otpInput.focus();
+          }
+
+          let countdown = 60;
+          clearInterval(whOtpTimer);
+          whOtpTimer = setInterval(() => {
+            countdown--;
+            if (btn) btn.textContent = 'Resend in ' + countdown + 's';
+            if (countdown <= 0) {
+              clearInterval(whOtpTimer);
+              if (btn) {
+                btn.disabled = false;
+                btn.textContent = '📲 Resend OTP';
+              }
+            }
+          }, 1000);
+        } else {
+          showToast(d.error || 'Failed to send OTP', 'error');
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = '📲 Send OTP';
+          }
+        }
+      } catch (err) {
+        showToast('Network error while requesting OTP', 'error');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '📲 Send OTP';
+        }
+      }
+    }
+
+    async function syncWarehouseToShipmozo(addressId) {
+      try {
+        showToast('Registering warehouse directly with Shipmozo API...', 'info');
+        const res = await fetch('/api/addresses/' + addressId + '/sync-warehouse', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await res.json();
+        if (res.ok && d.success) {
+          showToast('✓ Verified & Registered on Shipmozo! Warehouse ID: #' + d.warehouseId, 'success');
+          loadAddresses();
+        } else {
+          showToast(d.error || 'Failed to sync warehouse to Shipmozo', 'error');
+        }
+      } catch (e) {
+        showToast('Error communicating with Shipmozo API', 'error');
+      }
+    }
+
     let pickupAddresses = [];
     async function loadAddresses() {
       try {
         const res = await fetch('/api/addresses', { headers: { 'Authorization': 'Bearer ' + token } });
         const d = await res.json();
-        // Address book strictly contains only registered pickup warehouse locations
         pickupAddresses = (d.addresses || []).filter(a => a.type === 'WAREHOUSE' || a.type === 'PICKUP' || a.type === 'ORIGIN' || (!a.type && (a.label || '').toLowerCase().includes('warehouse')));
 
         // Populate create order select
@@ -4052,7 +4208,8 @@
         } else {
           sel.innerHTML = pickupAddresses.map((a, idx) => {
             const whLabel = a.label ? ('🏷️ ' + a.label + ' — ') : '🏭 ';
-            return '<option value="' + a.id + '" data-pincode="' + a.pincode + '" ' + (idx === 0 ? 'selected' : '') + '>' + whLabel + a.contactName + ' (' + a.city + ' - ' + a.pincode + ')</option>';
+            const verifiedTag = a.isVerified ? ' [✓ Verified]' : '';
+            return '<option value="' + a.id + '" data-pincode="' + a.pincode + '" ' + (idx === 0 ? 'selected' : '') + '>' + whLabel + a.contactName + verifiedTag + ' (' + a.city + ' - ' + a.pincode + ')</option>';
           }).join('');
         }
         triggerDynamicRateFetch();
@@ -4064,24 +4221,33 @@
         } else {
           grid.innerHTML = pickupAddresses.map(a => {
             const whLabel = a.label || 'Primary Warehouse';
+            const isVerified = !!(a.isVerified || a.shipmozoWarehouseId);
+            const verifiedBadge = isVerified ? '<span class="badge badge-success" style="font-size: 0.65rem;">✓ VERIFIED HUB</span>' : '<span class="badge badge-warning" style="font-size: 0.65rem;">UNVERIFIED</span>';
+            const shipmozoBadge = a.shipmozoWarehouseId ?
+              '<span class="badge" style="font-size: 0.65rem; background: #2563eb; color: #fff; font-weight: 800;">SHIPMOZO #' + a.shipmozoWarehouseId + '</span>' :
+              '<button type="button" onclick="syncWarehouseToShipmozo(\'' + a.id + '\')" class="btn-secondary" style="font-size: 0.65rem; padding: 2px 7px; color: #2563eb; border-color: #93c5fd; background: #eff6ff;">🔗 Register on Shipmozo</button>';
+
             return '<div class="card" style="padding: 1.25rem; border: 1.5px solid #e2e8f0; display: flex; flex-direction: column; justify-content: space-between;">' +
               '<div>' +
                 '<div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 0.6rem 0.85rem; margin-bottom: 0.875rem;">' +
-                  '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                    '<span style="font-size: 0.6875rem; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.05em;">Warehouse Label</span>' +
+                  '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.35rem;">' +
+                    '<div style="display: flex; align-items: center; gap: 0.35rem;">' +
+                      '<span style="font-size: 0.6875rem; font-weight: 800; color: #1e40af; text-transform: uppercase; letter-spacing: 0.05em;">Warehouse Facility</span>' +
+                      verifiedBadge +
+                    '</div>' +
                     '<span class="badge ' + (a.isDefault ? 'badge-success' : 'badge-navy') + '">' + (a.isDefault ? 'PRIMARY' : 'WAREHOUSE') + '</span>' +
                   '</div>' +
                   '<h4 style="font-size: 1.05rem; font-weight: 800; color: #1e3a8a; margin-top: 3px;">🏷️ ' + whLabel + '</h4>' +
                 '</div>' +
                 '<div style="font-size: 0.8125rem; line-height: 1.5; color: var(--text);">' +
                   '<p><strong>Facility / In-Charge:</strong> ' + a.contactName + '</p>' +
-                  '<p style="color: var(--text-muted); margin-top: 0.25rem;">' + a.addressLine1 + '</p>' +
+                  '<p style="color: var(--text-muted); margin-top: 0.25rem;">' + a.addressLine1 + (a.addressLine2 ? ', ' + a.addressLine2 : '') + '</p>' +
                   '<p style="color: var(--text-muted); margin-top: 0.25rem;">' + a.city + ', ' + a.state + ' - <strong>' + a.pincode + '</strong></p>' +
                   '<p style="color: var(--text-muted); margin-top: 0.25rem;">Phone: ' + a.phone + '</p>' +
                 '</div>' +
               '</div>' +
-              '<div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">' +
-                '<span style="font-size: 0.7rem; color: #64748b;">Registered Origin Hub</span>' +
+              '<div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">' +
+                shipmozoBadge +
                 '<button onclick="deleteAddress(&quot;' + a.id + '&quot;)" class="btn-secondary" style="padding: 0.25rem 0.55rem; font-size: 0.6875rem; color: var(--danger); border-color: #fecaca;">Delete</button>' +
               '</div>' +
             '</div>';
@@ -4090,20 +4256,41 @@
       } catch (e) {}
     }
 
-    function openAddAddressModal() { document.getElementById('addAddressModal').style.display = 'flex'; }
+    function openAddAddressModal() {
+      document.getElementById('addAddressModal').style.display = 'flex';
+      const badge = document.getElementById('whOtpBadge');
+      if (badge) {
+        badge.className = 'badge badge-warning';
+        badge.textContent = 'OTP REQUIRED';
+      }
+      const statusEl = document.getElementById('whOtpStatusText');
+      if (statusEl) statusEl.style.display = 'none';
+    }
     function closeAddAddressModal() { document.getElementById('addAddressModal').style.display = 'none'; }
 
     document.getElementById('addAddressForm').addEventListener('submit', async function(e) {
       e.preventDefault();
+      const phoneInput = document.getElementById('newAddrPhone');
+      const phone = (phoneInput?.value || '').replace(/\D/g, '').slice(-10);
+      const otpInput = document.getElementById('newAddrOtp');
+      const otp = (otpInput?.value || '').trim();
+
+      if (!otp) {
+        showToast('Please request & enter the 6-digit OTP to verify mobile before registering warehouse', 'warning');
+        sendWarehouseOtp();
+        otpInput?.focus();
+        return;
+      }
+
       const btn = document.getElementById('saveAddressSubmitBtn');
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      btn.textContent = 'Verifying OTP & Registering on Shipmozo...';
 
       const payload = {
         type: 'PICKUP',
         label: (document.getElementById('newAddrLabel')?.value || '').trim() || 'Primary Warehouse',
         contactName: document.getElementById('newAddrName').value.trim(),
-        phone: document.getElementById('newAddrPhone').value.trim(),
+        phone: phone,
         alternatePhone: (document.getElementById('newAddrAltPhone')?.value || '').trim(),
         email: (document.getElementById('newAddrEmail')?.value || '').trim(),
         addressLine1: document.getElementById('newAddrLine').value.trim(),
@@ -4113,27 +4300,32 @@
         pincode: document.getElementById('newAddrPincode').value.trim(),
         country: 'India',
         gstNumber: (document.getElementById('newAddrGst')?.value || '').trim(),
-        isDefault: document.getElementById('newAddrDefault')?.checked ? 1 : 0
+        isDefault: document.getElementById('newAddrDefault')?.checked ? 1 : 0,
+        otp: otp
       };
+
       try {
-        const res = await fetch('/api/addresses', {
+        const res = await fetch('/api/addresses/verify-and-register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify(payload)
         });
         const d = await res.json();
         btn.disabled = false;
-        btn.textContent = 'Save Warehouse';
+        btn.textContent = '✓ Verify OTP & Register Warehouse';
 
-        if (!res.ok) throw new Error(d.error || 'Failed to save address');
+        if (!res.ok) throw new Error(d.error || d.message || 'Failed to verify warehouse');
 
         closeAddAddressModal();
         document.getElementById('addAddressForm').reset();
         await loadAddresses();
-        showToast('Warehouse label and address saved successfully!', 'success');
+        const successMsg = d.shipmozoWarehouseId ?
+          '✓ Warehouse verified via OTP & registered on Shipmozo! (ID #' + d.shipmozoWarehouseId + ')' :
+          (d.message || 'Warehouse verified and registered successfully!');
+        showToast(successMsg, 'success');
       } catch (err) {
         btn.disabled = false;
-        btn.textContent = 'Save Warehouse';
+        btn.textContent = '✓ Verify OTP & Register Warehouse';
         showToast(err.message, 'error');
       }
     });
@@ -5603,28 +5795,12 @@
     }
 
     async function onBuyerPincodeChanged() {
-      const pin = document.getElementById('buyerPincode').value.trim();
+      const pin = (document.getElementById('buyerPincode')?.value || '').replace(/\D/g, '').trim();
       if (pin.length === 6) {
-        const spinner = document.getElementById('pincodeLookupSpinner');
-        if (spinner) spinner.style.display = 'inline-block';
-        try {
-          const res = await fetch('/api/pincode-lookup/' + pin);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.found) {
-              const cityInput = document.getElementById('buyerCity');
-              const stateInput = document.getElementById('buyerState');
-              if (cityInput && data.city) cityInput.value = data.city;
-              if (stateInput && data.state) stateInput.value = data.state;
-              showToast('Location identified: ' + data.city + ', ' + data.state, 'info');
-            }
-          }
-        } catch (e) {
-          console.warn('Pincode lookup failed:', e);
-        } finally {
-          if (spinner) spinner.style.display = 'none';
-        }
-        triggerDynamicRateFetch();
+        await lookupPincode(pin, 'buyerCity', 'buyerState', 'pincodeLookupSpinner', () => {
+          cacheCurrentBuyerForm();
+          triggerDynamicRateFetch();
+        });
       }
     }
 

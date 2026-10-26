@@ -280,9 +280,11 @@ const registeredRoutes = [
   { method: 'GET', path: '/api/weight-disputes' },
   { method: 'POST', path: '/api/weight-disputes/raise' },
   { method: 'POST', path: '/api/weight-disputes/accept' },
-  // Addresses
+  // Addresses & OTP Verification
   { method: 'GET', path: '/api/addresses' },
   { method: 'POST', path: '/api/addresses' },
+  { method: 'POST', path: '/api/addresses/send-otp' },
+  { method: 'POST', path: '/api/addresses/verify-and-register' },
   { method: 'DELETE', path: '/api/addresses/:id' },
   // Admin Operations
   { method: 'GET', path: '/api/admin' },
@@ -472,6 +474,54 @@ async function runLiveApiTests() {
     assert(res.ok && (d.success || d.rateMarginPercent !== undefined), 'Admin Margin Modal -> POST /api/admin/users/margin saves margin');
   } catch (e) {
     assert(false, `POST /api/admin/users/margin failed: ${e.message}`);
+  }
+
+  // 12. Test Buyer Pincode Autopopulation
+  try {
+    const res = await fetch(`${baseUrl}/api/pincode-lookup/110001`);
+    const d = await res.json();
+    assert(res.ok && d.city && d.state, `Buyer Pincode Autopopulation -> 110001 resolved to ${d.city}, ${d.state}`);
+  } catch (e) {
+    assert(false, `Pincode lookup failed: ${e.message}`);
+  }
+
+  // 13. Test Warehouse Address OTP Dispatch
+  let testOtp = '123456';
+  try {
+    const res = await fetch(`${baseUrl}/api/addresses/send-otp`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ phone: '9876543210', email: 'dispatch@hetex.in', label: 'Test Origin Hub' })
+    });
+    const d = await res.json();
+    assert(res.ok && d.success, 'Warehouse Address OTP -> POST /api/addresses/send-otp dispatches OTP');
+    if (d.dev_otp) testOtp = d.dev_otp;
+  } catch (e) {
+    assert(false, `POST /api/addresses/send-otp failed: ${e.message}`);
+  }
+
+  // 14. Test Warehouse Address OTP Verification & Registration
+  try {
+    const res = await fetch(`${baseUrl}/api/addresses/verify-and-register`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        label: 'Automated Test Facility',
+        contactName: 'Warehouse Dispatch In-Charge',
+        phone: '9876543210',
+        addressLine1: 'Plot 42, Sector 18, Udyog Vihar',
+        pincode: '122015',
+        city: 'Gurugram',
+        state: 'Haryana',
+        country: 'India',
+        otp: testOtp,
+        isDefault: 1
+      })
+    });
+    const d = await res.json();
+    assert(res.ok && (d.success || d.id), `Warehouse Registration & OTP Verification -> ${d.message || 'Verified'}`);
+  } catch (e) {
+    assert(false, `POST /api/addresses/verify-and-register failed: ${e.message}`);
   }
 
   // Final Summary
