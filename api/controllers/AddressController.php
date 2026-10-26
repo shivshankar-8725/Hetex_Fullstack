@@ -13,7 +13,6 @@ require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../utils/response.php';
 require_once __DIR__ . '/../utils/shipmozo_client.php';
 require_once __DIR__ . '/../utils/sender.php';
-require_once __DIR__ . '/../middlewares/auth.php';
 
 class AddressController {
 

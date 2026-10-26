@@ -175,6 +175,24 @@ for (const f of phpFiles) {
 }
 
 // ============================================================================
+// SUITE 1B: VALIDATING ALL PHP REQUIRE / REQUIRE_ONCE PATHS EXIST ON DISK
+// ============================================================================
+console.log('\n===============================================================');
+console.log('SUITE 1B: Validating All PHP require / require_once Paths on Disk');
+console.log('===============================================================');
+
+for (const f of phpFiles) {
+  const relName = path.relative(rootDir, f);
+  const content = fs.readFileSync(f, 'utf8');
+  const matches = content.matchAll(/require(?:_once)?\s+__DIR__\s*\.\s*'([^']+)'/g);
+  for (const m of matches) {
+    const target = path.resolve(path.dirname(f), '.' + m[1]);
+    const exists = fs.existsSync(target);
+    assert(exists, `Required file exists: ${relName} -> __DIR__ . '${m[1]}'`);
+  }
+}
+
+// ============================================================================
 // SUITE 2: HTML SCREENS & JAVASCRIPT AST INTEGRITY
 // ============================================================================
 console.log('\n===============================================================');
