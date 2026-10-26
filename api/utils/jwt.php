@@ -3,10 +3,15 @@
  * Zero-dependency pure PHP JWT encoder and decoder (HS256)
  */
 
+require_once __DIR__ . '/../config/credentials.php';
+
 class JWT {
-    private static string $secretKey = 'hetex_production_jwt_secret_key_change_in_prod_2026';
+    private static string $secretKey = 'hetex_jwt_super_secret_key_2026_hostinger_secure';
 
     public static function getSecret(): string {
+        if (class_exists('Credentials')) {
+            return Credentials::get('JWT_SECRET', self::$secretKey);
+        }
         return getenv('JWT_SECRET') ?: self::$secretKey;
     }
 
