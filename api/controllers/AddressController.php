@@ -205,9 +205,13 @@ class AddressController {
             Response::error(implode('; ', $errors), 400);
         }
 
+        // Clean name and title - Shipmozo strictly forbids special characters (e.g. parentheses, slashes)
+        $cleanContactName = ShipmozoClient::sanitizeShipmozoName($contactName, 'Facility Incharge');
+        $cleanLabel       = ShipmozoClient::sanitizeShipmozoName($label, 'Warehouse Hub');
+
         // Call Real Shipmozo API
         $shipmozoPayload = [
-            'name'             => $label . ' (' . $contactName . ')',
+            'name'             => $cleanContactName,
             'email'            => $email,
             'phone'            => $phone,
             'address'          => $addressLine1 . ($addressLine2 ? ', ' . $addressLine2 : ''),
@@ -215,14 +219,16 @@ class AddressController {
             'state'            => $state,
             'country'          => $country,
             'pin_code'         => $pincode,
-            'gst_number'       => $gstNumber,
-            'address_title'    => $label,
+            'address_title'    => $cleanLabel,
             'address_line_one' => $addressLine1,
             'address_line_two' => $addressLine2,
         ];
+        if (!empty($gstNumber)) {
+            $shipmozoPayload['gst_number'] = $gstNumber;
+        }
 
         $shipmozoWarehouseId = null;
-        $syncMessage = 'Warehouse verified via OTP and saved';
+        $syncMessage = 'Warehouse verified and saved';
 
         if (ShipmozoClient::isConfigured()) {
             $smResult = ShipmozoClient::createWarehouse($shipmozoPayload);
@@ -233,11 +239,11 @@ class AddressController {
                      ?? null;
                 if ($whId) {
                     $shipmozoWarehouseId = (int)$whId;
-                    $syncMessage = "Warehouse verified via OTP and registered on Shipmozo Network (ID #{$shipmozoWarehouseId})";
+                    $syncMessage = "Warehouse registered on Shipmozo Network (ID #{$shipmozoWarehouseId})";
                 }
             } else {
                 error_log("[AddressController] Shipmozo create-warehouse notice: " . ($smResult['message'] ?? ''));
-                $syncMessage = "Verified via OTP. Shipmozo status: " . ($smResult['message'] ?? 'Pending carrier link');
+                $syncMessage = "Address saved, but Shipmozo returned: " . ($smResult['message'] ?? 'Check carrier link');
             }
         }
 
@@ -457,7 +463,7 @@ class AddressController {
         if ($result['success'] && !empty($result['warehouse_id'])) {
             $warehouseId = (int)$result['warehouse_id'];
             try {
-                $db->prepare("UPDATE addresses SET shipmozo_warehouse_id = ? WHERE id = ?")->execute([$warehouseId, $addressId]);
+                $db->prepare("UPDATE addresses SET shipmozo_warehouse_id = ?, is_verified = 1 WHERE id = ?")->execute([$warehouseId, $addressId]);
             } catch (\Throwable $t) {}
 
             Response::json([
@@ -466,7 +472,7 @@ class AddressController {
                 'message'     => 'Warehouse synced to Shipmozo (ID: ' . $warehouseId . ')',
             ]);
         } else {
-            Response::error($result['message'] ?: 'Failed to register warehouse on Shipmozo', 502);
+            Response::error($result['message'] ?: 'Failed to register warehouse on Shipmozo', 400);
         }
     }
 

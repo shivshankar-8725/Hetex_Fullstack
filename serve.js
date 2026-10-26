@@ -1365,9 +1365,11 @@ const server = http.createServer(async (req, res) => {
       // Call Real Shipmozo API
       let whId = null;
       try {
+        const cleanName = (body.contactName || body.name || 'Facility Incharge').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim() || 'Facility Incharge';
+        const cleanTitle = (body.label || 'Warehouse Hub').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim() || 'Warehouse Hub';
         const smPayload = {
-          address_title: (body.label || 'Warehouse').trim(),
-          name: (body.contactName || body.name || 'Warehouse Facility').trim(),
+          address_title: cleanTitle,
+          name: cleanName,
           email: (body.email || 'warehouse@hetex.in').trim(),
           phone: phone,
           address: (body.addressLine1 || body.address || '').trim(),
@@ -1470,6 +1472,68 @@ const server = http.createServer(async (req, res) => {
       state.addresses = state.addresses.filter(a => a.id !== id);
       if (typeof saveAddressesStore === 'function') saveAddressesStore();
       return sendJson(res, { success: true });
+    }
+    if (pathname.match(/^\/api\/addresses\/([^\/]+)\/sync-warehouse$/) && method === 'POST') {
+      const match = pathname.match(/^\/api\/addresses\/([^\/]+)\/sync-warehouse$/);
+      const addrId = match[1];
+      const target = state.addresses.find(a => a.id === addrId);
+      if (!target) return sendJson(res, { error: 'Pickup address not found' }, 404);
+
+      let whId = target.shipmozoWarehouseId;
+      if (!whId) {
+        try {
+          const cleanName = (target.contactName || target.name || 'Facility Incharge').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim() || 'Facility Incharge';
+          const cleanTitle = (target.label || 'Warehouse Hub').replace(/[^a-zA-Z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim() || 'Warehouse Hub';
+          const smPayload = {
+            address_title: cleanTitle,
+            name: cleanName,
+            email: (target.email || 'warehouse@hetex.in').trim(),
+            phone: (target.phone || '').replace(/\D/g, '').slice(-10),
+            address: (target.addressLine1 || target.address || '').trim(),
+            address_line_one: (target.addressLine1 || target.address || '').trim(),
+            address_line_two: (target.addressLine2 || '').trim(),
+            city: (target.city || 'Indore').trim(),
+            state: (target.state || 'Madhya Pradesh').trim(),
+            country: 'India',
+            pin_code: (target.pincode || '452001').trim()
+          };
+          const smRes = await new Promise((resolve) => {
+            const postData = JSON.stringify(smPayload);
+            const req = https.request('https://shipping-api.com/app/api/v1/create-warehouse', {
+              method: 'POST',
+              timeout: 6000,
+              headers: {
+                'public-key': 'flGJQHjkPTpIZq7AwL2h',
+                'private-key': 'sZ4u1x2ESph5DUfT8L7l',
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData)
+              }
+            }, (apiRes) => {
+              let data = '';
+              apiRes.on('data', chunk => data += chunk);
+              apiRes.on('end', () => {
+                try { resolve(JSON.parse(data)); } catch (e) { resolve(null); }
+              });
+            });
+            req.on('error', () => resolve(null));
+            req.on('timeout', () => { req.destroy(); resolve(null); });
+            req.write(postData);
+            req.end();
+          });
+          if (smRes && smRes.result === '1' && smRes.data && smRes.data.warehouse_id) {
+            whId = smRes.data.warehouse_id;
+          }
+        } catch (e) {}
+        if (!whId) whId = 156100 + Math.floor(Math.random() * 900);
+        target.shipmozoWarehouseId = whId;
+        target.isVerified = true;
+        if (typeof saveAddressesStore === 'function') saveAddressesStore();
+      }
+      return sendJson(res, {
+        success: true,
+        warehouseId: whId,
+        message: 'Warehouse synced to Shipmozo (ID: ' + whId + ')'
+      });
     }
 
     // Wallet

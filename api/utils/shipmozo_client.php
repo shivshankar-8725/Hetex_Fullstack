@@ -337,6 +337,16 @@ class ShipmozoClient {
     }
 
     /**
+     * Clean a string to be acceptable by Shipmozo's strict character validator.
+     * Shipmozo rejects any special characters (including parentheses, slashes, hyphens) in name and address_title.
+     */
+    public static function sanitizeShipmozoName(string $name, string $fallback = 'Warehouse Hub'): string {
+        $clean = preg_replace('/[^a-zA-Z0-9\s]/', ' ', $name);
+        $clean = trim(preg_replace('/\s+/', ' ', $clean));
+        return !empty($clean) ? substr($clean, 0, 50) : $fallback;
+    }
+
+    /**
      * Register a HetEx PICKUP address as a Shipmozo warehouse.
      * Maps HetEx address fields to the exact Shipmozo /create-warehouse payload.
      *
@@ -344,8 +354,14 @@ class ShipmozoClient {
      * @return array ['success' => bool, 'warehouse_id' => int|null, 'message' => string]
      */
     public static function registerWarehouse(array $address): array {
+        $contactName = trim($address['contact_name'] ?? $address['name'] ?? 'Facility Incharge');
+        $cleanName   = self::sanitizeShipmozoName($contactName, 'Facility Incharge');
+
+        $label      = trim($address['label'] ?? 'Warehouse Hub');
+        $cleanTitle = self::sanitizeShipmozoName($label, 'Warehouse Hub');
+
         $payload = [
-            'name'             => trim($address['label'] ?? $address['contact_name'] ?? 'Warehouse'),
+            'name'             => $cleanName,
             'email'            => trim($address['email'] ?? 'warehouse@hetex.in'),
             'phone'            => preg_replace('/\D/', '', (string)($address['phone'] ?? '')),
             'address'          => trim($address['address_line1'] ?? $address['address'] ?? ''),
@@ -353,7 +369,7 @@ class ShipmozoClient {
             'state'            => trim($address['state'] ?? ''),
             'country'          => trim($address['country'] ?? 'India'),
             'pin_code'         => trim($address['pincode'] ?? $address['pin_code'] ?? ''),
-            'address_title'    => trim($address['label'] ?? 'Warehouse'),
+            'address_title'    => $cleanTitle,
             'address_line_one' => trim($address['address_line1'] ?? $address['address'] ?? ''),
             'address_line_two' => trim($address['address_line2'] ?? ''),
         ];
