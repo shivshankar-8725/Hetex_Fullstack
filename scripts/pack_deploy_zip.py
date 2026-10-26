@@ -34,6 +34,17 @@ includes = [
     'scripts'
 ]
 
+import subprocess
+
+test_script = os.path.join(root_dir, 'tests', 'pre_deploy_test_suite.js')
+if os.path.exists(test_script):
+    print("Running Pre-Deployment Quality & Screen Verification Suite...")
+    test_result = subprocess.run(['node', test_script], cwd=root_dir)
+    if test_result.returncode != 0:
+        print("\n[FAILED] Pre-deployment screen/API verification failed! No deployment package was built.")
+        sys.exit(1)
+    print("\n[PASSED] Verification passed 100%! Building deployment archives...\n")
+
 print(f"Creating Linux-compatible deployment package: {zip_path}")
 
 # Remove existing zips if present

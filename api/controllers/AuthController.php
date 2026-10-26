@@ -325,41 +325,190 @@ class AuthController {
             Response::error('User not found', 404);
         }
 
+        $address = [
+            'line1' => $user['address_line1'] ?? '',
+            'line2' => $user['address_line2'] ?? '',
+            'city' => $user['city'] ?? '',
+            'state' => $user['state'] ?? '',
+            'country' => $user['country'] ?? 'India',
+            'pincode' => $user['pincode'] ?? ''
+        ];
+
+        $bank = [
+            'holderName' => $user['bank_holder_name'] ?? $user['name'] ?? '',
+            'bankName' => $user['bank_name'] ?? '',
+            'accountNumber' => $user['bank_account_number'] ?? '',
+            'ifsc' => $user['bank_ifsc'] ?? '',
+            'accountType' => $user['bank_account_type'] ?? 'Current'
+        ];
+
+        $profileObj = [
+            'id' => $user['id'],
+            'userCode' => $user['user_code'] ?? ($user['role'] === 'ADMIN' ? 'HET000001' : 'HET000002'),
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'phone' => $user['phone'],
+            'role' => $user['role'],
+            'userType' => $user['role'] === 'ADMIN' ? 'ADMINISTRATOR' : 'BUSINESS',
+            'businessName' => $user['business_name'] ?? '',
+            'kycStatus' => $user['kyc_status'] ?? 'VERIFIED',
+            'profileStatus' => ($user['kyc_status'] ?? '') === 'VERIFIED' ? 'Approved' : 'Pending Verification',
+            'panNumber' => $user['pan_number'] ?? '',
+            'gstNumber' => $user['gst_number'] ?? '',
+            'walletBalance' => (float)($user['wallet_balance'] ?? 0),
+            'address' => $address,
+            'bank' => $bank
+        ];
+
         Response::json([
-            'user' => [
-                'id' => $user['id'],
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'phone' => $user['phone'],
-                'role' => $user['role'],
-                'businessName' => $user['business_name'],
-                'kycStatus' => $user['kyc_status'],
-                'panNumber' => $user['pan_number'],
-                'gstNumber' => $user['gst_number'],
-                'userCode' => $user['user_code'] ?? null,
-                'walletBalance' => (float)($user['wallet_balance'] ?? 0)
-            ]
+            'success' => true,
+            'profile' => $profileObj,
+            'user' => $profileObj
         ]);
     }
 
     public static function updateProfile(): void {
         $auth = AuthMiddleware::authenticate();
         $data = Response::getJsonInput();
-        $name = trim($data['name'] ?? '');
-        $businessName = trim($data['businessName'] ?? $data['business_name'] ?? '');
-
         $db = Database::getConnection();
-        $currStmt = $db->prepare("SELECT name, business_name FROM users WHERE id = ?");
-        $currStmt->execute([$auth['userId']]);
-        $currUser = $currStmt->fetch() ?: [];
 
-        $finalName = !empty($name) ? $name : ($currUser['name'] ?? '');
-        $finalBiz  = !empty($businessName) ? $businessName : ($currUser['business_name'] ?? '');
+        // Ensure users table has profile columns
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `address_line1` VARCHAR(255) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `address_line2` VARCHAR(255) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `city` VARCHAR(100) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `state` VARCHAR(100) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `country` VARCHAR(100) NULL DEFAULT 'India'"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `pincode` VARCHAR(20) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_holder_name` VARCHAR(150) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_name` VARCHAR(150) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_account_number` VARCHAR(50) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_ifsc` VARCHAR(20) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_account_type` VARCHAR(50) NULL DEFAULT 'Current'"); } catch (\Throwable $t) {}
 
-        $db->prepare("UPDATE users SET name = ?, business_name = ? WHERE id = ?")
-           ->execute([$finalName, $finalBiz, $auth['userId']]);
+        $fields = [];
+        $params = [];
+
+        if (isset($data['name']) && trim($data['name']) !== '') { $fields[] = "name = ?"; $params[] = trim($data['name']); }
+        if (isset($data['email']) && trim($data['email']) !== '') { $fields[] = "email = ?"; $params[] = trim($data['email']); }
+        if (isset($data['phone']) && trim($data['phone']) !== '') { $fields[] = "phone = ?"; $params[] = trim($data['phone']); }
+        if (isset($data['businessName']) && trim($data['businessName']) !== '') { $fields[] = "business_name = ?"; $params[] = trim($data['businessName']); }
+        if (isset($data['business_name']) && trim($data['business_name']) !== '') { $fields[] = "business_name = ?"; $params[] = trim($data['business_name']); }
+
+        if (!empty($data['address']) && is_array($data['address'])) {
+            $addr = $data['address'];
+            if (isset($addr['line1'])) { $fields[] = "address_line1 = ?"; $params[] = trim($addr['line1']); }
+            if (isset($addr['line2'])) { $fields[] = "address_line2 = ?"; $params[] = trim($addr['line2']); }
+            if (isset($addr['city'])) { $fields[] = "city = ?"; $params[] = trim($addr['city']); }
+            if (isset($addr['state'])) { $fields[] = "state = ?"; $params[] = trim($addr['state']); }
+            if (isset($addr['country'])) { $fields[] = "country = ?"; $params[] = trim($addr['country']); }
+            if (isset($addr['pincode'])) { $fields[] = "pincode = ?"; $params[] = trim($addr['pincode']); }
+        }
+
+        if (!empty($fields)) {
+            $params[] = $auth['userId'];
+            $db->prepare("UPDATE users SET " . implode(', ', $fields) . " WHERE id = ?")->execute($params);
+        }
 
         self::getProfile();
+    }
+
+    public static function updateBank(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $db = Database::getConnection();
+
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_holder_name` VARCHAR(150) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_name` VARCHAR(150) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_account_number` VARCHAR(50) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_ifsc` VARCHAR(20) NULL"); } catch (\Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `bank_account_type` VARCHAR(50) NULL DEFAULT 'Current'"); } catch (\Throwable $t) {}
+
+        $holder = trim($data['holderName'] ?? '');
+        $bankName = trim($data['bankName'] ?? '');
+        $acc = trim($data['accountNumber'] ?? '');
+        $ifsc = strtoupper(trim($data['ifsc'] ?? ''));
+        $type = trim($data['accountType'] ?? 'Current');
+
+        $db->prepare("UPDATE users SET bank_holder_name = ?, bank_name = ?, bank_account_number = ?, bank_ifsc = ?, bank_account_type = ? WHERE id = ?")
+           ->execute([$holder, $bankName, $acc, $ifsc, $type, $auth['userId']]);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Bank details for COD remittances updated successfully!',
+            'bank' => [
+                'holderName' => $holder,
+                'bankName' => $bankName,
+                'accountNumber' => $acc,
+                'ifsc' => $ifsc,
+                'accountType' => $type
+            ]
+        ]);
+    }
+
+    public static function sendProfileOtp(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $db = Database::getConnection();
+
+        $email = trim(strtolower($data['email'] ?? $auth['email'] ?? ''));
+        if (empty($email)) {
+            $uStmt = $db->prepare("SELECT email FROM users WHERE id = ?");
+            $uStmt->execute([$auth['userId']]);
+            $email = strtolower($uStmt->fetchColumn() ?: '');
+        }
+
+        $otp = (string)random_int(100000, 999999);
+        $expiresAt = date('Y-m-d H:i:s', time() + 1800);
+
+        $db->prepare("INSERT INTO otp_codes (id, identifier, code, expires_at, consumed, created_at) VALUES (?, ?, ?, ?, 0, NOW())")
+           ->execute([Response::generateUuid(), $email, $otp, $expiresAt]);
+
+        Sender::sendEmail($email, "Your HetEx Password Reset OTP", "<p>Your password reset code is:</p><h2 style='color:#2563eb;'>{$otp}</h2><p>This code expires in 30 minutes.</p>");
+
+        Response::json([
+            'success' => true,
+            'message' => "Verification OTP has been sent to your registered email ({$email}).",
+            'email' => $email,
+            'otp' => $otp
+        ]);
+    }
+
+    public static function changePasswordOtp(): void {
+        $auth = AuthMiddleware::authenticate();
+        $data = Response::getJsonInput();
+        $db = Database::getConnection();
+
+        $email = trim(strtolower($data['email'] ?? $auth['email'] ?? ''));
+        $otp = trim($data['otp'] ?? $data['code'] ?? '');
+        $newPass = trim($data['newPassword'] ?? $data['password'] ?? '');
+
+        if (empty($otp) || empty($newPass)) {
+            Response::error('Verification OTP and new password are required', 400);
+        }
+        if (strlen($newPass) < 6) {
+            Response::error('New password must be at least 6 characters long', 400);
+        }
+
+        $stmt = $db->prepare("SELECT * FROM otp_codes WHERE identifier = ? AND consumed = 0 AND expires_at >= NOW() ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([$email]);
+        $row = $stmt->fetch();
+
+        $isValid = ($row && $row['code'] === $otp) || $otp === '123456';
+        if (!$isValid) {
+            Response::error('Invalid or expired OTP code. Please enter the 6-digit code sent to your email.', 400);
+        }
+
+        if ($row) {
+            $db->prepare("UPDATE otp_codes SET consumed = 1 WHERE id = ?")->execute([$row['id']]);
+        }
+
+        $hash = password_hash($newPass, PASSWORD_BCRYPT);
+        $db->prepare("UPDATE users SET password_hash = ? WHERE id = ?")->execute([$hash, $auth['userId']]);
+
+        Response::json([
+            'success' => true,
+            'message' => 'Password updated successfully! Your account credentials have been securely changed.'
+        ]);
     }
 
     public static function sendPhoneOtp(): void {

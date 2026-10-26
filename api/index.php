@@ -85,11 +85,21 @@ try {
         case ($endpoint === '/auth/logout' && $method === 'POST'):
             AuthController::logout();
             break;
-        case ($endpoint === '/auth/me' && $method === 'GET'):
+        // --- Profile (Supports /profile, /user/profile, /auth/me, /auth/update-profile) ---
+        case (($endpoint === '/auth/me' || $endpoint === '/profile' || $endpoint === '/user/profile') && $method === 'GET'):
             AuthController::getProfile();
             break;
-        case ($endpoint === '/auth/update-profile' && $method === 'POST'):
+        case (($endpoint === '/auth/update-profile' || $endpoint === '/profile' || $endpoint === '/user/profile') && ($method === 'POST' || $method === 'PUT')):
             AuthController::updateProfile();
+            break;
+        case ($endpoint === '/profile/bank' && ($method === 'POST' || $method === 'PUT')):
+            AuthController::updateBank();
+            break;
+        case ($endpoint === '/profile/send-otp' && $method === 'POST'):
+            AuthController::sendProfileOtp();
+            break;
+        case ($endpoint === '/profile/change-password-otp' && $method === 'POST'):
+            AuthController::changePasswordOtp();
             break;
         case ($endpoint === '/auth/send-phone-otp' && $method === 'POST'):
             AuthController::sendPhoneOtp();
@@ -296,6 +306,57 @@ try {
             ExtraController::syncChannel($m[1]);
             break;
 
+        // --- Pincode Lookup ---
+        case (preg_match('#^/pincode-lookup(?:/([0-9]{6}))?$#', $endpoint, $m) && $method === 'GET'):
+            $pin = !empty($m[1]) ? $m[1] : ($_GET['pincode'] ?? $_GET['pin'] ?? '');
+            if (empty($pin) || strlen($pin) !== 6 || !ctype_digit($pin)) {
+                Response::error('Valid 6-digit pincode is required', 400);
+            }
+            $ch = curl_init("https://api.postalpincode.in/pincode/" . $pin);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $resp = curl_exec($ch);
+            curl_close($ch);
+            $parsed = $resp ? json_decode($resp, true) : null;
+            if ($parsed && !empty($parsed[0]['PostOffice'])) {
+                $po = $parsed[0]['PostOffice'][0];
+                Response::json([
+                    'success' => true,
+                    'found' => true,
+                    'pincode' => $pin,
+                    'city' => $po['District'] ?? $po['Name'] ?? 'City',
+                    'state' => $po['State'] ?? 'State'
+                ]);
+            } else {
+                Response::json([
+                    'success' => true,
+                    'found' => false,
+                    'pincode' => $pin,
+                    'city' => '',
+                    'state' => ''
+                ]);
+            }
+            break;
+
+        // --- Support Tickets & Messaging ---
+        case ($endpoint === '/tickets' && $method === 'GET'):
+            TicketController::listTickets();
+            break;
+        case ($endpoint === '/tickets' && $method === 'POST'):
+            TicketController::createTicket();
+            break;
+        case (preg_match('#^/tickets/([^/]+)$#', $endpoint, $m) && $method === 'GET'):
+            TicketController::getTicket($m[1]);
+            break;
+        case (preg_match('#^/tickets/([^/]+)/status$#', $endpoint, $m) && ($method === 'PATCH' || $method === 'POST')):
+            TicketController::updateTicketStatus($m[1]);
+            break;
+        case (preg_match('#^/tickets/([^/]+)/messages$#', $endpoint, $m) && $method === 'POST'):
+        case (preg_match('#^/ticket-messages/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
+            TicketController::addTicketMessage($m[1]);
+            break;
+
         // --- Disputes & Courier Measurement Reconciliation ---
         case (($endpoint === '/disputes' || $endpoint === '/weight-disputes') && $method === 'GET'):
             ExtraController::listDisputes();
@@ -303,8 +364,10 @@ try {
         case (($endpoint === '/weight-disputes/raise' || $endpoint === '/weight-disputes') && $method === 'POST'):
             ExtraController::raiseDispute();
             break;
-        case (preg_match('#^/dispute-respond/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
-            ExtraController::respondDispute($m[1]);
+        case (($endpoint === '/weight-disputes/accept' || preg_match('#^/dispute-respond/([^/]+)$#', $endpoint, $m)) && $method === 'POST'):
+            $dInput = Response::getJsonInput();
+            $disputeId = $m[1] ?? ($dInput['disputeId'] ?? $dInput['id'] ?? '');
+            ExtraController::respondDispute($disputeId);
             break;
 
         // --- COD Remittances ---
@@ -327,8 +390,10 @@ try {
         case ($endpoint === '/ndr' && $method === 'GET'):
             ExtraController::listNdr();
             break;
-        case (preg_match('#^/ndr-action/([^/]+)$#', $endpoint, $m) && $method === 'POST'):
-            ExtraController::actOnNdr($m[1]);
+        case (($endpoint === '/ndr/action' || preg_match('#^/ndr-action/([^/]+)$#', $endpoint, $m)) && $method === 'POST'):
+            $nInput = Response::getJsonInput();
+            $shipmentId = $m[1] ?? ($nInput['shipmentId'] ?? $nInput['id'] ?? '');
+            ExtraController::actOnNdr($shipmentId);
             break;
 
         // --- Notifications ---
@@ -433,8 +498,9 @@ try {
         case ($endpoint === '/admin/ndr-rto' && $method === 'GET'):
             AdminController::listNdrRtoOversight();
             break;
-        case ($endpoint === '/admin/commission' && $method === 'GET'):
-            AdminController::getCommissionRules();
+        case (($endpoint === '/admin/commission' || $endpoint === '/admin-commission') && $method === 'GET'):
+        case (preg_match('#^/admin-commission(?:/([^/]+))?$#', $endpoint, $m) && $method === 'GET'):
+            AdminController::getCommissionRules($m[1] ?? null);
             break;
         case ($endpoint === '/admin/commission' && $method === 'POST'):
             AdminController::setCommissionRule();
