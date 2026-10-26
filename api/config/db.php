@@ -257,12 +257,27 @@ class Database {
                         }
                     } catch (Throwable $t) {}
 
-                    // Ensure user_code column exists on relevant tables
+                    // Ensure user_code and rate margin columns exist on users
                     try { self::$instance->exec("ALTER TABLE `users` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `id`"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `users` ADD COLUMN `rate_margin_percent` DECIMAL(5,2) NULL DEFAULT NULL AFTER `role`"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `users` ADD COLUMN `rate_margin_type` VARCHAR(16) NOT NULL DEFAULT 'PERCENT' AFTER `rate_margin_percent`"); } catch (Throwable $t) {}
                     try { self::$instance->exec("ALTER TABLE `wallet_recharges` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `user_id`"); } catch (Throwable $t) {}
                     try { self::$instance->exec("ALTER TABLE `wallet_transactions` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `user_id`"); } catch (Throwable $t) {}
                     try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `user_code` VARCHAR(16) NULL AFTER `user_id`"); } catch (Throwable $t) {}
                     try { self::$instance->exec("ALTER TABLE `orders` MODIFY COLUMN `status` VARCHAR(32) NOT NULL DEFAULT 'CONFIRMED'"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `package_type` VARCHAR(16) NOT NULL DEFAULT 'SMALL'"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `eway_bill_number` VARCHAR(32) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `gst_number` VARCHAR(32) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `shipping_charges` DECIMAL(12,2) NOT NULL DEFAULT 0.00"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `shipping_payment_status` VARCHAR(16) NOT NULL DEFAULT 'PENDING'"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `courier_weight` DECIMAL(10,3) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `courier_length` DECIMAL(10,2) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `courier_width` DECIMAL(10,2) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `courier_height` DECIMAL(10,2) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `courier_billable_weight` DECIMAL(10,3) NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `weight_dispute_status` VARCHAR(32) NOT NULL DEFAULT 'NO_DISPUTE'"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `weight_dispute_note` TEXT NULL"); } catch (Throwable $t) {}
+                    try { self::$instance->exec("ALTER TABLE `orders` ADD COLUMN `discrepancy_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00"); } catch (Throwable $t) {}
                 } catch (Throwable $ignore) {}
 
             } catch (PDOException $e) {

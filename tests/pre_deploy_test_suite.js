@@ -443,6 +443,37 @@ async function runLiveApiTests() {
     assert(false, `GET /api/admin/recharges failed: ${e.message}`);
   }
 
+  // 10. Test Admin Users / Sellers
+  let firstUserId = '';
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/users`, { headers: authHeaders });
+    const d = await res.json();
+    assert(res.ok && Array.isArray(d.users || d), 'Admin Sellers Screen -> GET /api/admin/users returns sellers');
+    const uList = d.users || d;
+    if (uList && uList.length > 0) {
+      firstUserId = uList[0].id || '';
+    }
+  } catch (e) {
+    assert(false, `GET /api/admin/users failed: ${e.message}`);
+  }
+
+  // 11. Test Admin Configure Seller Rate Margin
+  try {
+    const res = await fetch(`${baseUrl}/api/admin/users/margin`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        userId: firstUserId || 'df8091d8-eb66-4f0c-a4d7-60a88620cf96',
+        rateMarginPercent: 10,
+        rateMarginType: 'FLAT'
+      })
+    });
+    const d = await res.json();
+    assert(res.ok && (d.success || d.rateMarginPercent !== undefined), 'Admin Margin Modal -> POST /api/admin/users/margin saves margin');
+  } catch (e) {
+    assert(false, `POST /api/admin/users/margin failed: ${e.message}`);
+  }
+
   // Final Summary
   console.log('\n===============================================================');
   console.log(`PRE-DEPLOYMENT TEST RESULTS: ${passes} Passed, ${failures} Failed`);

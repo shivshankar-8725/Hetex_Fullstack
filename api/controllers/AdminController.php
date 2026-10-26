@@ -178,6 +178,11 @@ class AdminController {
         ]);
     }
 
+    private static function ensureUserMarginColumns(PDO $db): void {
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `rate_margin_percent` DECIMAL(5,2) NULL DEFAULT NULL AFTER `role`"); } catch (Throwable $t) {}
+        try { $db->exec("ALTER TABLE `users` ADD COLUMN `rate_margin_type` VARCHAR(16) NOT NULL DEFAULT 'PERCENT' AFTER `rate_margin_percent`"); } catch (Throwable $t) {}
+    }
+
     public static function adjustWallet(): void {
         AuthMiddleware::requireAdmin();
         $data = Response::getJsonInput();
@@ -193,6 +198,7 @@ class AdminController {
             $marginPercent = ($mVal !== '' && $mVal !== null) ? (float)$mVal : null;
             $marginType = strtoupper($data['marginType'] ?? $data['rateMarginType'] ?? 'PERCENT');
             $db = Database::getConnection();
+            self::ensureUserMarginColumns($db);
             $db->prepare("UPDATE users SET rate_margin_percent = ?, rate_margin_type = ? WHERE id = ?")->execute([$marginPercent, $marginType, $userId]);
             if ($amount == 0) {
                 Response::json(['success' => true, 'rateMarginPercent' => $marginPercent, 'rateMarginType' => $marginType, 'message' => 'Rate margin updated successfully']);
@@ -243,6 +249,7 @@ class AdminController {
         }
 
         $db = Database::getConnection();
+        self::ensureUserMarginColumns($db);
         $stmt = $db->prepare("UPDATE users SET rate_margin_percent = ?, rate_margin_type = ? WHERE id = ?");
         $stmt->execute([$marginPercent, $marginType, $userId]);
 
