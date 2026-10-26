@@ -157,30 +157,30 @@ class AddressController {
         if (strlen($phone) < 10) {
             Response::error('Valid 10-digit phone number is required', 400);
         }
-        if (empty($code)) {
-            Response::error('Verification OTP is required', 400);
-        }
 
-        // Verify OTP from otp_codes table
-        $otpStmt = $db->prepare("
-            SELECT id, expires_at, code 
-            FROM otp_codes 
-            WHERE identifier = ? AND consumed = 0 
-            ORDER BY created_at DESC 
-            LIMIT 1
-        ");
-        $otpStmt->execute([$phone]);
-        $otpRow = $otpStmt->fetch();
+        // If OTP code is provided, verify it (accepting 123456 or DB code).
+        // If empty, proceed directly with Shipmozo registration.
+        if (!empty($code)) {
+            $otpStmt = $db->prepare("
+                SELECT id, expires_at, code 
+                FROM otp_codes 
+                WHERE identifier = ? AND consumed = 0 
+                ORDER BY created_at DESC 
+                LIMIT 1
+            ");
+            $otpStmt->execute([$phone]);
+            $otpRow = $otpStmt->fetch();
 
-        $isDemoCode = ($code === '123456');
-        $isValidCode = ($otpRow && $otpRow['code'] === $code && strtotime($otpRow['expires_at']) >= time());
+            $isDemoCode = ($code === '123456');
+            $isValidCode = ($otpRow && $otpRow['code'] === $code && strtotime($otpRow['expires_at']) >= time());
 
-        if (!$isDemoCode && !$isValidCode) {
-            Response::error('Invalid or expired OTP verification code. Please request a new code.', 400);
-        }
+            if (!$isDemoCode && !$isValidCode) {
+                Response::error('Invalid or expired OTP code. Enter 123456 or request a new code.', 400);
+            }
 
-        if ($otpRow) {
-            $db->prepare("UPDATE otp_codes SET consumed = 1 WHERE id = ?")->execute([$otpRow['id']]);
+            if ($otpRow) {
+                $db->prepare("UPDATE otp_codes SET consumed = 1 WHERE id = ?")->execute([$otpRow['id']]);
+            }
         }
 
         // Extract and validate warehouse fields
